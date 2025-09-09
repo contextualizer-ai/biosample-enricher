@@ -1,6 +1,8 @@
+# Biosample Enricher - UV-based Python project
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[codz]
+*.py[cod]
 *$py.class
 
 # C extensions
@@ -25,6 +27,10 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# UV virtual environment
+.venv/
+uv.lock
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -94,12 +100,6 @@ ipython_config.py
 #   install all needed dependencies.
 #Pipfile.lock
 
-# UV
-#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#uv.lock
-
 # poetry
 #   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
 #   This is especially recommended for binary packages to ensure reproducibility, and is more
@@ -137,7 +137,6 @@ celerybeat.pid
 # Environments
 .env
 .envrc
-.venv
 env/
 venv/
 ENV/
@@ -174,12 +173,6 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
-
-# Abstra
-# Abstra is an AI-powered process automation framework.
-# Ignore directories containing user credentials, local state, and settings.
-# Learn more at https://abstra.io/docs
-.abstra/
 
 # Visual Studio Code
 #  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
