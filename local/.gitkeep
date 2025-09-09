@@ -1,0 +1,3 @@
+# This file ensures the local/ directory is tracked by git
+# The local/ directory is for development-specific files that should not be committed
+# Examples: local configs, sample data, personal scripts, cache files, etc.
