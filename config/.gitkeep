@@ -1,0 +1,4 @@
+# This file ensures the config/ directory is tracked by git
+# The config/ directory is for configuration files that should be committed
+# Examples: default configs, environment-specific configs, schema files, etc.
+# For local/secret configs, use .env or local/ directory instead
