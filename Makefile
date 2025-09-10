@@ -1,4 +1,4 @@
-.PHONY: help install install-dev test test-cov lint format type-check check clean build docs run
+.PHONY: help install install-dev test test-cov lint format type-check check clean build docs run schema-dirs analyze-schemas clean-schema
 .DEFAULT_GOAL := help
 
 # Colors for output
@@ -138,3 +138,83 @@ git-status: ## Show git status
 
 git-log: ## Show recent git commits
 	@git log --oneline -10
+
+## Schema Analysis Infrastructure
+# MongoDB connection defaults (can be overridden) 
+MONGO_URI ?= mongodb://ncbi_reader:register_manatee_coach78@localhost:27778/?directConnection=true&authMechanism=DEFAULT&authSource=admin
+NMDC_DB ?= nmdc
+GOLD_DB ?= gold_metadata
+
+schema-dirs: ## Create schema analysis directories
+	@echo "$(GREEN)Creating schema analysis directories...$(RESET)"
+	@mkdir -p data/outputs/schema
+
+# Schema inference from MongoDB collections
+data/outputs/schema/nmdc_biosample_schema.json: schema-dirs
+	@echo "$(GREEN)Inferring NMDC biosample schema from MongoDB...$(RESET)"
+	uv run python -m biosample_enricher.schema_inference \
+		--mongo-uri "$(MONGO_URI)" \
+		--db $(NMDC_DB) \
+		--coll biosample_set \
+		--sample-size 50000 \
+		--out-json-schema $@
+
+data/outputs/schema/gold_biosample_schema.json: schema-dirs
+	@echo "$(GREEN)Inferring GOLD biosample schema from MongoDB...$(RESET)"
+	uv run python -m biosample_enricher.schema_inference \
+		--mongo-uri "$(MONGO_URI)" \
+		--db $(GOLD_DB) \
+		--coll biosamples \
+		--sample-size 50000 \
+		--out-json-schema $@
+
+# Schema statistics generation
+data/outputs/schema/nmdc_biosample_stats.csv: schema-dirs
+	@echo "$(GREEN)Generating NMDC biosample field statistics...$(RESET)"
+	uv run python -m biosample_enricher.schema_statistics \
+		--mongo-uri "$(MONGO_URI)" \
+		--db $(NMDC_DB) \
+		--coll biosample_set \
+		--sample-size 50000 \
+		--out-csv $@ \
+		--out-md data/outputs/schema/nmdc_biosample_stats.md
+
+data/outputs/schema/gold_biosample_stats.csv: schema-dirs
+	@echo "$(GREEN)Generating GOLD biosample field statistics...$(RESET)"
+	uv run python -m biosample_enricher.schema_statistics \
+		--mongo-uri "$(MONGO_URI)" \
+		--db $(GOLD_DB) \
+		--coll biosamples \
+		--sample-size 50000 \
+		--out-csv $@ \
+		--out-md data/outputs/schema/gold_biosample_stats.md
+
+# Claude CLI schema comparison
+data/outputs/schema/schema_comparison_raw.json: data/outputs/schema/nmdc_biosample_schema.json data/outputs/schema/gold_biosample_schema.json prompts/schema-comparison-prompt.txt
+	@echo "$(GREEN)Running Claude CLI schema comparison...$(RESET)"
+	@mkdir -p $$(dirname $@)
+	date && time claude --print --output-format json < prompts/schema-comparison-prompt.txt > $@
+
+data/outputs/schema/schema_comparison.json: data/outputs/schema/schema_comparison_raw.json
+	@echo "$(GREEN)Extracting schema comparison JSON from Claude response...$(RESET)"
+	jq -r '.result | fromjson' $< > $@
+
+# Claude CLI enrichment analysis
+data/outputs/schema/enrichment_analysis_raw.json: data/outputs/schema/nmdc_biosample_stats.csv data/outputs/schema/gold_biosample_stats.csv data/outputs/schema/schema_comparison.json prompts/enrichment-analysis-prompt.txt
+	@echo "$(GREEN)Running Claude CLI enrichment analysis...$(RESET)"
+	@mkdir -p $$(dirname $@)
+	date && time claude --print --output-format json < prompts/enrichment-analysis-prompt.txt > $@
+
+data/outputs/schema/enrichment_analysis.json: data/outputs/schema/enrichment_analysis_raw.json
+	@echo "$(GREEN)Extracting enrichment analysis JSON from Claude response...$(RESET)"
+	jq -r '.result | fromjson' $< > $@
+
+# Meta-targets for complete workflows
+analyze-schemas: data/outputs/schema/nmdc_biosample_schema.json data/outputs/schema/gold_biosample_schema.json data/outputs/schema/nmdc_biosample_stats.csv data/outputs/schema/gold_biosample_stats.csv data/outputs/schema/schema_comparison.json data/outputs/schema/enrichment_analysis.json ## Complete schema analysis workflow
+	@echo "$(GREEN)✅ Complete schema analysis workflow finished$(RESET)"
+
+# Clean schema analysis outputs
+clean-schema: ## Clean all schema analysis outputs
+	@echo "$(GREEN)🧹 Cleaning schema analysis outputs...$(RESET)"
+	@rm -rf data/outputs/schema/
+	@echo "$(GREEN)✅ Schema analysis outputs cleaned$(RESET)"
