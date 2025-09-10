@@ -1,5 +1,6 @@
 """Command-line interface for biosample enricher."""
 
+import json
 from pathlib import Path
 
 import click
@@ -72,8 +73,6 @@ def enrich(
         if output_format == "table":
             _display_table(sample_id, results)
         elif output_format == "json":
-            import json
-
             data = [result.model_dump() for result in results]
             click.echo(json.dumps(data, indent=2))
         elif output_format == "csv":
@@ -151,8 +150,6 @@ def batch(
 
         # Output results
         if output_format == "json":
-            import json
-
             output_data = {}
             for sample_id, metadata_list in results.items():
                 output_data[sample_id] = [m.model_dump() for m in metadata_list]

@@ -18,6 +18,7 @@ from datetime import datetime
 from typing import Any
 
 import click
+import pymongo
 
 from .adapters import (
     MongoGOLDBiosampleFetcher,
@@ -39,8 +40,6 @@ def get_mongo_connection_string(mongo_uri: str | None = None) -> str:
 def test_mongodb_connection(connection_string: str) -> dict[str, Any]:
     """Test basic MongoDB connection."""
     try:
-        import pymongo
-
         start_time = time.time()
         client: pymongo.MongoClient = pymongo.MongoClient(connection_string)
 
@@ -59,12 +58,6 @@ def test_mongodb_connection(connection_string: str) -> dict[str, Any]:
             else "simple_uri",
         }
 
-    except ImportError:
-        return {
-            "success": False,
-            "error": "pymongo not available",
-            "details": "MongoDB operations require pymongo package",
-        }
     except Exception as e:
         return {"success": False, "error": "connection_failed", "details": str(e)}
 

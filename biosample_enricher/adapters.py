@@ -14,6 +14,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import pymongo
+
 from .models import BiosampleLocation
 
 
@@ -589,15 +591,9 @@ class MongoNMDCBiosampleFetcher:
     def connect(self) -> bool:
         """Establish MongoDB connection."""
         try:
-            import pymongo
-
             self._client = pymongo.MongoClient(self.connection_string)
             self._collection = self._client[self.database_name][self.collection_name]
             return True
-        except ImportError:
-            raise ImportError(
-                "pymongo is required for MongoDB operations. Install with: pip install pymongo"
-            ) from None
         except Exception as e:
             print(f"MongoDB connection failed: {e}")
             return False
@@ -736,15 +732,9 @@ class MongoGOLDBiosampleFetcher:
     def connect(self) -> bool:
         """Establish MongoDB connection."""
         try:
-            import pymongo
-
             self._client = pymongo.MongoClient(self.connection_string)
             self._collection = self._client[self.database_name][self.collection_name]
             return True
-        except ImportError:
-            raise ImportError(
-                "pymongo is required for MongoDB operations. Install with: pip install pymongo"
-            ) from None
         except Exception as e:
             print(f"MongoDB connection failed: {e}")
             return False

@@ -7,6 +7,7 @@ from typing import Any
 
 import requests
 import requests_cache
+from pymongo import MongoClient
 from requests_cache import CachedSession
 
 from .logging_config import get_logger
@@ -52,8 +53,6 @@ def get_session() -> CachedSession:
         )
     else:
         try:
-            from pymongo import MongoClient
-
             mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
             logger.debug(f"Attempting MongoDB connection to {mongo_uri}")
             client: MongoClient = MongoClient(mongo_uri, serverSelectionTimeoutMS=1000)
