@@ -1,4 +1,4 @@
-.PHONY: help install install-dev test test-cov lint format type-check check clean build docs run schema-dirs analyze-schemas clean-schema adapter-dirs demo-core demo-infrastructure demo-advanced demo-all demo-mongodb-dependent demo-mock-data clean-adapters clean-all-outputs show-demo-results validate-demo-outputs validate-synthetic validate-biosamples validate-biosamples-make
+.PHONY: help install install-dev test test-cov lint format type-check check clean build docs run schema-dirs analyze-schemas clean-schema adapter-dirs demo-core demo-infrastructure demo-advanced demo-all demo-mongodb-dependent demo-mock-data clean-adapters clean-all-outputs show-demo-results validate-demo-outputs validate-synthetic validate-biosamples validate-biosamples-make elevation-dirs elevation-demo elevation-test elevation-batch elevation-compare-providers clean-elevation
 .DEFAULT_GOAL := help
 
 # Colors for output
@@ -448,3 +448,81 @@ cache-help: ## Show cache management help
 	@echo "$(GREEN)Direct CLI Usage:$(RESET)"
 	@echo "  uv run http-cache-manager --help"
 	@echo "  uv run http-cache-manager query --help"
+
+## Elevation Service Demonstrations
+elevation-dirs: ## Create elevation output directories
+	@echo "$(GREEN)Creating elevation output directories...$(RESET)"
+	@mkdir -p data/outputs/elevation
+
+# Single coordinate elevation lookup
+data/outputs/elevation/mount_rushmore.json: elevation-dirs
+	@echo "$(GREEN)Testing elevation lookup for Mount Rushmore...$(RESET)"
+	uv run elevation-lookup lookup --lat 43.8791 --lon -103.4591 \
+		--subject-id "mount-rushmore-demo" \
+		--output $@
+
+data/outputs/elevation/london_uk.json: elevation-dirs
+	@echo "$(GREEN)Testing elevation lookup for London, UK...$(RESET)"
+	uv run elevation-lookup lookup --lat 51.5074 --lon -0.1278 \
+		--subject-id "london-uk-demo" \
+		--output $@
+
+data/outputs/elevation/ocean_pacific.json: elevation-dirs
+	@echo "$(GREEN)Testing elevation lookup for Pacific Ocean...$(RESET)"
+	uv run elevation-lookup lookup --lat 20.0 --lon -150.0 \
+		--subject-id "pacific-ocean-demo" \
+		--output $@
+
+# Elevation test with cache options
+data/outputs/elevation/cache_test.json: elevation-dirs
+	@echo "$(GREEN)Testing elevation lookup with cache disabled...$(RESET)"
+	uv run elevation-lookup lookup --lat 37.7749 --lon -122.4194 \
+		--subject-id "san-francisco-no-cache" \
+		--no-cache \
+		--output $@
+
+# Provider comparison
+data/outputs/elevation/provider_comparison.json: elevation-dirs
+	@echo "$(GREEN)Comparing elevation providers for Mount Rushmore...$(RESET)"
+	uv run elevation-demos compare-providers --lat 43.8791 --lon -103.4591 \
+		--output $@
+
+# Batch processing of synthetic biosamples
+data/outputs/elevation/synthetic_biosamples.jsonl: data/input/synthetic_biosamples.json elevation-dirs
+	@echo "$(GREEN)Processing elevation for synthetic biosamples...$(RESET)"
+	uv run elevation-demos process-biosamples $< $@ \
+		--batch-size 5 \
+		--timeout 30 \
+		--format jsonl
+
+data/outputs/elevation/synthetic_biosamples.csv: data/input/synthetic_biosamples.json elevation-dirs
+	@echo "$(GREEN)Processing elevation for synthetic biosamples (CSV output)...$(RESET)"
+	uv run elevation-demos process-biosamples $< $@ \
+		--batch-size 3 \
+		--timeout 30 \
+		--format csv
+
+data/outputs/elevation/synthetic_biosamples_no_cache.jsonl: data/input/synthetic_biosamples.json elevation-dirs
+	@echo "$(GREEN)Processing elevation for synthetic biosamples without cache...$(RESET)"
+	uv run elevation-demos process-biosamples $< $@ \
+		--batch-size 2 \
+		--timeout 30 \
+		--format jsonl \
+		--no-cache
+
+# Test elevation CLI functionality
+elevation-test: data/outputs/elevation/mount_rushmore.json data/outputs/elevation/london_uk.json data/outputs/elevation/cache_test.json ## Test elevation CLI with various coordinates and options
+
+elevation-demo: data/outputs/elevation/provider_comparison.json ## Run elevation provider comparison demo
+
+elevation-batch: data/outputs/elevation/synthetic_biosamples.jsonl data/outputs/elevation/synthetic_biosamples.csv ## Run batch elevation processing demos
+
+elevation-compare-providers: data/outputs/elevation/provider_comparison.json ## Compare elevation providers for a test coordinate
+
+# Run all elevation demonstrations
+elevation-all: elevation-test elevation-demo elevation-batch ## Run all elevation demonstrations
+
+# Clean elevation outputs
+clean-elevation: ## Remove all elevation output files
+	@echo "$(RED)Cleaning elevation outputs...$(RESET)"
+	rm -rf data/outputs/elevation/
