@@ -91,11 +91,15 @@ type-check: ## Run type checking with mypy
 	@echo "$(GREEN)Running type checking...$(RESET)"
 	uv run mypy biosample_enricher/
 
+dep-check: ## Check for unused dependencies with deptry
+	@echo "$(GREEN)Checking dependencies...$(RESET)"
+	uv run deptry .
+
 ## Combined checks
-check: lint type-check test ## Run all checks (lint, type-check, test)
+check: lint type-check dep-check test ## Run all checks (lint, type-check, dep-check, test)
 	@echo "$(GREEN)All checks completed!$(RESET)"
 
-check-ci: lint format-check type-check test ## Run all CI checks (lint, format-check, type-check, test)
+check-ci: lint format-check type-check dep-check test ## Run all CI checks (lint, format-check, type-check, dep-check, test)
 	@echo "$(GREEN)All CI checks completed!$(RESET)"
 
 ## Package building

@@ -2,6 +2,19 @@
 
 This document outlines the testing standards and practices for the Biosample Enricher project, following LinkML community guidelines and modern Python testing best practices.
 
+## ⚠️ Important Architectural Lesson Learned
+
+**HTTP Caching Implementation Mistake**: The initial HTTP caching system was custom-built from scratch with hundreds of lines of MongoDB-specific code, including manual timezone handling, cache key generation, and coordinate canonicalization. This was a **major architectural mistake**.
+
+**What We Should Have Done**: Used the standard `requests-cache` library from the beginning, which provides:
+- Built-in MongoDB, SQLite, Redis, and other backends
+- Automatic cache expiration and management  
+- Standard HTTP caching semantics
+- Well-tested, production-ready code
+- Minimal configuration required
+
+**Key Takeaway**: Always research existing solutions first before building custom implementations. This serves as a reminder that the "Not Invented Here" syndrome can lead to unnecessary complexity and maintenance burden.
+
 ## Framework & How to Run
 
 ### Primary Testing Framework
@@ -250,6 +263,7 @@ def test_invalid_examples():
 - **Linting**: `ruff check` for code quality
 - **Formatting**: `ruff format` for consistent style
 - **Type checking**: `mypy` for static type analysis
+- **Dependency analysis**: `deptry` for unused dependencies and missing imports
 
 ### Pre-commit Hooks
 Encouraged for consistent local enforcement:

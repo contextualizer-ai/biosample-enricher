@@ -5,8 +5,6 @@ from typing import Any
 from pydantic import BaseModel, Field
 from rich.console import Console
 
-from .http_cache import CachedHTTPClient
-
 console = Console()
 
 
@@ -33,7 +31,6 @@ class BiosampleEnricher:
             timeout: HTTP request timeout in seconds
         """
         self.timeout = timeout
-        self.client = CachedHTTPClient()
 
     def __enter__(self) -> "BiosampleEnricher":
         """Context manager entry."""
@@ -41,7 +38,7 @@ class BiosampleEnricher:
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Context manager exit."""
-        self.client.close()
+        pass
 
     def enrich_sample(
         self, sample_id: str, sources: list[str] | None = None
@@ -114,5 +111,5 @@ class BiosampleEnricher:
         return results
 
     def close(self) -> None:
-        """Close the HTTP client."""
-        self.client.close()
+        """Close resources (no-op with simplified client)."""
+        pass

@@ -16,7 +16,7 @@ import time
 
 import pytest
 
-from biosample_enricher.http_cache import CachedHTTPClient
+from biosample_enricher.http_cache import get_session, request
 
 
 @pytest.mark.network
@@ -32,34 +32,9 @@ def test_sunrise_api_cache_demo():
     print("\n🌅 Sunrise-Sunset API Cache Demo")
     print("=" * 50)
 
-    # Create cached client with MongoDB configuration
-    import os
-
-    from pymongo import MongoClient
-
-    mongo_uri = os.getenv("TEST_MONGO_URI", "mongodb://localhost:27017")
-    database = "test_http_cache_demo"
-    collection = "demo_requests"
-
-    # Clean the demo database before starting
-    try:
-        mongo_client = MongoClient(mongo_uri)
-        mongo_client.drop_database(database)
-        mongo_client.close()
-    except Exception:
-        pass
-
-    client = CachedHTTPClient(
-        mongo_uri=mongo_uri,
-        database=database,
-        collection=collection,
-        default_expire_after=3600,
-        coord_precision=4,
-        truncate_dates=True,
-    )
-
-    if client.cache is None:
-        pytest.skip("MongoDB not available for cache demo")
+    # Clear cache to start fresh
+    session = get_session()
+    session.cache.clear()
 
     # San Francisco coordinates
     url = "https://api.sunrise-sunset.org/json"
@@ -74,12 +49,12 @@ def test_sunrise_api_cache_demo():
     start_time = time.time()
 
     try:
-        response1 = client.get(url, params=params, timeout=10)
+        response1 = request("GET", url, params=params, timeout=10)
         first_request_time = time.time() - start_time
 
         print(f"✅ Status: {response1.status_code}")
         print(f"⏱️  Time: {first_request_time:.3f} seconds")
-        print(f"💾 From cache: {getattr(response1, '_from_cache', False)}")
+        print(f"💾 From cache: {getattr(response1, 'from_cache', False)}")
 
         if response1.status_code == 200:
             data = response1.json()
@@ -93,12 +68,12 @@ def test_sunrise_api_cache_demo():
         print("📡 Second request (cache hit expected)...")
         start_time = time.time()
 
-        response2 = client.get(url, params=params, timeout=10)
+        response2 = request("GET", url, params=params, timeout=10)
         second_request_time = time.time() - start_time
 
         print(f"✅ Status: {response2.status_code}")
         print(f"⏱️  Time: {second_request_time:.3f} seconds")
-        print(f"💾 From cache: {getattr(response2, '_from_cache', False)}")
+        print(f"💾 From cache: {getattr(response2, 'from_cache', False)}")
         print()
 
         # Test coordinate canonicalization
@@ -111,12 +86,12 @@ def test_sunrise_api_cache_demo():
         print(f"High precision params: {precise_params}")
 
         start_time = time.time()
-        response3 = client.get(url, params=precise_params, timeout=10)
+        response3 = request("GET", url, params=precise_params, timeout=10)
         third_request_time = time.time() - start_time
 
         print(f"✅ Status: {response3.status_code}")
         print(f"⏱️  Time: {third_request_time:.3f} seconds")
-        print(f"💾 From cache: {getattr(response3, '_from_cache', False)}")
+        print(f"💾 From cache: {getattr(response3, 'from_cache', False)}")
         print()
 
         # Performance comparison
@@ -152,10 +127,10 @@ def test_sunrise_api_cache_demo():
         assert response1.status_code == 200
         assert response2.status_code == 200
         assert response3.status_code == 200
-        assert getattr(response2, "_from_cache", False), (
+        assert getattr(response2, "from_cache", False), (
             "Second request should hit cache"
         )
-        assert getattr(response3, "_from_cache", False), (
+        assert getattr(response3, "from_cache", False), (
             "Third request should hit cache (canonicalization)"
         )
 
@@ -164,14 +139,8 @@ def test_sunrise_api_cache_demo():
         raise
 
     finally:
-        client.close()
-        # Clean up demo database
-        try:
-            mongo_client = MongoClient(mongo_uri)
-            mongo_client.drop_database(database)
-            mongo_client.close()
-        except Exception:
-            pass
+        # Clean up cache
+        session.cache.clear()
 
 
 if __name__ == "__main__":
