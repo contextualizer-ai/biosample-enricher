@@ -552,18 +552,18 @@ class TestNetworkIntegration:
         """Test coordinate canonicalization with real Sunrise-Sunset API."""
         url = SUNRISE_API_URL
 
-        # Request with high precision
+        # Request with high precision - use unique date to avoid cache pollution
         precise_params = {
             "lat": 37.774929483,
             "lng": -122.419416284,
-            "date": "2025-09-10",
+            "date": "2025-09-11",  # Different date to ensure cache miss
         }
         response1 = cached_client.get(url, params=precise_params, timeout=10)
         assert response1.status_code == 200
         assert not getattr(response1, "_from_cache", True)
 
         # Request with rounded coordinates (should hit cache)
-        rounded_params = {"lat": 37.7749, "lng": -122.4194, "date": "2025-09-10"}
+        rounded_params = {"lat": 37.7749, "lng": -122.4194, "date": "2025-09-11"}
         response2 = cached_client.get(url, params=rounded_params, timeout=10)
         assert response2.status_code == 200
         assert getattr(response2, "_from_cache", False)
@@ -577,12 +577,12 @@ class TestNetworkIntegration:
         url = SUNRISE_API_URL
 
         # San Francisco
-        sf_params = {"lat": 37.7749, "lng": -122.4194, "date": "2025-09-10"}
+        sf_params = {"lat": 37.7749, "lng": -122.4194, "date": "2025-09-12"}
         sf_response = cached_client.get(url, params=sf_params, timeout=10)
         assert sf_response.status_code == 200
 
         # New York (should be separate cache entry)
-        ny_params = {"lat": 40.7128, "lng": -74.0060, "date": "2025-09-10"}
+        ny_params = {"lat": 40.7128, "lng": -74.0060, "date": "2025-09-12"}
         ny_response = cached_client.get(url, params=ny_params, timeout=10)
         assert ny_response.status_code == 200
         assert not getattr(ny_response, "_from_cache", True)

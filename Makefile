@@ -25,9 +25,9 @@ install-dev: ## Install package with development dependencies
 	uv sync --dev
 
 ## Testing
-test: ## Run tests
-	@echo "$(GREEN)Running tests...$(RESET)"
-	uv run pytest tests/ -v
+test: ## Run tests with timing
+	@echo "$(GREEN)Running tests with timing...$(RESET)"
+	uv run pytest tests/ -v --durations=0
 
 test-cov: ## Run tests with coverage
 	@echo "$(GREEN)Running tests with coverage...$(RESET)"

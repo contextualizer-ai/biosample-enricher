@@ -2,9 +2,10 @@
 
 from typing import Any
 
-import httpx
 from pydantic import BaseModel, Field
 from rich.console import Console
+
+from .http_cache import CachedHTTPClient
 
 console = Console()
 
@@ -32,7 +33,7 @@ class BiosampleEnricher:
             timeout: HTTP request timeout in seconds
         """
         self.timeout = timeout
-        self.client = httpx.Client(timeout=timeout)
+        self.client = CachedHTTPClient()
 
     def __enter__(self) -> "BiosampleEnricher":
         """Context manager entry."""

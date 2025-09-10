@@ -11,8 +11,11 @@ Centralized HTTP caching with MongoDB backend that supports:
 import hashlib
 import json
 import os
+import pickle
 import re
+import tempfile
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
@@ -135,6 +138,182 @@ class RequestCanonicalizer:
         return urlunsplit(
             (parts.scheme, parts.netloc, path, canonical_query, parts.fragment)
         )
+
+
+class FileHTTPCache:
+    """Filesystem-based HTTP cache backend for when MongoDB is unavailable."""
+
+    def __init__(
+        self,
+        cache_dir: str | Path | None = None,
+        default_expire_after: int | None = None,
+        coord_precision: int = 4,
+        truncate_dates: bool = True,
+    ):
+        self.cache_dir = Path(cache_dir) if cache_dir else Path(tempfile.gettempdir()) / "http_cache"
+        self.cache_dir.mkdir(exist_ok=True)
+        self.default_expire_after = default_expire_after
+        self.canonicalizer = RequestCanonicalizer(coord_precision, truncate_dates)
+
+    def _generate_cache_key(
+        self,
+        method: str,
+        url: str,
+        params: dict[str, Any] | None = None,
+        body: bytes | None = None,
+    ) -> str:
+        """Generate a consistent cache key."""
+        # Canonicalize URL and params
+        canonical_url = self.canonicalizer.canonicalize_url(url)
+        canonical_params = self.canonicalizer.canonicalize_params(params)
+
+        # Create cache key components
+        key_data = {
+            "method": method.upper(),
+            "url": canonical_url,
+            "params": canonical_params,
+            "body_hash": hashlib.sha256(body or b"").hexdigest()[:16],
+        }
+
+        # Generate consistent hash
+        key_string = json.dumps(key_data, sort_keys=True)
+        return hashlib.sha256(key_string.encode()).hexdigest()
+
+    def _get_cache_file(self, cache_key: str) -> Path:
+        """Get the cache file path for a given key."""
+        return self.cache_dir / f"{cache_key}.pkl"
+
+    def get(
+        self,
+        method: str,
+        url: str,
+        params: dict[str, Any] | None = None,
+        body: bytes | None = None,
+    ) -> CacheEntry | None:
+        """Retrieve cached response."""
+        cache_key = self._generate_cache_key(method, url, params, body)
+        cache_file = self._get_cache_file(cache_key)
+
+        try:
+            if not cache_file.exists():
+                return None
+
+            with cache_file.open("rb") as f:
+                entry_data = pickle.load(f)
+
+            # Check expiration
+            now = datetime.now(UTC)
+            if entry_data.get("expires_at") and entry_data["expires_at"] < now:
+                # Expired, remove it
+                cache_file.unlink(missing_ok=True)
+                return None
+
+            # Update access statistics
+            entry_data["hit_count"] += 1
+            entry_data["last_accessed"] = now
+
+            # Save updated stats
+            with cache_file.open("wb") as f:
+                pickle.dump(entry_data, f)
+
+            return CacheEntry(**entry_data)
+
+        except Exception as e:
+            print(f"Cache retrieval error: {e}")
+            return None
+
+    def set(
+        self,
+        method: str,
+        url: str,
+        response: requests.Response,
+        params: dict[str, Any] | None = None,
+        body: bytes | None = None,
+        expire_after: int | None = None,
+    ) -> None:
+        """Store response in cache."""
+        cache_key = self._generate_cache_key(method, url, params, body)
+        cache_file = self._get_cache_file(cache_key)
+        now = datetime.now(UTC)
+
+        # Determine expiration
+        expires_at = None
+        ttl = expire_after if expire_after is not None else self.default_expire_after
+        if ttl:
+            expires_at = now + timedelta(seconds=ttl)
+
+        entry_data = {
+            "cache_key": cache_key,
+            "url": url,
+            "method": method.upper(),
+            "headers": dict(response.request.headers) if response.request else {},
+            "request_body": body,
+            "status_code": response.status_code,
+            "response_headers": dict(response.headers),
+            "response_body": response.content,
+            "created_at": now,
+            "expires_at": expires_at,
+            "hit_count": 0,
+            "last_accessed": now,
+        }
+
+        try:
+            with cache_file.open("wb") as f:
+                pickle.dump(entry_data, f)
+        except Exception as e:
+            print(f"Cache storage error: {e}")
+
+    def clear(self, older_than_hours: int | None = None) -> int:
+        """Clear cache entries."""
+        try:
+            deleted_count = 0
+            for cache_file in self.cache_dir.glob("*.pkl"):
+                if older_than_hours:
+                    cutoff = datetime.now(UTC) - timedelta(hours=older_than_hours)
+                    if cache_file.stat().st_mtime > cutoff.timestamp():
+                        continue
+                cache_file.unlink()
+                deleted_count += 1
+            return deleted_count
+        except Exception:
+            return 0
+
+    def stats(self) -> dict[str, Any]:
+        """Get cache statistics."""
+        try:
+            total_entries = 0
+            total_hits = 0
+            by_status_code: dict[int, int] = {}
+            by_method: dict[str, int] = {}
+
+            for cache_file in self.cache_dir.glob("*.pkl"):
+                try:
+                    with cache_file.open("rb") as f:
+                        entry_data = pickle.load(f)
+                    
+                    total_entries += 1
+                    total_hits += entry_data.get("hit_count", 0)
+                    
+                    status_code = entry_data.get("status_code", 0)
+                    by_status_code[status_code] = by_status_code.get(status_code, 0) + 1
+                    
+                    method = entry_data.get("method", "UNKNOWN")
+                    by_method[method] = by_method.get(method, 0) + 1
+                except Exception:
+                    continue
+
+            return {
+                "total_entries": total_entries,
+                "total_hits": total_hits,
+                "by_status_code": by_status_code,
+                "by_method": by_method,
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+    def close(self) -> None:
+        """Close cache - no-op for file cache."""
+        pass
 
 
 class MongoHTTPCache:
@@ -386,26 +565,37 @@ class MongoHTTPCache:
 
 
 class CachedHTTPClient:
-    """HTTP client with MongoDB caching capabilities."""
+    """HTTP client with MongoDB or filesystem caching capabilities."""
 
     def __init__(
         self,
-        cache: MongoHTTPCache | None = None,
+        cache: MongoHTTPCache | FileHTTPCache | None = None,
         mongo_uri: str | None = None,
+        use_file_cache: bool = False,
         **cache_kwargs: Any,
     ) -> None:
-        self.cache: MongoHTTPCache | None
+        self.cache: MongoHTTPCache | FileHTTPCache | None
         if cache:
             self.cache = cache
+        elif use_file_cache:
+            self.cache = FileHTTPCache(**cache_kwargs)
         elif mongo_uri:
             self.cache = MongoHTTPCache(mongo_uri, **cache_kwargs)
         else:
             # Try to get from environment
             mongo_uri = os.getenv("MONGO_URI")
             if mongo_uri:
-                self.cache = MongoHTTPCache(mongo_uri, **cache_kwargs)
+                try:
+                    self.cache = MongoHTTPCache(mongo_uri, **cache_kwargs)
+                    # Test connection
+                    if self.cache._collection is None:
+                        raise Exception("MongoDB connection failed")
+                except Exception:
+                    print("MongoDB unavailable, falling back to filesystem cache")
+                    self.cache = FileHTTPCache(**cache_kwargs)
             else:
-                self.cache = None
+                # Default to filesystem cache if no MongoDB
+                self.cache = FileHTTPCache(**cache_kwargs)
 
         self.session = requests.Session()
 
