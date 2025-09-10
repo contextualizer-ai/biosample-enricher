@@ -33,11 +33,16 @@ dependencies = [
     "genson>=1.2.2",
     "pymongo>=4.5.0",
     "pandas>=2.0.0",
+    "python-dotenv>=1.1.1",
 ]
 
 
 [project.scripts]
 biosample-enricher = "biosample_enricher.cli:main"
+# Elevation service CLI
+elevation-lookup = "biosample_enricher.cli_elevation:elevation_cli"
+elevation-demos = "biosample_enricher.elevation_demos:cli"
+biosample-elevation = "biosample_enricher.cli_biosample_elevation:cli"
 # Cache management
 http-cache-manager = "biosample_enricher.cache_management:cli"
 # Demonstration scripts

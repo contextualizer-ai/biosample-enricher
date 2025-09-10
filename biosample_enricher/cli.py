@@ -6,6 +6,7 @@ import click
 from rich.console import Console
 from rich.table import Table
 
+from biosample_enricher.cli_elevation import elevation_cli
 from biosample_enricher.core import BiosampleEnricher
 
 console = Console()
@@ -203,6 +204,10 @@ def _display_csv(results: list) -> None:
         click.echo(
             f"{result.sample_id},{result.source},{result.confidence},{metadata_str}"
         )
+
+
+# Add elevation CLI as a subcommand
+main.add_command(elevation_cli, name="elevation")
 
 
 if __name__ == "__main__":

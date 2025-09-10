@@ -1,0 +1,1034 @@
+[
+  {
+    "original_sample": {
+      "source_system": "NMDC",
+      "nmdc_biosample_id": "nmdc:bsm-0001",
+      "gold_biosample_id": null,
+      "name": "Berkeley campus topsoil",
+      "ecosystem_category": "terrestrial_soil",
+      "collection_date": "2019-04-23",
+      "geo": {
+        "latitude": 37.8715,
+        "longitude": -122.273,
+        "country": "United States",
+        "country_code": "US",
+        "admin1": "California",
+        "locality": "Berkeley"
+      },
+      "env_terms": {
+        "env_broad_scale": "terrestrial biome",
+        "env_local_scale": "urban ecosystem",
+        "env_medium": "soil",
+        "envo_terms": [
+          "ENVO:00000446",
+          "ENVO:01000254"
+        ]
+      },
+      "is_usa": true,
+      "is_enrichable": true,
+      "provenance": "synthetic_example"
+    },
+    "elevation_envelope": {
+      "schema_version": "1.0.0",
+      "run": {
+        "started_at": "2025-09-10 15:43:24.141199+00:00",
+        "ended_at": "2025-09-10 15:43:24.141201+00:00",
+        "tool_version": "biosample-enricher 0.1.0",
+        "git_sha": null,
+        "read_from_cache": true,
+        "write_to_cache": true
+      },
+      "subject_id": "nmdc:bsm-0001",
+      "observations": [
+        {
+          "variable": "elevation",
+          "value_numeric": 51.053039551,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "usgs_epqs",
+            "endpoint": "https://epqs.nationalmap.gov/v1/json",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 37.8715,
+            "lon": -122.273,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 37.8715,
+            "lon": -122.273,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 1.0,
+          "vertical_datum": "NAVD88",
+          "raw_payload": "{\"location\": {\"x\": -122.273, \"y\": 37.8715, \"spatialReference\": {\"wkid\": 4326, \"latestWkid\": 4326}}, \"locationId\": 0, \"value\": \"51.053039551\", \"rasterId\": 80704, \"resolution\": 1, \"attributes\": {\"AcquisitionDate\": \"1/0/2021\"}}",
+          "raw_payload_sha256": "bb6ea89200f0beed54cc39060510307b1aca9e66229221a3cb0b558d69acc638",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "0a5e4f47",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:23.298919+00:00"
+        },
+        {
+          "variable": "elevation",
+          "value_numeric": 52.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "open_topo_data",
+            "endpoint": "https://api.opentopodata.org/v1/srtm30m",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 37.8715,
+            "lon": -122.273,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 37.8715,
+            "lon": -122.273,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 30.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"dataset\": \"srtm30m\", \"elevation\": 52.0, \"location\": {\"lat\": 37.8715, \"lng\": -122.273}}], \"status\": \"OK\"}",
+          "raw_payload_sha256": "50aaf00950538ffb1d4bfab1e801d6731318d586a87d31022ed2b6719054b696",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "e455c047",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:23.573167+00:00"
+        },
+        {
+          "variable": "elevation",
+          "value_numeric": 51.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "osm_elevation",
+            "endpoint": "https://api.open-elevation.com/api/v1/lookup",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 37.8715,
+            "lon": -122.273,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 37.8715,
+            "lon": -122.273,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 90.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"latitude\": 37.8715, \"longitude\": -122.273, \"elevation\": 51.0}]}",
+          "raw_payload_sha256": "7d10fb91fddd8a9a5c95fa6042fd9267189fc4733fbd5971aa1ce275981cc4f5",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "d28b63bd",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:24.140973+00:00"
+        }
+      ]
+    },
+    "best_elevation_m": 51.053039551,
+    "best_provider": "usgs_epqs",
+    "num_successful_providers": 3,
+    "location_context": {
+      "ecosystem": "terrestrial_soil",
+      "country": "United States",
+      "locality": "Berkeley"
+    }
+  },
+  {
+    "original_sample": {
+      "source_system": "GOLD",
+      "nmdc_biosample_id": null,
+      "gold_biosample_id": "gold:Gb000001",
+      "name": "Lake Tahoe surface water",
+      "ecosystem_category": "inland_fresh_water",
+      "collection_date": "2017-07-12",
+      "geo": {
+        "latitude": 39.0968,
+        "longitude": -120.0324,
+        "country": "United States",
+        "country_code": "US",
+        "admin1": "California",
+        "locality": "Lake Tahoe"
+      },
+      "env_terms": {
+        "env_broad_scale": "freshwater biome",
+        "env_local_scale": "lake",
+        "env_medium": "water",
+        "envo_terms": [
+          "ENVO:00002011",
+          "ENVO:00000020"
+        ]
+      },
+      "is_usa": true,
+      "is_enrichable": true,
+      "provenance": "synthetic_example"
+    },
+    "elevation_envelope": {
+      "schema_version": "1.0.0",
+      "run": {
+        "started_at": "2025-09-10 15:43:26.131615+00:00",
+        "ended_at": "2025-09-10 15:43:26.131618+00:00",
+        "tool_version": "biosample-enricher 0.1.0",
+        "git_sha": null,
+        "read_from_cache": true,
+        "write_to_cache": true
+      },
+      "subject_id": "Lake Tahoe surface water",
+      "observations": [
+        {
+          "variable": "elevation",
+          "value_numeric": 1897.550048828,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "usgs_epqs",
+            "endpoint": "https://epqs.nationalmap.gov/v1/json",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 39.0968,
+            "lon": -120.0324,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 39.0968,
+            "lon": -120.0324,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 3.086419871794868e-05,
+          "vertical_datum": "NAVD88",
+          "raw_payload": "{\"location\": {\"x\": -120.0324, \"y\": 39.0968, \"spatialReference\": {\"wkid\": 4326, \"latestWkid\": 4326}}, \"locationId\": 0, \"value\": \"1897.550048828\", \"rasterId\": 9347, \"resolution\": 3.086419871794868e-05, \"attributes\": {\"AcquisitionDate\": \"7/2/2010\"}}",
+          "raw_payload_sha256": "b62ae2531a804f9a32bf49f09311f8a2c93b3f3658275147662becfcb2911b53",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "0b5bd8c4",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:25.323423+00:00"
+        },
+        {
+          "variable": "elevation",
+          "value_numeric": 1898.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "open_topo_data",
+            "endpoint": "https://api.opentopodata.org/v1/srtm30m",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 39.0968,
+            "lon": -120.0324,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 39.0968,
+            "lon": -120.0324,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 30.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"dataset\": \"srtm30m\", \"elevation\": 1898.0, \"location\": {\"lat\": 39.0968, \"lng\": -120.0324}}], \"status\": \"OK\"}",
+          "raw_payload_sha256": "ccede74635b4982504ae43eefd133e53fe2d1f9152693d2dc9c70505fd9e6c8f",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "11f3ef1b",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:25.669660+00:00"
+        },
+        {
+          "variable": "elevation",
+          "value_numeric": 1898.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "osm_elevation",
+            "endpoint": "https://api.open-elevation.com/api/v1/lookup",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 39.0968,
+            "lon": -120.0324,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 39.0968,
+            "lon": -120.0324,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 90.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"latitude\": 39.0968, \"longitude\": -120.0324, \"elevation\": 1898.0}]}",
+          "raw_payload_sha256": "00414c2f85280b9b4b9992f7668401e525dd81297504386312783ade4ba38f09",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "00e73a41",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:26.131373+00:00"
+        }
+      ]
+    },
+    "best_elevation_m": 1897.550048828,
+    "best_provider": "usgs_epqs",
+    "num_successful_providers": 3,
+    "location_context": {
+      "ecosystem": "inland_fresh_water",
+      "country": "United States",
+      "locality": "Lake Tahoe"
+    }
+  },
+  {
+    "original_sample": {
+      "source_system": "NMDC",
+      "nmdc_biosample_id": "nmdc:bsm-0002",
+      "gold_biosample_id": null,
+      "name": "Cape Cod tidal sand",
+      "ecosystem_category": "coastal",
+      "collection_date": "2021-05-30",
+      "geo": {
+        "latitude": 41.668,
+        "longitude": -70.296,
+        "country": "United States",
+        "country_code": "US",
+        "admin1": "Massachusetts",
+        "locality": "Cape Cod"
+      },
+      "env_terms": {
+        "env_broad_scale": "marine biome",
+        "env_local_scale": "sandy beach",
+        "env_medium": "sediment",
+        "envo_terms": [
+          "ENVO:00000447",
+          "ENVO:01000024"
+        ]
+      },
+      "is_usa": true,
+      "is_enrichable": true,
+      "provenance": "synthetic_example"
+    },
+    "elevation_envelope": {
+      "schema_version": "1.0.0",
+      "run": {
+        "started_at": "2025-09-10 15:43:28.136597+00:00",
+        "ended_at": "2025-09-10 15:43:28.136600+00:00",
+        "tool_version": "biosample-enricher 0.1.0",
+        "git_sha": null,
+        "read_from_cache": true,
+        "write_to_cache": true
+      },
+      "subject_id": "nmdc:bsm-0002",
+      "observations": [
+        {
+          "variable": "elevation",
+          "value_numeric": 12.73021698,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "usgs_epqs",
+            "endpoint": "https://epqs.nationalmap.gov/v1/json",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 41.668,
+            "lon": -70.296,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 41.668,
+            "lon": -70.296,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 1.0,
+          "vertical_datum": "NAVD88",
+          "raw_payload": "{\"location\": {\"x\": -70.296, \"y\": 41.668, \"spatialReference\": {\"wkid\": 4326, \"latestWkid\": 4326}}, \"locationId\": 0, \"value\": \"12.730216980\", \"rasterId\": 51433, \"resolution\": 1, \"attributes\": {\"AcquisitionDate\": \"3/6/2021\"}}",
+          "raw_payload_sha256": "2141ec4a4a8bcd72a031408b883edf41c1f8a3e4bfc3d1c3dab7c1d99f3737fb",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "0fed751b",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:27.324887+00:00"
+        },
+        {
+          "variable": "elevation",
+          "value_numeric": 13.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "open_topo_data",
+            "endpoint": "https://api.opentopodata.org/v1/srtm30m",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 41.668,
+            "lon": -70.296,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 41.668,
+            "lon": -70.296,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 30.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"dataset\": \"srtm30m\", \"elevation\": 13.0, \"location\": {\"lat\": 41.668, \"lng\": -70.296}}], \"status\": \"OK\"}",
+          "raw_payload_sha256": "6f96dda3a6a2ff01208f0d60a70ed3991220b73d04c24a7ce807ac0c9a99b89e",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "abce72e0",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:27.634245+00:00"
+        },
+        {
+          "variable": "elevation",
+          "value_numeric": 16.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "osm_elevation",
+            "endpoint": "https://api.open-elevation.com/api/v1/lookup",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 41.668,
+            "lon": -70.296,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 41.668,
+            "lon": -70.296,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 90.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"latitude\": 41.668, \"longitude\": -70.296, \"elevation\": 16.0}]}",
+          "raw_payload_sha256": "34db44f18b8aff58f7dd462513ecd2dccd11c28c143869daf205ed170202cff5",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "6f976073",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:28.136355+00:00"
+        }
+      ]
+    },
+    "best_elevation_m": 12.73021698,
+    "best_provider": "usgs_epqs",
+    "num_successful_providers": 3,
+    "location_context": {
+      "ecosystem": "coastal",
+      "country": "United States",
+      "locality": "Cape Cod"
+    }
+  },
+  {
+    "original_sample": {
+      "source_system": "GOLD",
+      "nmdc_biosample_id": null,
+      "gold_biosample_id": "gold:Gb000002",
+      "name": "North Pacific pelagic water",
+      "ecosystem_category": "open_ocean",
+      "collection_date": "2015-09-18",
+      "geo": {
+        "latitude": 28.0,
+        "longitude": -155.0,
+        "country": "United States",
+        "country_code": "US",
+        "admin1": "Hawaii",
+        "locality": "Offshore Hawaii"
+      },
+      "env_terms": {
+        "env_broad_scale": "marine biome",
+        "env_local_scale": "pelagic zone",
+        "env_medium": "water",
+        "envo_terms": [
+          "ENVO:00000208",
+          "ENVO:01000023"
+        ]
+      },
+      "is_usa": true,
+      "is_enrichable": true,
+      "provenance": "synthetic_example"
+    },
+    "elevation_envelope": {
+      "schema_version": "1.0.0",
+      "run": {
+        "started_at": "2025-09-10 15:43:29.402841+00:00",
+        "ended_at": "2025-09-10 15:43:29.402844+00:00",
+        "tool_version": "biosample-enricher 0.1.0",
+        "git_sha": null,
+        "read_from_cache": true,
+        "write_to_cache": true
+      },
+      "subject_id": "North Pacific pelagic water",
+      "observations": [
+        {
+          "variable": "elevation",
+          "value_numeric": null,
+          "unit_ucum": "m",
+          "value_status": "error",
+          "provider": {
+            "name": "open_topo_data",
+            "endpoint": "https://api.opentopodata.org/v1/srtm30m",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 28.0,
+            "lon": -155.0,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": null,
+          "distance_to_input_m": null,
+          "spatial_resolution_m": null,
+          "vertical_datum": null,
+          "raw_payload": "{\"results\": [{\"dataset\": \"srtm30m\", \"elevation\": null, \"location\": {\"lat\": 28.0, \"lng\": -155.0}}], \"status\": \"OK\"}",
+          "raw_payload_sha256": "55ba09a97e20abc230a4c057716778013a5e6f655f5caafa44b770e132591158",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "46a20d0d",
+          "error_message": "No elevation value in response",
+          "created_at": "2025-09-10 15:43:28.740101+00:00"
+        },
+        {
+          "variable": "elevation",
+          "value_numeric": 0.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "osm_elevation",
+            "endpoint": "https://api.open-elevation.com/api/v1/lookup",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 28.0,
+            "lon": -155.0,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 28.0,
+            "lon": -155.0,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 90.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"latitude\": 28.0, \"longitude\": -155.0, \"elevation\": 0.0}]}",
+          "raw_payload_sha256": "fa8d85c7909b30b9b2dd5297fc7393c795f1673cef78adfc9f803e4c95ba7e46",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "95f487c6",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:29.402610+00:00"
+        }
+      ]
+    },
+    "best_elevation_m": 0.0,
+    "best_provider": "osm_elevation",
+    "num_successful_providers": 1,
+    "location_context": {
+      "ecosystem": "open_ocean",
+      "country": "United States",
+      "locality": "Offshore Hawaii"
+    }
+  },
+  {
+    "original_sample": {
+      "source_system": "GOLD",
+      "nmdc_biosample_id": null,
+      "gold_biosample_id": "gold:Gb100001",
+      "name": "Berlin agricultural soil",
+      "ecosystem_category": "terrestrial_soil",
+      "collection_date": "2020-06-02",
+      "geo": {
+        "latitude": 52.52,
+        "longitude": 13.405,
+        "country": "Germany",
+        "country_code": "DE",
+        "admin1": "Berlin",
+        "locality": "M\u00e4rkisches Viertel"
+      },
+      "env_terms": {
+        "env_broad_scale": "terrestrial biome",
+        "env_local_scale": "agricultural field",
+        "env_medium": "soil",
+        "envo_terms": [
+          "ENVO:00000446",
+          "ENVO:00000114"
+        ]
+      },
+      "is_usa": false,
+      "is_enrichable": true,
+      "provenance": "synthetic_example"
+    },
+    "elevation_envelope": {
+      "schema_version": "1.0.0",
+      "run": {
+        "started_at": "2025-09-10 15:43:30.383164+00:00",
+        "ended_at": "2025-09-10 15:43:30.383166+00:00",
+        "tool_version": "biosample-enricher 0.1.0",
+        "git_sha": null,
+        "read_from_cache": true,
+        "write_to_cache": true
+      },
+      "subject_id": "Berlin agricultural soil",
+      "observations": [
+        {
+          "variable": "elevation",
+          "value_numeric": 49.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "open_topo_data",
+            "endpoint": "https://api.opentopodata.org/v1/srtm30m",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 52.52,
+            "lon": 13.405,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 52.52,
+            "lon": 13.405,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 30.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"dataset\": \"srtm30m\", \"elevation\": 49.0, \"location\": {\"lat\": 52.52, \"lng\": 13.405}}], \"status\": \"OK\"}",
+          "raw_payload_sha256": "0854bac682880eaa9d0f909eca2a08ae1929b9390174b4794bf80a2497217b6a",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "78b2215e",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:29.960321+00:00"
+        },
+        {
+          "variable": "elevation",
+          "value_numeric": 45.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "osm_elevation",
+            "endpoint": "https://api.open-elevation.com/api/v1/lookup",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 52.52,
+            "lon": 13.405,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 52.52,
+            "lon": 13.405,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 90.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"latitude\": 52.52, \"longitude\": 13.405, \"elevation\": 45.0}]}",
+          "raw_payload_sha256": "bcb613647bc6db50bb2dc6eed4ebd3e31518b7e6851cee3c4e4acd289b7f6cb5",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "7ac18a25",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:30.382932+00:00"
+        }
+      ]
+    },
+    "best_elevation_m": 49.0,
+    "best_provider": "open_topo_data",
+    "num_successful_providers": 2,
+    "location_context": {
+      "ecosystem": "terrestrial_soil",
+      "country": "Germany",
+      "locality": "M\u00e4rkisches Viertel"
+    }
+  },
+  {
+    "original_sample": {
+      "source_system": "NMDC",
+      "nmdc_biosample_id": "nmdc:bsm-1003",
+      "gold_biosample_id": null,
+      "name": "Lake Victoria nearshore water",
+      "ecosystem_category": "inland_fresh_water",
+      "collection_date": "2018-11-04",
+      "geo": {
+        "latitude": -0.22,
+        "longitude": 33.0,
+        "country": "Uganda",
+        "country_code": "UG",
+        "admin1": "Wakiso",
+        "locality": "Entebbe Bay"
+      },
+      "env_terms": {
+        "env_broad_scale": "freshwater biome",
+        "env_local_scale": "lake",
+        "env_medium": "water",
+        "envo_terms": [
+          "ENVO:00002011",
+          "ENVO:00000020"
+        ]
+      },
+      "is_usa": false,
+      "is_enrichable": true,
+      "provenance": "synthetic_example"
+    },
+    "elevation_envelope": {
+      "schema_version": "1.0.0",
+      "run": {
+        "started_at": "2025-09-10 15:43:31.611985+00:00",
+        "ended_at": "2025-09-10 15:43:31.611987+00:00",
+        "tool_version": "biosample-enricher 0.1.0",
+        "git_sha": null,
+        "read_from_cache": true,
+        "write_to_cache": true
+      },
+      "subject_id": "nmdc:bsm-1003",
+      "observations": [
+        {
+          "variable": "elevation",
+          "value_numeric": 1134.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "open_topo_data",
+            "endpoint": "https://api.opentopodata.org/v1/srtm30m",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": -0.22,
+            "lon": 33.0,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": -0.22,
+            "lon": 33.0,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 30.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"dataset\": \"srtm30m\", \"elevation\": 1134.0, \"location\": {\"lat\": -0.22, \"lng\": 33.0}}], \"status\": \"OK\"}",
+          "raw_payload_sha256": "9cd16293b469baf65366ab7b732f0bf5f45a2eefe0424dfb0c9fc527ce8bf713",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "810ad6b7",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:31.110499+00:00"
+        },
+        {
+          "variable": "elevation",
+          "value_numeric": 1134.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "osm_elevation",
+            "endpoint": "https://api.open-elevation.com/api/v1/lookup",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": -0.22,
+            "lon": 33.0,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": -0.22,
+            "lon": 33.0,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 90.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"latitude\": -0.22, \"longitude\": 33.0, \"elevation\": 1134.0}]}",
+          "raw_payload_sha256": "ab7e8a7d32745abd7129a306b1b326b0f910db553d67c9917666e6ef0295e593",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "a2f16771",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:31.611760+00:00"
+        }
+      ]
+    },
+    "best_elevation_m": 1134.0,
+    "best_provider": "open_topo_data",
+    "num_successful_providers": 2,
+    "location_context": {
+      "ecosystem": "inland_fresh_water",
+      "country": "Uganda",
+      "locality": "Entebbe Bay"
+    }
+  },
+  {
+    "original_sample": {
+      "source_system": "GOLD",
+      "nmdc_biosample_id": null,
+      "gold_biosample_id": "gold:Gb200002",
+      "name": "Osaka Bay intertidal sediment",
+      "ecosystem_category": "coastal",
+      "collection_date": "2016-03-15",
+      "geo": {
+        "latitude": 34.65,
+        "longitude": 135.2,
+        "country": "Japan",
+        "country_code": "JP",
+        "admin1": "Osaka",
+        "locality": "Sakai"
+      },
+      "env_terms": {
+        "env_broad_scale": "marine biome",
+        "env_local_scale": "intertidal zone",
+        "env_medium": "sediment",
+        "envo_terms": [
+          "ENVO:00000447",
+          "ENVO:01000145"
+        ]
+      },
+      "is_usa": false,
+      "is_enrichable": true,
+      "provenance": "synthetic_example"
+    },
+    "elevation_envelope": {
+      "schema_version": "1.0.0",
+      "run": {
+        "started_at": "2025-09-10 15:43:32.633987+00:00",
+        "ended_at": "2025-09-10 15:43:32.633989+00:00",
+        "tool_version": "biosample-enricher 0.1.0",
+        "git_sha": null,
+        "read_from_cache": true,
+        "write_to_cache": true
+      },
+      "subject_id": "Osaka Bay intertidal sediment",
+      "observations": [
+        {
+          "variable": "elevation",
+          "value_numeric": 0.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "open_topo_data",
+            "endpoint": "https://api.opentopodata.org/v1/srtm30m",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 34.65,
+            "lon": 135.2,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 34.65,
+            "lon": 135.2,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 30.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"dataset\": \"srtm30m\", \"elevation\": 0.0, \"location\": {\"lat\": 34.65, \"lng\": 135.2}}], \"status\": \"OK\"}",
+          "raw_payload_sha256": "009ecc3fd6e503c7ce6b3e60338a23a0d5b8f927e4eb380a9b667e04ae9de04c",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "c740cdc1",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:32.135396+00:00"
+        },
+        {
+          "variable": "elevation",
+          "value_numeric": 0.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "osm_elevation",
+            "endpoint": "https://api.open-elevation.com/api/v1/lookup",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": 34.65,
+            "lon": 135.2,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": 34.65,
+            "lon": 135.2,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 90.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"latitude\": 34.65, \"longitude\": 135.2, \"elevation\": 0.0}]}",
+          "raw_payload_sha256": "519811eeaa172a0e40569c0fb488ddbb0509bb4f7ce990f1482b570040ac0663",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "40b0502c",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:32.633778+00:00"
+        }
+      ]
+    },
+    "best_elevation_m": 0.0,
+    "best_provider": "open_topo_data",
+    "num_successful_providers": 2,
+    "location_context": {
+      "ecosystem": "coastal",
+      "country": "Japan",
+      "locality": "Sakai"
+    }
+  },
+  {
+    "original_sample": {
+      "source_system": "NMDC",
+      "nmdc_biosample_id": "nmdc:bsm-2004",
+      "gold_biosample_id": null,
+      "name": "South Atlantic pelagic water",
+      "ecosystem_category": "open_ocean",
+      "collection_date": "2013-01-09",
+      "geo": {
+        "latitude": -30.0,
+        "longitude": -15.0,
+        "country": null,
+        "country_code": null,
+        "admin1": null,
+        "locality": "International waters"
+      },
+      "env_terms": {
+        "env_broad_scale": "marine biome",
+        "env_local_scale": "pelagic zone",
+        "env_medium": "water",
+        "envo_terms": [
+          "ENVO:00000208",
+          "ENVO:01000023"
+        ]
+      },
+      "is_usa": false,
+      "is_enrichable": true,
+      "provenance": "synthetic_example"
+    },
+    "elevation_envelope": {
+      "schema_version": "1.0.0",
+      "run": {
+        "started_at": "2025-09-10 15:43:33.714856+00:00",
+        "ended_at": "2025-09-10 15:43:33.714858+00:00",
+        "tool_version": "biosample-enricher 0.1.0",
+        "git_sha": null,
+        "read_from_cache": true,
+        "write_to_cache": true
+      },
+      "subject_id": "nmdc:bsm-2004",
+      "observations": [
+        {
+          "variable": "elevation",
+          "value_numeric": null,
+          "unit_ucum": "m",
+          "value_status": "error",
+          "provider": {
+            "name": "open_topo_data",
+            "endpoint": "https://api.opentopodata.org/v1/srtm30m",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": -30.0,
+            "lon": -15.0,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": null,
+          "distance_to_input_m": null,
+          "spatial_resolution_m": null,
+          "vertical_datum": null,
+          "raw_payload": "{\"results\": [{\"dataset\": \"srtm30m\", \"elevation\": null, \"location\": {\"lat\": -30.0, \"lng\": -15.0}}], \"status\": \"OK\"}",
+          "raw_payload_sha256": "0eef88cc84713c22b6b864c2764df96b15fbaa84f18f46690cc672a4f24bea02",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "3824447a",
+          "error_message": "No elevation value in response",
+          "created_at": "2025-09-10 15:43:33.227461+00:00"
+        },
+        {
+          "variable": "elevation",
+          "value_numeric": 0.0,
+          "unit_ucum": "m",
+          "value_status": "ok",
+          "provider": {
+            "name": "osm_elevation",
+            "endpoint": "https://api.open-elevation.com/api/v1/lookup",
+            "api_version": "v1"
+          },
+          "request_location": {
+            "lat": -30.0,
+            "lon": -15.0,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "measurement_location": {
+            "lat": -30.0,
+            "lon": -15.0,
+            "precision_digits": 6,
+            "uncertainty_m": null
+          },
+          "distance_to_input_m": 0.0,
+          "spatial_resolution_m": 90.0,
+          "vertical_datum": "EGM96",
+          "raw_payload": "{\"results\": [{\"latitude\": -30.0, \"longitude\": -15.0, \"elevation\": 0.0}]}",
+          "raw_payload_sha256": "a635b3bb9b35a9a56c69f6da23ee5267d091e4bcd18938509cc8e2c3f71fabec",
+          "normalization_version": "elev-2025-09-10",
+          "cache_used": false,
+          "request_id": "87a923f2",
+          "error_message": null,
+          "created_at": "2025-09-10 15:43:33.714663+00:00"
+        }
+      ]
+    },
+    "best_elevation_m": 0.0,
+    "best_provider": "osm_elevation",
+    "num_successful_providers": 1,
+    "location_context": {
+      "ecosystem": "open_ocean",
+      "locality": "International waters"
+    }
+  }
+]
