@@ -208,7 +208,7 @@ class ElevationService:
         logger.debug(f"Selected providers: {[p.name for p in selected]}")
         return selected
 
-    async def get_elevation(
+    def get_elevation(
         self,
         request: ElevationRequest,
         *,
@@ -248,7 +248,7 @@ class ElevationService:
                 logger.debug(f"Fetching from {provider.name}")
 
                 # Fetch from provider
-                result = await provider.fetch(
+                result = provider.fetch(
                     lat,
                     lon,
                     read_from_cache=read_from_cache,

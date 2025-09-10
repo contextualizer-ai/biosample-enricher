@@ -172,7 +172,7 @@ def enrich(
 
                         try:
                             # Get elevation observations
-                            observations = await service.get_elevation(
+                            observations = service.get_elevation(
                                 elevation_request,
                                 timeout_s=timeout,
                                 read_from_cache=use_cache,

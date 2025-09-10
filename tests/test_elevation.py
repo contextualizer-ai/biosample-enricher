@@ -136,13 +136,13 @@ class TestCoordinateClassifier:
 class TestElevationProviders:
     """Test individual elevation providers with live API calls."""
 
-    @pytest.mark.asyncio
-    async def test_usgs_provider_live(self):
+    @pytest.mark.integration
+    def test_usgs_provider_live(self):
         """Test USGS provider with live API call to known US location."""
         provider = USGSElevationProvider()
 
         # Test with Mount Rushmore, SD (known US location with good elevation data)
-        result = await provider.fetch(43.8791, -103.4591, timeout_s=30)
+        result = provider.fetch(43.8791, -103.4591, timeout_s=30)
 
         assert result.ok is True
         assert result.elevation is not None
@@ -153,13 +153,13 @@ class TestElevationProviders:
         assert abs(result.location.lat - 43.8791) < 0.01
         assert abs(result.location.lon - (-103.4591)) < 0.01
 
-    @pytest.mark.asyncio
-    async def test_osm_provider_live(self):
+    @pytest.mark.integration
+    def test_osm_provider_live(self):
         """Test OSM provider with live API call."""
         provider = OSMElevationProvider()
 
         # Test with San Francisco (well-known location)
-        result = await provider.fetch(37.7749, -122.4194, timeout_s=30)
+        result = provider.fetch(37.7749, -122.4194, timeout_s=30)
 
         # OSM should work globally
         assert result.ok is True
@@ -168,13 +168,13 @@ class TestElevationProviders:
         assert result.resolution_m == 90.0
         assert result.location is not None
 
-    @pytest.mark.asyncio
-    async def test_open_topo_data_provider_live(self):
+    @pytest.mark.integration
+    def test_open_topo_data_provider_live(self):
         """Test Open Topo Data provider with live API call."""
         provider = OpenTopoDataProvider()
 
         # Test with Mount Rushmore (known elevation)
-        result = await provider.fetch(43.8791, -103.4591, timeout_s=30)
+        result = provider.fetch(43.8791, -103.4591, timeout_s=30)
 
         assert result.ok is True
         assert result.elevation is not None
@@ -186,26 +186,26 @@ class TestElevationProviders:
     @pytest.mark.skipif(
         not os.getenv("GOOGLE_MAIN_API_KEY"), reason="Google API key not available"
     )
-    @pytest.mark.asyncio
-    async def test_google_provider_live(self):
+    @pytest.mark.integration
+    def test_google_provider_live(self):
         """Test Google provider with live API call (requires API key)."""
         provider = GoogleElevationProvider()  # Uses env var
 
         # Test with San Francisco
-        result = await provider.fetch(37.7749, -122.4194, timeout_s=30)
+        result = provider.fetch(37.7749, -122.4194, timeout_s=30)
 
         assert result.ok is True
         assert result.elevation is not None
         assert result.vertical_datum == "EGM96"
         assert result.location is not None
 
-    @pytest.mark.asyncio
-    async def test_usgs_provider_ocean_location(self):
+    @pytest.mark.integration
+    def test_usgs_provider_ocean_location(self):
         """Test USGS provider with ocean location (should return no data)."""
         provider = USGSElevationProvider()
 
         # Test with Pacific Ocean location
-        result = await provider.fetch(30.0, -140.0, timeout_s=30)
+        result = provider.fetch(30.0, -140.0, timeout_s=30)
 
         # USGS returns various errors for ocean locations
         assert result.ok is False
@@ -215,16 +215,15 @@ class TestElevationProviders:
             or "Expecting value" in result.error
         )
 
-    @pytest.mark.asyncio
-    async def test_provider_invalid_coordinates(self):
+    def test_provider_invalid_coordinates(self):
         """Test providers with invalid coordinates."""
         provider = USGSElevationProvider()
 
         with pytest.raises(ValueError, match="Invalid latitude"):
-            await provider.fetch(91.0, 0.0)  # Invalid latitude
+            provider.fetch(91.0, 0.0)  # Invalid latitude
 
         with pytest.raises(ValueError, match="Invalid longitude"):
-            await provider.fetch(0.0, 181.0)  # Invalid longitude
+            provider.fetch(0.0, 181.0)  # Invalid longitude
 
 
 class TestElevationService:
@@ -269,13 +268,13 @@ class TestElevationService:
         # Should respect preferred provider
         assert providers[0].name == "osm_elevation"
 
-    @pytest.mark.asyncio
-    async def test_service_get_elevation_us_location(self):
+    @pytest.mark.integration
+    def test_service_get_elevation_us_location(self):
         """Test successful elevation lookup for US location."""
         request = ElevationRequest(
             latitude=43.8791, longitude=-103.4591
         )  # Mount Rushmore
-        observations = await self.service.get_elevation(request, timeout_s=30)
+        observations = self.service.get_elevation(request, timeout_s=30)
 
         assert len(observations) >= 1
         # At least one should succeed
@@ -290,11 +289,11 @@ class TestElevationService:
         assert usgs_obs[0].value_numeric is not None
         assert usgs_obs[0].value_numeric > 1000  # Mount Rushmore elevation
 
-    @pytest.mark.asyncio
-    async def test_service_get_elevation_non_us_location(self):
+    @pytest.mark.integration
+    def test_service_get_elevation_non_us_location(self):
         """Test successful elevation lookup for non-US location."""
         request = ElevationRequest(latitude=51.5074, longitude=-0.1278)  # London
-        observations = await self.service.get_elevation(request, timeout_s=30)
+        observations = self.service.get_elevation(request, timeout_s=30)
 
         assert len(observations) >= 1
         # At least one should succeed
@@ -405,14 +404,14 @@ class TestElevationModels:
 class TestElevationEndToEnd:
     """End-to-end integration tests with full service."""
 
-    @pytest.mark.asyncio
-    async def test_full_service_us_location(self):
+    @pytest.mark.integration
+    def test_full_service_us_location(self):
         """Test complete elevation service with US location."""
         service = ElevationService.from_env()
 
         # Test Mount Rushmore
         request = ElevationRequest(latitude=43.8791, longitude=-103.4591)
-        observations = await service.get_elevation(request, timeout_s=30)
+        observations = service.get_elevation(request, timeout_s=30)
 
         # Should have at least USGS and OSM observations
         assert len(observations) >= 2
@@ -427,14 +426,14 @@ class TestElevationEndToEnd:
         assert envelope.subject_id == "test-rushmore"
         assert len(envelope.observations) == len(observations)
 
-    @pytest.mark.asyncio
-    async def test_full_service_international_location(self):
+    @pytest.mark.integration
+    def test_full_service_international_location(self):
         """Test complete elevation service with international location."""
         service = ElevationService.from_env()
 
         # Test London, UK
         request = ElevationRequest(latitude=51.5074, longitude=-0.1278)
-        observations = await service.get_elevation(request, timeout_s=30)
+        observations = service.get_elevation(request, timeout_s=30)
 
         # Should have observations (at least OSM)
         assert len(observations) >= 1
@@ -445,8 +444,8 @@ class TestElevationEndToEnd:
         # London is relatively low elevation
         assert 0 <= best.elevation_meters <= 200
 
-    @pytest.mark.asyncio
-    async def test_elevation_with_preferred_providers(self):
+    @pytest.mark.integration
+    def test_elevation_with_preferred_providers(self):
         """Test elevation lookup with preferred provider list."""
         service = ElevationService.from_env()
 
@@ -454,7 +453,7 @@ class TestElevationEndToEnd:
         request = ElevationRequest(
             latitude=37.7749, longitude=-122.4194, preferred_providers=["osm"]
         )
-        observations = await service.get_elevation(request, timeout_s=30)
+        observations = service.get_elevation(request, timeout_s=30)
 
         assert len(observations) >= 1
         # First observation should be from OSM
