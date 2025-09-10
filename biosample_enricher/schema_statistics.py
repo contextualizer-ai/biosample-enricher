@@ -5,17 +5,18 @@ Generate comprehensive field statistics from MongoDB collections.
 Adapted from crawl-first schema analysis infrastructure.
 Provides Compass-like field coverage analysis with examples.
 """
+
 import argparse
 import collections
 import json
 import math
-from typing import Any, Dict, List
+from typing import Any
 
 import pandas as pd
 from pymongo import MongoClient
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
         description="Compass-like field stats from MongoDB collection"
     )
@@ -64,7 +65,9 @@ def typeof(v: Any) -> str:
     return type(v).__name__
 
 
-def walk(doc: Any, prefix: str, seen: Dict[str, dict], max_examples: int, doc_id: str):
+def walk(
+    doc: Any, prefix: str, seen: dict[str, dict], max_examples: int, doc_id: str
+) -> None:
     """Recursively record stats for each path."""
     if isinstance(doc, dict):
         for k, v in doc.items():
@@ -96,15 +99,15 @@ def walk(doc: Any, prefix: str, seen: Dict[str, dict], max_examples: int, doc_id
                 for elem in v:
                     et = typeof(elem)
                     stats["array_elem_types"][et] += 1
-                    if isinstance(elem, (dict, list)):
+                    if isinstance(elem, dict | list):
                         walk(elem, path + "[]", seen, max_examples, doc_id)
 
 
-def main():
+def main() -> None:
     args = parse_args()
     query = json.loads(args.query)
 
-    client = MongoClient(args.mongo_uri)
+    client: MongoClient = MongoClient(args.mongo_uri)
     coll = client[args.db][args.coll]
 
     pipeline = []
@@ -112,14 +115,14 @@ def main():
         pipeline.append({"$match": query})
     pipeline.append({"$sample": {"size": args.sample_size}})
 
-    seen: Dict[str, dict] = {}
+    seen: dict[str, dict] = {}
     n_docs = 0
     for doc in coll.aggregate(pipeline, allowDiskUse=True):
         n_docs += 1
         doc_id = str(doc.get("_id", f"doc_{n_docs}"))
         walk(doc, "", seen, args.max_examples, doc_id)
 
-    rows: List[Dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
     for path, s in seen.items():
         # Coverage = percentage of documents that have this field (non-null)
         docs_with_field = len(s["docs_with_field"])

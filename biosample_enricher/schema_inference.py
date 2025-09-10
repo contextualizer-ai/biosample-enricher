@@ -4,6 +4,7 @@ Schema inference from MongoDB collections.
 
 Adapted from crawl-first schema analysis infrastructure.
 """
+
 import argparse
 import json
 import sys
@@ -12,7 +13,7 @@ from genson import SchemaBuilder
 from pymongo import MongoClient
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
         description="Infer JSON Schema from MongoDB collection"
     )
@@ -29,7 +30,7 @@ def parse_args():
     return ap.parse_args()
 
 
-def main():
+def main() -> None:
     args = parse_args()
     try:
         query = json.loads(args.query)
@@ -37,7 +38,7 @@ def main():
         print(f"Bad --query JSON: {e}", file=sys.stderr)
         sys.exit(2)
 
-    client = MongoClient(args.mongo_uri)
+    client: MongoClient = MongoClient(args.mongo_uri)
     coll = client[args.db][args.coll]
 
     # Server-side sampling to reduce bias/IO; apply query first if provided.
