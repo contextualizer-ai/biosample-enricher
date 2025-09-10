@@ -8,6 +8,7 @@ from pathlib import Path
 
 try:
     from dotenv import load_dotenv
+
     # Load .env file if it exists
     env_path = Path(__file__).parent.parent.parent / ".env"
     if env_path.exists():
