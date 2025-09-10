@@ -160,7 +160,7 @@ docker-run: ## Run Docker container
 ## Version management
 version: ## Show current version
 	@echo "$(GREEN)Current version:$(RESET)"
-	@uv run python -c "from biosample_enricher import __version__; print(__version__)"
+	@uv run biosample-version
 
 ## Documentation
 docs: ## Generate documentation (placeholder)
@@ -190,7 +190,7 @@ schema-dirs: ## Create schema analysis directories
 # Schema inference from MongoDB collections
 data/outputs/schema/nmdc_biosample_schema.json: schema-dirs
 	@echo "$(GREEN)Inferring NMDC biosample schema from MongoDB...$(RESET)"
-	uv run python -m biosample_enricher.schema_inference \
+	uv run schema-inference \
 		--mongo-uri "$(MONGO_URI)" \
 		--db $(NMDC_DB) \
 		--coll biosample_set \
@@ -199,7 +199,7 @@ data/outputs/schema/nmdc_biosample_schema.json: schema-dirs
 
 data/outputs/schema/gold_biosample_schema.json: schema-dirs
 	@echo "$(GREEN)Inferring GOLD biosample schema from MongoDB...$(RESET)"
-	uv run python -m biosample_enricher.schema_inference \
+	uv run schema-inference \
 		--mongo-uri "$(MONGO_URI)" \
 		--db $(GOLD_DB) \
 		--coll biosamples \
@@ -209,7 +209,7 @@ data/outputs/schema/gold_biosample_schema.json: schema-dirs
 # Schema statistics generation
 data/outputs/schema/nmdc_biosample_stats.csv: schema-dirs
 	@echo "$(GREEN)Generating NMDC biosample field statistics...$(RESET)"
-	uv run python -m biosample_enricher.schema_statistics \
+	uv run schema-statistics \
 		--mongo-uri "$(MONGO_URI)" \
 		--db $(NMDC_DB) \
 		--coll biosample_set \
@@ -219,7 +219,7 @@ data/outputs/schema/nmdc_biosample_stats.csv: schema-dirs
 
 data/outputs/schema/gold_biosample_stats.csv: schema-dirs
 	@echo "$(GREEN)Generating GOLD biosample field statistics...$(RESET)"
-	uv run python -m biosample_enricher.schema_statistics \
+	uv run schema-statistics \
 		--mongo-uri "$(MONGO_URI)" \
 		--db $(GOLD_DB) \
 		--coll biosamples \
