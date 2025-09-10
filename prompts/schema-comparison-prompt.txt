@@ -1,0 +1,35 @@
+You are a schema comparison assistant.
+Read the files: data/outputs/schema/gold_biosample_schema.json and data/outputs/schema/nmdc_biosample_schema.json.
+
+Compare these schemas semantically to identify:
+
+NMDC fields with no exact GOLD equivalent
+
+GOLD fields with no exact NMDC equivalent
+
+Potential semantic matches between a field in one source and a similar field in the other source
+
+Your output must be a single valid JSON object only.
+Do not include markdown code fences.
+Do not include any commentary, explanations, or extra text.
+
+The JSON object must have exactly these top-level keys:
+
+"nmdc_unique": array of strings
+
+"gold_unique": array of strings
+
+"potential_matches": array of objects with fields:
+
+"nmdc_field": string OR array of strings (array only if many-to-one)
+
+"gold_field": string OR array of strings (array only if many-to-one)
+
+"similarity_score": number between 0.0 and 1.0
+
+"notes": string
+
+Use arrays for nmdc_field or gold_field only when one field truly maps to multiple fields in the other schema (e.g., nmdc lat_lon maps to gold latitude + longitude). Keep individual 1:1 matches as plain strings.
+
+Focus specifically on biological and environmental metadata semantics.
+If you are uncertain, return syntactically valid empty JSON with the correct keys.

@@ -1,0 +1,52 @@
+You are an enrichment assistant.
+Your only output must be a single valid JSON object.
+Do not include commentary, markdown, or code fences.
+If you cannot populate a section, return an empty array [].
+
+Read the following files:
+
+- data/outputs/schema/nmdc_biosample_stats.csv
+- data/outputs/schema/gold_biosample_stats.csv
+- data/outputs/schema/schema_comparison.json
+
+Task:
+
+Identify
+- fields that have low population (are sparse) in either NMDC or GOLD
+- APIs or other resources that could be used to find a value for the sparse field
+- the high-coverage fields could be used as inputs to those APIs or resources.
+
+For each sparse field, report:
+
+- its name,
+- its population percentage,
+- a list of high-coverage fields that could serve as inputs for inference,
+- multiple APIs or resource that can use the dense inputs to provide or approximate the missing value.
+
+Free APIs or Google APIs are preferred.
+
+Provide the largest number of reasonable solutions possible
+
+Output format (use exactly this structure):
+
+{
+"enrichable_sparse_fields": [
+{
+"sparse_field_name": "xxx",
+"sparse_field_population_percentage": number,
+"dense_inputs_for_api": [
+{
+"field_name": "xxx",
+"population_percentage": number
+}
+],
+"api_resources": [
+{
+"name": "API or dataset name",
+"description": "short description of what it provides",
+"response": "number|categorical|free text ",
+}
+]
+}
+]
+}
