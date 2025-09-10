@@ -1,0 +1,593 @@
+{
+  "demonstration_info": {
+    "timestamp": "2025-09-10T03:36:16.804362Z",
+    "description": "Random sampling demonstration using MongoDB aggregation pipelines",
+    "connection_source": "default"
+  },
+  "mongodb_sampling_tests": {
+    "nmdc_sampling_tests": {
+      "source": "NMDC",
+      "total_sample_count": 13006,
+      "enrichable_sample_count": 13006,
+      "random_sampling_tests": [
+        {
+          "sample_size_requested": 5,
+          "samples_returned": 5,
+          "sampling_time_seconds": 0.0944,
+          "enrichable_in_sample": 5,
+          "enrichable_rate_in_sample": 1.0,
+          "avg_time_per_sample": 0.018877,
+          "sample_coordinates": [
+            {
+              "sample_id": "nmdc:bsm-12-yy062029",
+              "latitude": 39.105069,
+              "longitude": -96.603387,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "nmdc:bsm-11-4gtjwy06",
+              "latitude": 44.296098,
+              "longitude": -85.199621,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "nmdc:bsm-11-7bfbth12",
+              "latitude": 34.4149,
+              "longitude": -119.841,
+              "is_enrichable": true
+            }
+          ]
+        },
+        {
+          "sample_size_requested": 10,
+          "samples_returned": 10,
+          "sampling_time_seconds": 0.0938,
+          "enrichable_in_sample": 10,
+          "enrichable_rate_in_sample": 1.0,
+          "avg_time_per_sample": 0.009376,
+          "sample_coordinates": [
+            {
+              "sample_id": "nmdc:bsm-11-edcvd309",
+              "latitude": 37.427946,
+              "longitude": -80.571837,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "nmdc:bsm-11-p4s1va82",
+              "latitude": 46.256193,
+              "longitude": -89.515052,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "nmdc:bsm-11-craaft50",
+              "latitude": 39.082563,
+              "longitude": -96.566704,
+              "is_enrichable": true
+            }
+          ]
+        },
+        {
+          "sample_size_requested": 25,
+          "samples_returned": 25,
+          "sampling_time_seconds": 0.0986,
+          "enrichable_in_sample": 25,
+          "enrichable_rate_in_sample": 1.0,
+          "avg_time_per_sample": 0.003944,
+          "sample_coordinates": [
+            {
+              "sample_id": "nmdc:bsm-12-w8b7mp21",
+              "latitude": 44.95011,
+              "longitude": -110.58715,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "nmdc:bsm-11-zckgea38",
+              "latitude": 39.078872,
+              "longitude": -77.963659,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "nmdc:bsm-11-67pj4f82",
+              "latitude": 42.476365,
+              "longitude": -85.451887,
+              "is_enrichable": true
+            }
+          ]
+        },
+        {
+          "sample_size_requested": 50,
+          "samples_returned": 50,
+          "sampling_time_seconds": 0.1023,
+          "enrichable_in_sample": 50,
+          "enrichable_rate_in_sample": 1.0,
+          "avg_time_per_sample": 0.002047,
+          "sample_coordinates": [
+            {
+              "sample_id": "nmdc:bsm-11-j1mn7d65",
+              "latitude": 44.296098,
+              "longitude": -85.199612,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "nmdc:bsm-11-qkks8j25",
+              "latitude": 35.930248,
+              "longitude": -84.270109,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "nmdc:bsm-11-n1ee7s81",
+              "latitude": 45.665551,
+              "longitude": -89.218027,
+              "is_enrichable": true
+            }
+          ]
+        }
+      ],
+      "enrichable_sampling_tests": [
+        {
+          "sample_size_requested": 3,
+          "samples_returned": 3,
+          "sampling_time_seconds": 0.0867,
+          "all_enrichable_verified": true,
+          "avg_time_per_sample": 0.028891,
+          "completeness_distribution": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "sample_size_requested": 5,
+          "samples_returned": 5,
+          "sampling_time_seconds": 0.0863,
+          "all_enrichable_verified": true,
+          "avg_time_per_sample": 0.017257,
+          "completeness_distribution": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "sample_size_requested": 10,
+          "samples_returned": 10,
+          "sampling_time_seconds": 0.0911,
+          "all_enrichable_verified": true,
+          "avg_time_per_sample": 0.009113,
+          "completeness_distribution": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "sample_size_requested": 20,
+          "samples_returned": 20,
+          "sampling_time_seconds": 0.0904,
+          "all_enrichable_verified": true,
+          "avg_time_per_sample": 0.004522,
+          "completeness_distribution": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "aggregation_pipeline_tests": [
+        {
+          "sample_size_requested": 5,
+          "samples_returned": 5,
+          "sampling_time_seconds": 0.1747,
+          "all_enrichable_verified": true,
+          "pipeline_efficiency": 28.63,
+          "method": "mongodb_aggregation_pipeline"
+        },
+        {
+          "sample_size_requested": 15,
+          "samples_returned": 15,
+          "sampling_time_seconds": 0.1204,
+          "all_enrichable_verified": true,
+          "pipeline_efficiency": 124.53,
+          "method": "mongodb_aggregation_pipeline"
+        },
+        {
+          "sample_size_requested": 30,
+          "samples_returned": 30,
+          "sampling_time_seconds": 0.1144,
+          "all_enrichable_verified": true,
+          "pipeline_efficiency": 262.33,
+          "method": "mongodb_aggregation_pipeline"
+        }
+      ]
+    },
+    "gold_sampling_tests": {
+      "source": "GOLD",
+      "total_sample_count": 217605,
+      "enrichable_sample_count": 213450,
+      "random_sampling_tests": [
+        {
+          "sample_size_requested": 5,
+          "samples_returned": 5,
+          "sampling_time_seconds": 1.422,
+          "enrichable_in_sample": 5,
+          "enrichable_rate_in_sample": 1.0,
+          "avg_time_per_sample": 0.284402,
+          "sample_coordinates": [
+            {
+              "sample_id": "Gb0411796",
+              "latitude": -34.806,
+              "longitude": 138.54165,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "Gb0201708",
+              "latitude": 56.469698,
+              "longitude": 10.037277,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "Gb0373813",
+              "latitude": 52.0785372,
+              "longitude": 0.1863279,
+              "is_enrichable": true
+            }
+          ]
+        },
+        {
+          "sample_size_requested": 10,
+          "samples_returned": 10,
+          "sampling_time_seconds": 2.7624,
+          "enrichable_in_sample": 10,
+          "enrichable_rate_in_sample": 1.0,
+          "avg_time_per_sample": 0.276242,
+          "sample_coordinates": [
+            {
+              "sample_id": "Gb0156098",
+              "latitude": 48.972613,
+              "longitude": -119.477608,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "Gb0152751",
+              "latitude": 31.3172,
+              "longitude": -113.56,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "Gb0384830",
+              "latitude": 45.777101,
+              "longitude": 4.789186,
+              "is_enrichable": true
+            }
+          ]
+        },
+        {
+          "sample_size_requested": 25,
+          "samples_returned": 25,
+          "sampling_time_seconds": 6.788,
+          "enrichable_in_sample": 24,
+          "enrichable_rate_in_sample": 0.96,
+          "avg_time_per_sample": 0.27152,
+          "sample_coordinates": [
+            {
+              "sample_id": "Gb0321200",
+              "latitude": 68.5896775,
+              "longitude": -149.1815373,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "Gb0250345",
+              "latitude": 40.4308,
+              "longitude": -79.9598,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "Gb0056295",
+              "latitude": 54.184167,
+              "longitude": 7.9,
+              "is_enrichable": true
+            }
+          ]
+        },
+        {
+          "sample_size_requested": 50,
+          "samples_returned": 50,
+          "sampling_time_seconds": 12.1672,
+          "enrichable_in_sample": 50,
+          "enrichable_rate_in_sample": 1.0,
+          "avg_time_per_sample": 0.243344,
+          "sample_coordinates": [
+            {
+              "sample_id": "Gb0297525",
+              "latitude": 62.14,
+              "longitude": -74.68,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "Gb0327888",
+              "latitude": 42.754,
+              "longitude": -76.702,
+              "is_enrichable": true
+            },
+            {
+              "sample_id": "Gb0147735",
+              "latitude": 38.9383,
+              "longitude": -110.1354,
+              "is_enrichable": true
+            }
+          ]
+        }
+      ],
+      "enrichable_sampling_tests": [
+        {
+          "sample_size_requested": 3,
+          "samples_returned": 3,
+          "sampling_time_seconds": 0.835,
+          "all_enrichable_verified": true,
+          "avg_time_per_sample": 0.278319,
+          "completeness_distribution": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "sample_size_requested": 5,
+          "samples_returned": 5,
+          "sampling_time_seconds": 1.2365,
+          "all_enrichable_verified": true,
+          "avg_time_per_sample": 0.247297,
+          "completeness_distribution": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "sample_size_requested": 10,
+          "samples_returned": 10,
+          "sampling_time_seconds": 2.5038,
+          "all_enrichable_verified": true,
+          "avg_time_per_sample": 0.250377,
+          "completeness_distribution": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "sample_size_requested": 20,
+          "samples_returned": 20,
+          "sampling_time_seconds": 4.7779,
+          "all_enrichable_verified": true,
+          "avg_time_per_sample": 0.238896,
+          "completeness_distribution": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "aggregation_pipeline_tests": [
+        {
+          "sample_size_requested": 5,
+          "samples_returned": 5,
+          "sampling_time_seconds": 1.7116,
+          "all_enrichable_verified": true,
+          "pipeline_efficiency": 2.92,
+          "method": "mongodb_aggregation_pipeline"
+        },
+        {
+          "sample_size_requested": 15,
+          "samples_returned": 15,
+          "sampling_time_seconds": 4.1994,
+          "all_enrichable_verified": true,
+          "pipeline_efficiency": 3.57,
+          "method": "mongodb_aggregation_pipeline"
+        },
+        {
+          "sample_size_requested": 30,
+          "samples_returned": 30,
+          "sampling_time_seconds": 7.7043,
+          "all_enrichable_verified": true,
+          "pipeline_efficiency": 3.89,
+          "method": "mongodb_aggregation_pipeline"
+        }
+      ]
+    },
+    "sampling_comparison": {
+      "dataset_scale_comparison": {
+        "nmdc_total_samples": 13006,
+        "gold_total_samples": 217605,
+        "nmdc_enrichable_samples": 13006,
+        "gold_enrichable_samples": 213450,
+        "nmdc_enrichable_rate": 1.0,
+        "gold_enrichable_rate": 0.9809057696284552
+      },
+      "sampling_efficiency_comparison": {
+        "nmdc_avg_time_per_sample": 0.008561,
+        "gold_avg_time_per_sample": 0.268877,
+        "faster_source": "NMDC",
+        "speed_difference_factor": 31.41
+      },
+      "enrichable_rate_comparison": {
+        "nmdc_avg_enrichment_in_random_samples": 1.0,
+        "gold_avg_enrichment_in_random_samples": 0.99,
+        "nmdc_enrichment_variance": 0.0,
+        "gold_enrichment_variance": 0.0003
+      },
+      "method_performance_comparison": {
+        "aggregation_pipeline_available": {
+          "nmdc": true,
+          "gold": true
+        },
+        "pipeline_efficiency": {
+          "nmdc_samples_per_second": 138.5,
+          "gold_samples_per_second": 3.46,
+          "more_efficient_source": "NMDC"
+        }
+      }
+    },
+    "performance_analysis": {
+      "performance_summary": {
+        "total_sampling_tests": 22,
+        "total_samples_retrieved": 356,
+        "total_time_spent": 47.261,
+        "overall_samples_per_second": 7.53
+      },
+      "sampling_recommendations": [
+        "Use MongoDB aggregation pipeline for random sampling when available",
+        "NMDC sampling is significantly more efficient than GOLD",
+        "NMDC has high enrichment rate - random sampling is effective",
+        "GOLD has high enrichment rate - random sampling is effective"
+      ],
+      "scalability_assessment": {
+        "notes": [
+          "GOLD dataset is large-scale (>100k samples)",
+          "Significant performance difference between sources (factor: 31.41)"
+        ],
+        "large_scale_ready": true
+      }
+    }
+  },
+  "unified_sampling_tests": {
+    "unified_sampling_tests": [
+      {
+        "sample_size_requested": 10,
+        "combined_sampling": {
+          "samples_returned": 10,
+          "sampling_time_seconds": 2.3026,
+          "source_distribution": {
+            "NMDC": 5,
+            "GOLD": 5
+          },
+          "enrichable_count": 10
+        },
+        "separate_sampling": {
+          "nmdc_samples": 5,
+          "gold_samples": 5,
+          "nmdc_time_seconds": 0.0905,
+          "gold_time_seconds": 1.3081,
+          "total_separate_time": 1.3986
+        },
+        "efficiency_comparison": {
+          "combined_faster": false,
+          "time_difference": 0.904
+        }
+      },
+      {
+        "sample_size_requested": 25,
+        "combined_sampling": {
+          "samples_returned": 25,
+          "sampling_time_seconds": 3.3798,
+          "source_distribution": {
+            "NMDC": 12,
+            "GOLD": 13
+          },
+          "enrichable_count": 25
+        },
+        "separate_sampling": {
+          "nmdc_samples": 12,
+          "gold_samples": 12,
+          "nmdc_time_seconds": 0.0946,
+          "gold_time_seconds": 2.8653,
+          "total_separate_time": 2.9599
+        },
+        "efficiency_comparison": {
+          "combined_faster": false,
+          "time_difference": 0.4199
+        }
+      },
+      {
+        "sample_size_requested": 50,
+        "combined_sampling": {
+          "samples_returned": 50,
+          "sampling_time_seconds": 6.2404,
+          "source_distribution": {
+            "NMDC": 25,
+            "GOLD": 25
+          },
+          "enrichable_count": 49
+        },
+        "separate_sampling": {
+          "nmdc_samples": 25,
+          "gold_samples": 25,
+          "nmdc_time_seconds": 0.1061,
+          "gold_time_seconds": 5.9733,
+          "total_separate_time": 6.0795
+        },
+        "efficiency_comparison": {
+          "combined_faster": false,
+          "time_difference": 0.161
+        }
+      }
+    ],
+    "source_distribution_analysis": {
+      "distribution_consistency": {
+        "nmdc_proportion_variance": 0.0001,
+        "gold_proportion_variance": 0.0001,
+        "distribution_stable": true,
+        "consistency_rating": "high"
+      },
+      "average_nmdc_proportion": 0.49411764705882355,
+      "average_gold_proportion": 0.5058823529411764
+    },
+    "cross_source_comparison": {
+      "scalability_factor": 5.0,
+      "time_scalability": 2.710153739251281,
+      "distribution_stability": true
+    }
+  },
+  "sampling_methodology_analysis": {
+    "methodologies_tested": [
+      "nmdc_random_sampling",
+      "nmdc_enrichable_sampling",
+      "nmdc_aggregation_pipeline",
+      "gold_random_sampling",
+      "gold_enrichable_sampling",
+      "gold_aggregation_pipeline"
+    ],
+    "mongodb_aggregation_effectiveness": {
+      "nmdc": {
+        "average_samples_per_second": 138.5,
+        "tests_performed": 3
+      },
+      "gold": {
+        "average_samples_per_second": 3.46,
+        "tests_performed": 3
+      }
+    },
+    "random_vs_enrichable_sampling": {
+      "nmdc": {
+        "random_sampling_avg_time": 0.008561,
+        "enrichable_sampling_avg_time": 0.014946,
+        "enrichable_sampling_faster": false,
+        "speed_difference_factor": 0.57
+      },
+      "gold": {
+        "random_sampling_avg_time": 0.268877,
+        "enrichable_sampling_avg_time": 0.253722,
+        "enrichable_sampling_faster": true,
+        "speed_difference_factor": 1.06
+      }
+    }
+  },
+  "performance_recommendations": [
+    "Use NMDC for better sampling performance (factor: 31.41x)",
+    "NMDC has high enrichment rate - random sampling is efficient",
+    "GOLD has high enrichment rate - random sampling is efficient",
+    "MongoDB aggregation pipeline for nmdc is highly efficient (>138.5 samples/sec)"
+  ]
+}

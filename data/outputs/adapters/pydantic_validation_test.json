@@ -1,0 +1,547 @@
+{
+  "demonstration_info": {
+    "timestamp": "2025-09-10T03:36:15.646068Z",
+    "total_test_cases": 15,
+    "description": "Pydantic model validation demonstration with various valid and invalid inputs"
+  },
+  "validation_tests": [
+    {
+      "test_name": "valid_complete_sample",
+      "description": "Fully valid sample with all fields",
+      "input_data": {
+        "latitude": 42.3601,
+        "longitude": -71.0928,
+        "collection_date": "2014-11-25",
+        "textual_location": "Boston Harbor, Massachusetts, USA",
+        "sample_id": "nmdc:bsm-11-34xj1150",
+        "database_source": "NMDC",
+        "nmdc_biosample_id": "nmdc:bsm-11-34xj1150",
+        "coordinate_precision": 4,
+        "date_precision": "day"
+      },
+      "validation_result": {
+        "valid": true,
+        "model_created": true,
+        "is_enrichable": true,
+        "location_completeness": 1.0,
+        "extraction_timestamp_set": true,
+        "serialized_data": {
+          "latitude": 42.3601,
+          "longitude": -71.0928,
+          "collection_date": "2014-11-25",
+          "textual_location": "Boston Harbor, Massachusetts, USA",
+          "sample_id": "nmdc:bsm-11-34xj1150",
+          "database_source": "NMDC",
+          "extraction_timestamp": "2025-09-10T03:36:15.647610Z",
+          "nmdc_biosample_id": "nmdc:bsm-11-34xj1150",
+          "gold_biosample_id": null,
+          "alternative_identifiers": null,
+          "external_database_identifiers": null,
+          "biosample_identifiers": null,
+          "sample_identifiers": null,
+          "nmdc_studies": null,
+          "gold_studies": null,
+          "coordinate_precision": 4,
+          "date_precision": "day",
+          "location_completeness": 1.0,
+          "is_enrichable": true
+        },
+        "serialization_test": {
+          "serializable": true,
+          "deserializable": true,
+          "data_preserved": true
+        }
+      }
+    },
+    {
+      "test_name": "valid_minimal_enrichable",
+      "description": "Minimal valid sample with just enrichable fields",
+      "input_data": {
+        "latitude": 38.8895,
+        "longitude": -77.0501,
+        "sample_id": "test_minimal",
+        "database_source": "GOLD"
+      },
+      "validation_result": {
+        "valid": true,
+        "model_created": true,
+        "is_enrichable": true,
+        "location_completeness": 0.5,
+        "extraction_timestamp_set": true,
+        "serialized_data": {
+          "latitude": 38.8895,
+          "longitude": -77.0501,
+          "collection_date": null,
+          "textual_location": null,
+          "sample_id": "test_minimal",
+          "database_source": "GOLD",
+          "extraction_timestamp": "2025-09-10T03:36:15.647764Z",
+          "nmdc_biosample_id": null,
+          "gold_biosample_id": null,
+          "alternative_identifiers": null,
+          "external_database_identifiers": null,
+          "biosample_identifiers": null,
+          "sample_identifiers": null,
+          "nmdc_studies": null,
+          "gold_studies": null,
+          "coordinate_precision": null,
+          "date_precision": null,
+          "location_completeness": 0.5,
+          "is_enrichable": true
+        },
+        "serialization_test": {
+          "serializable": true,
+          "deserializable": true,
+          "data_preserved": true
+        }
+      }
+    },
+    {
+      "test_name": "invalid_latitude_high",
+      "description": "Invalid sample with latitude > 90",
+      "input_data": {
+        "latitude": 95.0,
+        "longitude": -71.0928,
+        "sample_id": "test_invalid_lat",
+        "database_source": "NMDC"
+      },
+      "validation_result": {
+        "valid": false,
+        "model_created": false,
+        "validation_errors": [
+          {
+            "field": "latitude",
+            "message": "Input should be less than or equal to 90",
+            "type": "less_than_equal",
+            "input": 95.0
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "invalid_latitude_low",
+      "description": "Invalid sample with latitude < -90",
+      "input_data": {
+        "latitude": -95.0,
+        "longitude": -71.0928,
+        "sample_id": "test_invalid_lat_low",
+        "database_source": "NMDC"
+      },
+      "validation_result": {
+        "valid": false,
+        "model_created": false,
+        "validation_errors": [
+          {
+            "field": "latitude",
+            "message": "Input should be greater than or equal to -90",
+            "type": "greater_than_equal",
+            "input": -95.0
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "invalid_longitude_high",
+      "description": "Invalid sample with longitude > 180",
+      "input_data": {
+        "latitude": 42.3601,
+        "longitude": 185.0,
+        "sample_id": "test_invalid_lon",
+        "database_source": "NMDC"
+      },
+      "validation_result": {
+        "valid": false,
+        "model_created": false,
+        "validation_errors": [
+          {
+            "field": "longitude",
+            "message": "Input should be less than or equal to 180",
+            "type": "less_than_equal",
+            "input": 185.0
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "invalid_longitude_low",
+      "description": "Invalid sample with longitude < -180",
+      "input_data": {
+        "latitude": 42.3601,
+        "longitude": -185.0,
+        "sample_id": "test_invalid_lon_low",
+        "database_source": "NMDC"
+      },
+      "validation_result": {
+        "valid": false,
+        "model_created": false,
+        "validation_errors": [
+          {
+            "field": "longitude",
+            "message": "Input should be greater than or equal to -180",
+            "type": "greater_than_equal",
+            "input": -185.0
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "invalid_date_format",
+      "description": "Invalid date format",
+      "input_data": {
+        "latitude": 42.3601,
+        "longitude": -71.0928,
+        "collection_date": "25-11-2014",
+        "sample_id": "test_invalid_date",
+        "database_source": "NMDC"
+      },
+      "validation_result": {
+        "valid": false,
+        "model_created": false,
+        "validation_errors": [
+          {
+            "field": "collection_date",
+            "message": "String should match pattern '^\\d{4}-\\d{2}-\\d{2}$'",
+            "type": "string_pattern_mismatch",
+            "input": "25-11-2014"
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "invalid_database_source",
+      "description": "Invalid database source",
+      "input_data": {
+        "latitude": 42.3601,
+        "longitude": -71.0928,
+        "sample_id": "test_invalid_db",
+        "database_source": "INVALID_DB"
+      },
+      "validation_result": {
+        "valid": false,
+        "model_created": false,
+        "validation_errors": [
+          {
+            "field": "database_source",
+            "message": "String should match pattern '^(NMDC|GOLD)$'",
+            "type": "string_pattern_mismatch",
+            "input": "INVALID_DB"
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "invalid_date_precision",
+      "description": "Invalid date precision value",
+      "input_data": {
+        "latitude": 42.3601,
+        "longitude": -71.0928,
+        "collection_date": "2014-11-25",
+        "date_precision": "invalid_precision",
+        "sample_id": "test_invalid_precision",
+        "database_source": "NMDC"
+      },
+      "validation_result": {
+        "valid": false,
+        "model_created": false,
+        "validation_errors": [
+          {
+            "field": "date_precision",
+            "message": "String should match pattern '^(day|month|year)$'",
+            "type": "string_pattern_mismatch",
+            "input": "invalid_precision"
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "invalid_coordinate_precision",
+      "description": "Invalid coordinate precision (negative)",
+      "input_data": {
+        "latitude": 42.3601,
+        "longitude": -71.0928,
+        "coordinate_precision": -1,
+        "sample_id": "test_invalid_coord_precision",
+        "database_source": "NMDC"
+      },
+      "validation_result": {
+        "valid": false,
+        "model_created": false,
+        "validation_errors": [
+          {
+            "field": "coordinate_precision",
+            "message": "Input should be greater than or equal to 0",
+            "type": "greater_than_equal",
+            "input": -1
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "invalid_completeness_high",
+      "description": "Invalid completeness > 1.0",
+      "input_data": {
+        "latitude": 42.3601,
+        "longitude": -71.0928,
+        "location_completeness": 1.5,
+        "sample_id": "test_invalid_completeness",
+        "database_source": "NMDC"
+      },
+      "validation_result": {
+        "valid": false,
+        "model_created": false,
+        "validation_errors": [
+          {
+            "field": "location_completeness",
+            "message": "Input should be less than or equal to 1",
+            "type": "less_than_equal",
+            "input": 1.5
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "invalid_completeness_low",
+      "description": "Invalid completeness < 0.0",
+      "input_data": {
+        "latitude": 42.3601,
+        "longitude": -71.0928,
+        "location_completeness": -0.1,
+        "sample_id": "test_invalid_completeness_low",
+        "database_source": "NMDC"
+      },
+      "validation_result": {
+        "valid": false,
+        "model_created": false,
+        "validation_errors": [
+          {
+            "field": "location_completeness",
+            "message": "Input should be greater than or equal to 0",
+            "type": "greater_than_equal",
+            "input": -0.1
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "extra_fields_forbidden",
+      "description": "Extra fields should be forbidden",
+      "input_data": {
+        "latitude": 42.3601,
+        "longitude": -71.0928,
+        "sample_id": "test_extra_fields",
+        "database_source": "NMDC",
+        "extra_field": "this should not be allowed"
+      },
+      "validation_result": {
+        "valid": false,
+        "model_created": false,
+        "validation_errors": [
+          {
+            "field": "extra_field",
+            "message": "Extra inputs are not permitted",
+            "type": "extra_forbidden",
+            "input": "this should not be allowed"
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "auto_timestamp_test",
+      "description": "Test automatic timestamp generation",
+      "input_data": {
+        "latitude": 42.3601,
+        "longitude": -71.0928,
+        "sample_id": "test_timestamp",
+        "database_source": "NMDC"
+      },
+      "validation_result": {
+        "valid": true,
+        "model_created": true,
+        "is_enrichable": true,
+        "location_completeness": 0.5,
+        "extraction_timestamp_set": true,
+        "serialized_data": {
+          "latitude": 42.3601,
+          "longitude": -71.0928,
+          "collection_date": null,
+          "textual_location": null,
+          "sample_id": "test_timestamp",
+          "database_source": "NMDC",
+          "extraction_timestamp": "2025-09-10T03:36:15.648066Z",
+          "nmdc_biosample_id": null,
+          "gold_biosample_id": null,
+          "alternative_identifiers": null,
+          "external_database_identifiers": null,
+          "biosample_identifiers": null,
+          "sample_identifiers": null,
+          "nmdc_studies": null,
+          "gold_studies": null,
+          "coordinate_precision": null,
+          "date_precision": null,
+          "location_completeness": 0.5,
+          "is_enrichable": true
+        },
+        "serialization_test": {
+          "serializable": true,
+          "deserializable": true,
+          "data_preserved": true
+        }
+      }
+    },
+    {
+      "test_name": "completeness_calculation_test",
+      "description": "Test automatic completeness calculation",
+      "input_data": {
+        "latitude": 42.3601,
+        "longitude": -71.0928,
+        "collection_date": "2014-11-25",
+        "textual_location": "Test location",
+        "sample_id": "test_completeness",
+        "database_source": "NMDC"
+      },
+      "validation_result": {
+        "valid": true,
+        "model_created": true,
+        "is_enrichable": true,
+        "location_completeness": 1.0,
+        "extraction_timestamp_set": true,
+        "serialized_data": {
+          "latitude": 42.3601,
+          "longitude": -71.0928,
+          "collection_date": "2014-11-25",
+          "textual_location": "Test location",
+          "sample_id": "test_completeness",
+          "database_source": "NMDC",
+          "extraction_timestamp": "2025-09-10T03:36:15.648125Z",
+          "nmdc_biosample_id": null,
+          "gold_biosample_id": null,
+          "alternative_identifiers": null,
+          "external_database_identifiers": null,
+          "biosample_identifiers": null,
+          "sample_identifiers": null,
+          "nmdc_studies": null,
+          "gold_studies": null,
+          "coordinate_precision": null,
+          "date_precision": null,
+          "location_completeness": 1.0,
+          "is_enrichable": true
+        },
+        "serialization_test": {
+          "serializable": true,
+          "deserializable": true,
+          "data_preserved": true
+        }
+      }
+    }
+  ],
+  "enrichment_logic_tests": {
+    "enrichment_tests": [
+      {
+        "test_name": "enrichable_valid_coords",
+        "input_coords": {
+          "latitude": 42.0,
+          "longitude": -71.0
+        },
+        "expected_enrichable": true,
+        "actual_enrichable": true,
+        "test_passed": true,
+        "model_valid": true
+      },
+      {
+        "test_name": "not_enrichable_missing_lat",
+        "input_coords": {
+          "longitude": -71.0
+        },
+        "expected_enrichable": false,
+        "actual_enrichable": false,
+        "test_passed": true,
+        "model_valid": true
+      },
+      {
+        "test_name": "not_enrichable_missing_lon",
+        "input_coords": {
+          "latitude": 42.0
+        },
+        "expected_enrichable": false,
+        "actual_enrichable": false,
+        "test_passed": true,
+        "model_valid": true
+      },
+      {
+        "test_name": "not_enrichable_lat_too_high",
+        "input_coords": {
+          "latitude": 91.0,
+          "longitude": -71.0
+        },
+        "expected_enrichable": false,
+        "actual_enrichable": null,
+        "test_passed": true,
+        "model_valid": false,
+        "note": "Model validation failed (expected for invalid coordinates)"
+      },
+      {
+        "test_name": "not_enrichable_lat_too_low",
+        "input_coords": {
+          "latitude": -91.0,
+          "longitude": -71.0
+        },
+        "expected_enrichable": false,
+        "actual_enrichable": null,
+        "test_passed": true,
+        "model_valid": false,
+        "note": "Model validation failed (expected for invalid coordinates)"
+      },
+      {
+        "test_name": "enrichable_boundary_coords",
+        "input_coords": {
+          "latitude": 90.0,
+          "longitude": 180.0
+        },
+        "expected_enrichable": true,
+        "actual_enrichable": true,
+        "test_passed": true,
+        "model_valid": true
+      },
+      {
+        "test_name": "enrichable_negative_boundary_coords",
+        "input_coords": {
+          "latitude": -90.0,
+          "longitude": -180.0
+        },
+        "expected_enrichable": true,
+        "actual_enrichable": true,
+        "test_passed": true,
+        "model_valid": true
+      }
+    ],
+    "summary": {
+      "total_tests": 7,
+      "passed_tests": 7,
+      "failed_tests": 0
+    }
+  },
+  "validation_summary": {
+    "total_tests": 15,
+    "valid_models": 4,
+    "invalid_models": 11,
+    "expected_valid_cases": 4,
+    "expected_invalid_cases": 11,
+    "correctly_validated": 15,
+    "validation_accuracy": 1.0,
+    "enrichment_test_summary": {
+      "total_tests": 7,
+      "passed_tests": 7,
+      "failed_tests": 0
+    }
+  },
+  "pydantic_features_tested": [
+    "field_validation",
+    "coordinate_range_validation",
+    "date_format_validation",
+    "enum_constraints",
+    "automatic_field_generation",
+    "completeness_calculation",
+    "serialization_deserialization",
+    "extra_fields_forbidden"
+  ]
+}

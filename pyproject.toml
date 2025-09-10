@@ -48,6 +48,14 @@ dev = [
 
 [project.scripts]
 biosample-enricher = "biosample_enricher.cli:main"
+# Demonstration scripts
+nmdc-adapter-demo = "biosample_enricher.nmdc_adapter_demo:main"
+gold-adapter-demo = "biosample_enricher.gold_adapter_demo:main"
+unified-adapter-demo = "biosample_enricher.unified_adapter_demo:main"
+mongodb-connection-demo = "biosample_enricher.mongodb_connection_demo:main"
+pydantic-validation-demo = "biosample_enricher.pydantic_validation_demo:main"
+id-retrieval-demo = "biosample_enricher.id_retrieval_demo:main"
+random-sampling-demo = "biosample_enricher.random_sampling_demo:main"
 
 [project.urls]
 Homepage = "https://github.com/contextualizer-ai/biosample-enricher"
@@ -102,6 +110,27 @@ disallow_untyped_defs = false
 [[tool.mypy.overrides]]
 module = "genson"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "biosample_enricher.nmdc_adapter_demo",
+    "biosample_enricher.gold_adapter_demo", 
+    "biosample_enricher.unified_adapter_demo",
+    "biosample_enricher.mongodb_connection_demo",
+    "biosample_enricher.pydantic_validation_demo",
+    "biosample_enricher.id_retrieval_demo",
+    "biosample_enricher.random_sampling_demo"
+]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+warn_return_any = false
+check_untyped_defs = false
+disallow_any_generics = false
+disallow_any_unimported = false
+disallow_any_expr = false
+disallow_subclassing_any = false
+warn_unreachable = false
+strict_equality = false
 
 [tool.pytest.ini_options]
 minversion = "7.0"
