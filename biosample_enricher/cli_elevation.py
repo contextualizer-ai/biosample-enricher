@@ -1,6 +1,7 @@
 """CLI interface for elevation lookups."""
 
 import asyncio
+import csv
 import json
 import sys
 from pathlib import Path
@@ -170,8 +171,6 @@ def batch_elevation(
 
     async def run_batch() -> None:
         try:
-            import csv
-
             # Parse providers
             provider_list = None
             if providers:

@@ -7,6 +7,7 @@ with automatic field mapping and elevation lookup integration.
 """
 
 import asyncio
+import csv
 import json
 from pathlib import Path
 from typing import Any
@@ -238,8 +239,6 @@ def enrich(
                             f.write("\n")
 
                 elif output_format == "csv":
-                    import csv
-
                     with open(output, "w", newline="") as f:
                         writer = csv.writer(f)
                         writer.writerow(
