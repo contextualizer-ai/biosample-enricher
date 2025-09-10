@@ -4,6 +4,17 @@ import hashlib
 import json
 import os
 from datetime import UTC, datetime
+from pathlib import Path
+
+try:
+    from dotenv import load_dotenv
+    # Load .env file if it exists
+    env_path = Path(__file__).parent.parent.parent / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+except ImportError:
+    # dotenv not available, skip loading
+    pass
 
 from ..logging_config import get_logger
 from ..models import (
