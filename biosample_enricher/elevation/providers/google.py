@@ -36,7 +36,7 @@ class GoogleElevationProvider(BaseElevationProvider):
 
         logger.info("Google Elevation provider initialized")
 
-    async def fetch(
+    def fetch(
         self,
         lat: float,
         lon: float,

@@ -1,16 +1,16 @@
-"""Base class and protocol for elevation providers."""
+"""Base class and protocol for reverse geocoding providers."""
 
 from abc import ABC, abstractmethod
 from typing import Protocol
 
 from ...logging_config import get_logger
-from ...models import FetchResult
+from ...reverse_geocoding_models import ReverseGeocodeFetchResult
 
 logger = get_logger(__name__)
 
 
-class ElevationProvider(Protocol):
-    """Protocol defining the interface for elevation providers."""
+class ReverseGeocodingProvider(Protocol):
+    """Protocol defining the interface for reverse geocoding providers."""
 
     name: str
     endpoint: str
@@ -24,9 +24,11 @@ class ElevationProvider(Protocol):
         read_from_cache: bool = True,
         write_to_cache: bool = True,
         timeout_s: float = 20.0,
-    ) -> FetchResult:
+        language: str = "en",
+        limit: int = 10,
+    ) -> ReverseGeocodeFetchResult:
         """
-        Fetch elevation data for the given coordinates.
+        Fetch reverse geocoding data for the given coordinates.
 
         Args:
             lat: Latitude in decimal degrees
@@ -34,15 +36,17 @@ class ElevationProvider(Protocol):
             read_from_cache: Whether to read from cache
             write_to_cache: Whether to write to cache
             timeout_s: Request timeout in seconds
+            language: Language code for results (ISO 639-1)
+            limit: Maximum number of results to return
 
         Returns:
-            Fetch result with elevation data
+            Fetch result with reverse geocoding data
         """
         ...
 
 
-class BaseElevationProvider(ABC):
-    """Base implementation for elevation providers."""
+class BaseReverseGeocodingProvider(ABC):
+    """Base implementation for reverse geocoding providers."""
 
     def __init__(self, name: str, endpoint: str, api_version: str = "v1") -> None:
         """
@@ -67,9 +71,11 @@ class BaseElevationProvider(ABC):
         read_from_cache: bool = True,
         write_to_cache: bool = True,
         timeout_s: float = 20.0,
-    ) -> FetchResult:
+        language: str = "en",
+        limit: int = 10,
+    ) -> ReverseGeocodeFetchResult:
         """
-        Fetch elevation data for the given coordinates.
+        Fetch reverse geocoding data for the given coordinates.
 
         Args:
             lat: Latitude in decimal degrees
@@ -77,25 +83,31 @@ class BaseElevationProvider(ABC):
             read_from_cache: Whether to read from cache
             write_to_cache: Whether to write to cache
             timeout_s: Request timeout in seconds
+            language: Language code for results (ISO 639-1)
+            limit: Maximum number of results to return
 
         Returns:
-            Fetch result with elevation data
+            Fetch result with reverse geocoding data
         """
         pass
 
-    def _create_cache_key(self, lat: float, lon: float) -> str:
+    def _create_cache_key(
+        self, lat: float, lon: float, language: str = "en", limit: int = 10
+    ) -> str:
         """
-        Create a cache key for the given coordinates.
+        Create a cache key for the given coordinates and parameters.
 
         Args:
             lat: Latitude in decimal degrees
             lon: Longitude in decimal degrees
+            language: Language code
+            limit: Result limit
 
         Returns:
             Cache key string
         """
         # Canonicalize coordinates to 6 decimal places
-        return f"{self.name}:{lat:.6f},{lon:.6f}"
+        return f"{self.name}:reverse:{lat:.6f},{lon:.6f}:{language}:{limit}"
 
     def _validate_coordinates(self, lat: float, lon: float) -> None:
         """

@@ -25,7 +25,7 @@ class OSMElevationProvider(BaseElevationProvider):
         super().__init__(name="osm_elevation", endpoint=endpoint, api_version="v1")
         logger.info(f"OSM Elevation provider initialized: {endpoint}")
 
-    async def fetch(
+    def fetch(
         self,
         lat: float,
         lon: float,

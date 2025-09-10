@@ -22,7 +22,7 @@ class USGSElevationProvider(BaseElevationProvider):
         )
         logger.info("USGS Elevation provider initialized")
 
-    async def fetch(
+    def fetch(
         self,
         lat: float,
         lon: float,

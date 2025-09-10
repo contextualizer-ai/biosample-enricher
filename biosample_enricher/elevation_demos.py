@@ -124,7 +124,7 @@ def process_biosamples(
                         )
 
                         try:
-                            observations = await service.get_elevation(
+                            observations = service.get_elevation(
                                 request,
                                 timeout_s=timeout,
                                 read_from_cache=use_cache,
@@ -275,7 +275,7 @@ def compare_providers(lat: float, lon: float, providers: str, output: str) -> No
             latitude=lat, longitude=lon, preferred_providers=provider_list
         )
 
-        observations = await service.get_elevation(request)
+        observations = service.get_elevation(request)
 
         # Create comparison table
         table = Table(title=f"Provider Comparison: {lat:.6f}, {lon:.6f}")

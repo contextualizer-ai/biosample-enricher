@@ -31,7 +31,7 @@ class OpenTopoDataProvider(BaseElevationProvider):
         self.dataset = dataset
         logger.info(f"Open Topo Data provider initialized: {dataset} dataset")
 
-    async def fetch(
+    def fetch(
         self,
         lat: float,
         lon: float,
@@ -184,7 +184,7 @@ class SmartOpenTopoDataProvider(BaseElevationProvider):
         # Default to SRTM 30m for best global coverage
         return "srtm30m"
 
-    async def fetch(
+    def fetch(
         self,
         lat: float,
         lon: float,
@@ -202,7 +202,7 @@ class SmartOpenTopoDataProvider(BaseElevationProvider):
         provider = OpenTopoDataProvider(endpoint=self.endpoint_base, dataset=dataset)
 
         # Delegate to specific provider
-        return await provider.fetch(
+        return provider.fetch(
             lat,
             lon,
             read_from_cache=read_from_cache,

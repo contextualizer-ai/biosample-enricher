@@ -85,7 +85,7 @@ def lookup_elevation(
                 )
 
             # Get observations
-            observations = await service.get_elevation(
+            observations = service.get_elevation(
                 request,
                 timeout_s=timeout,
                 read_from_cache=use_read_cache,
@@ -228,7 +228,7 @@ def batch_elevation(
                             preferred_providers=provider_list,
                         )
 
-                        observations = await service.get_elevation(
+                        observations = service.get_elevation(
                             request,
                             timeout_s=timeout,
                             read_from_cache=use_read_cache,
