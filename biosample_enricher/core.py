@@ -5,7 +5,10 @@ from typing import Any
 from pydantic import BaseModel, Field
 from rich.console import Console
 
+from .logging_config import get_logger
+
 console = Console()
+logger = get_logger(__name__)
 
 
 class BiosampleMetadata(BaseModel):
@@ -31,6 +34,7 @@ class BiosampleEnricher:
             timeout: HTTP request timeout in seconds
         """
         self.timeout = timeout
+        logger.info(f"Initialized BiosampleEnricher with timeout={timeout}s")
 
     def __enter__(self) -> "BiosampleEnricher":
         """Context manager entry."""
@@ -55,16 +59,21 @@ class BiosampleEnricher:
         if sources is None:
             sources = ["ncbi", "ebi", "biosample_db"]
 
+        logger.info(f"Enriching sample {sample_id} from sources: {sources}")
         results = []
         for source in sources:
             try:
+                logger.debug(f"Fetching metadata for {sample_id} from {source}")
                 metadata = self._fetch_metadata(sample_id, source)
                 results.append(metadata)
+                logger.debug(f"Successfully fetched metadata from {source}")
             except Exception as e:
+                logger.warning(f"Failed to fetch from {source}: {e}")
                 console.print(
                     f"[yellow]Warning: Failed to fetch from {source}: {e}[/yellow]"
                 )
 
+        logger.info(f"Enrichment completed for {sample_id}: {len(results)} sources")
         return results
 
     def _fetch_metadata(self, sample_id: str, source: str) -> BiosampleMetadata:
@@ -104,10 +113,12 @@ class BiosampleEnricher:
         Returns:
             Dictionary mapping sample IDs to their metadata lists
         """
+        logger.info(f"Enriching {len(sample_ids)} samples in batch")
         results = {}
         for sample_id in sample_ids:
             results[sample_id] = self.enrich_sample(sample_id, sources)
 
+        logger.info(f"Batch enrichment completed for {len(sample_ids)} samples")
         return results
 
     def close(self) -> None:
