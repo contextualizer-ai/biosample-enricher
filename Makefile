@@ -1,4 +1,4 @@
-.PHONY: help install install-dev test test-cov lint format type-check check clean build docs run schema-dirs analyze-schemas clean-schema
+.PHONY: help install install-dev test test-cov lint format type-check check clean build docs run schema-dirs analyze-schemas clean-schema adapter-dirs demo-core demo-infrastructure demo-advanced demo-all demo-mongodb-dependent demo-mock-data clean-adapters clean-all-outputs show-demo-results validate-demo-outputs
 .DEFAULT_GOAL := help
 
 # Colors for output
@@ -139,11 +139,12 @@ git-status: ## Show git status
 git-log: ## Show recent git commits
 	@git log --oneline -10
 
-## Schema Analysis Infrastructure
+## Biosample Adapter Infrastructure
 # MongoDB connection defaults (can be overridden) 
 MONGO_URI ?= mongodb://ncbi_reader:register_manatee_coach78@localhost:27778/?directConnection=true&authMechanism=DEFAULT&authSource=admin
 NMDC_DB ?= nmdc
 GOLD_DB ?= gold_metadata
+
 
 schema-dirs: ## Create schema analysis directories
 	@echo "$(GREEN)Creating schema analysis directories...$(RESET)"
@@ -218,3 +219,119 @@ clean-schema: ## Clean all schema analysis outputs
 	@echo "$(GREEN)🧹 Cleaning schema analysis outputs...$(RESET)"
 	@rm -rf data/outputs/schema/
 	@echo "$(GREEN)✅ Schema analysis outputs cleaned$(RESET)"
+
+## Biosample Adapter Demonstrations
+# Create output directories for adapter demonstrations
+adapter-dirs: ## Create adapter demonstration output directories
+	@echo "$(GREEN)Creating adapter demonstration directories...$(RESET)"
+	@mkdir -p data/outputs/adapters
+
+# Core Adapter Tests
+data/outputs/adapters/nmdc_adapter_test.json: adapter-dirs
+	@echo "$(GREEN)Generating $(notdir $@)...$(RESET)"
+	@mkdir -p $(dir $@)
+	uv run nmdc-adapter-demo --output-file $@
+
+data/outputs/adapters/gold_adapter_test.json: adapter-dirs
+	@echo "$(GREEN)Generating $(notdir $@)...$(RESET)"
+	@mkdir -p $(dir $@)
+	uv run gold-adapter-demo --output-file $@
+
+data/outputs/adapters/unified_adapter_test.json: adapter-dirs
+	@echo "$(GREEN)Generating $(notdir $@)...$(RESET)"
+	@mkdir -p $(dir $@)
+	uv run unified-adapter-demo --output-file $@
+
+# Infrastructure Tests
+data/outputs/adapters/mongodb_adapter_test.json: adapter-dirs
+	@echo "$(GREEN)Generating $(notdir $@)...$(RESET)"
+	@echo "$(YELLOW)Note: Requires MongoDB connection at $(MONGO_URI)$(RESET)"
+	@mkdir -p $(dir $@)
+	uv run mongodb-connection-demo --output-file $@
+
+data/outputs/adapters/pydantic_validation_test.json: adapter-dirs
+	@echo "$(GREEN)Generating $(notdir $@)...$(RESET)"
+	@mkdir -p $(dir $@)
+	uv run pydantic-validation-demo --output-file $@
+
+# Advanced Features
+data/outputs/adapters/id_retrieval_test.json: adapter-dirs
+	@echo "$(GREEN)Generating $(notdir $@)...$(RESET)"
+	@mkdir -p $(dir $@)
+	uv run id-retrieval-demo --output-file $@
+
+data/outputs/adapters/random_sampling_test.json: adapter-dirs
+	@echo "$(GREEN)Generating $(notdir $@)...$(RESET)"
+	@echo "$(YELLOW)Note: Requires MongoDB connection at $(MONGO_URI)$(RESET)"
+	@mkdir -p $(dir $@)
+	uv run random-sampling-demo --output-file $@
+
+# Meta-targets for demonstration workflows (phony targets that aggregate file targets)
+demo-core: data/outputs/adapters/nmdc_adapter_test.json data/outputs/adapters/gold_adapter_test.json data/outputs/adapters/unified_adapter_test.json ## Run core adapter demonstrations
+	@echo "$(GREEN)✅ Core adapter demonstrations completed$(RESET)"
+
+demo-infrastructure: data/outputs/adapters/mongodb_adapter_test.json data/outputs/adapters/pydantic_validation_test.json ## Run infrastructure demonstrations
+	@echo "$(GREEN)✅ Infrastructure demonstrations completed$(RESET)"
+
+demo-advanced: data/outputs/adapters/id_retrieval_test.json data/outputs/adapters/random_sampling_test.json ## Run advanced feature demonstrations
+	@echo "$(GREEN)✅ Advanced feature demonstrations completed$(RESET)"
+
+demo-all: demo-core demo-infrastructure demo-advanced ## Run all adapter demonstrations
+	@echo "$(GREEN)🎉 All adapter demonstrations completed!$(RESET)"
+	@echo "$(CYAN)Output files generated:$(RESET)"
+	@ls -la data/outputs/adapters/*.json
+
+# MongoDB-dependent demonstrations (require real database connection)
+demo-mongodb-dependent: data/outputs/adapters/mongodb_adapter_test.json data/outputs/adapters/random_sampling_test.json ## Run demonstrations that require MongoDB
+	@echo "$(GREEN)✅ MongoDB-dependent demonstrations completed$(RESET)"
+
+# Mock data demonstrations (work without MongoDB)
+demo-mock-data: data/outputs/adapters/nmdc_adapter_test.json data/outputs/adapters/gold_adapter_test.json data/outputs/adapters/unified_adapter_test.json data/outputs/adapters/pydantic_validation_test.json data/outputs/adapters/id_retrieval_test.json ## Run demonstrations using mock data
+	@echo "$(GREEN)✅ Mock data demonstrations completed$(RESET)"
+
+# Clean adapter demonstration outputs
+clean-adapters: ## Clean all adapter demonstration outputs
+	@echo "$(GREEN)🧹 Cleaning adapter demonstration outputs...$(RESET)"
+	@rm -rf data/outputs/adapters/
+	@echo "$(GREEN)✅ Adapter demonstration outputs cleaned$(RESET)"
+
+# Clean all adapter/normalization work (schema + adapters)
+clean-all-outputs: clean-schema clean-adapters ## Clean all schema analysis and adapter demonstration outputs
+	@echo "$(GREEN)🧹 Cleaning all adapter/normalization outputs...$(RESET)"
+	@rm -rf data/outputs/
+	@echo "$(GREEN)✅ All adapter/normalization outputs cleaned$(RESET)"
+
+# Show demonstration results
+show-demo-results: ## Show summary of demonstration results
+	@echo "$(CYAN)Adapter Demonstration Results Summary:$(RESET)"
+	@echo ""
+	@if [ -d "data/outputs/adapters" ]; then \
+		for file in data/outputs/adapters/*.json; do \
+			if [ -f "$$file" ]; then \
+				echo "$(GREEN)📄 $$(basename $$file)$(RESET)"; \
+				echo "   Size: $$(wc -c < "$$file") bytes"; \
+				echo "   Generated: $$(stat -f "%Sm" "$$file")"; \
+				echo ""; \
+			fi; \
+		done; \
+	else \
+		echo "$(YELLOW)No demonstration results found. Run 'make demo-all' first.$(RESET)"; \
+	fi
+
+# Validate demonstration outputs
+validate-demo-outputs: ## Validate that all demonstration outputs are valid JSON
+	@echo "$(GREEN)Validating demonstration outputs...$(RESET)"
+	@if [ -d "data/outputs/adapters" ]; then \
+		for file in data/outputs/adapters/*.json; do \
+			if [ -f "$$file" ]; then \
+				echo "Validating $$(basename $$file)..."; \
+				if jq empty "$$file" 2>/dev/null; then \
+					echo "$(GREEN)✅ $$(basename $$file) is valid JSON$(RESET)"; \
+				else \
+					echo "$(RED)❌ $$(basename $$file) is invalid JSON$(RESET)"; \
+				fi; \
+			fi; \
+		done; \
+	else \
+		echo "$(YELLOW)No demonstration outputs found.$(RESET)"; \
+	fi
