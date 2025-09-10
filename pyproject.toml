@@ -26,7 +26,7 @@ classifiers = [
 dependencies = [
     "click>=8.1.0",
     "pydantic>=2.0.0",
-    "httpx>=0.25.0",
+    "requests>=2.31.0",
     "rich>=13.0.0",
     # Schema analysis dependencies
     "genson>=1.2.2",
@@ -48,6 +48,8 @@ dev = [
 
 [project.scripts]
 biosample-enricher = "biosample_enricher.cli:main"
+# Cache management
+http-cache-manager = "biosample_enricher.cache_management:cli"
 # Demonstration scripts
 nmdc-adapter-demo = "biosample_enricher.nmdc_adapter_demo:main"
 gold-adapter-demo = "biosample_enricher.gold_adapter_demo:main"
@@ -120,7 +122,8 @@ module = [
     "biosample_enricher.mongodb_connection_demo",
     "biosample_enricher.pydantic_validation_demo",
     "biosample_enricher.id_retrieval_demo",
-    "biosample_enricher.random_sampling_demo"
+    "biosample_enricher.random_sampling_demo",
+    "biosample_enricher.synthetic_validation_demo"
 ]
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
@@ -148,6 +151,12 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselected with -m 'not slow')",
+    "network: marks tests as requiring network (deselected in CI)",
+    "unit: marks tests as unit tests",
+    "integration: marks tests as integration tests",
+]
 
 [tool.coverage.run]
 source = ["biosample_enricher"]
