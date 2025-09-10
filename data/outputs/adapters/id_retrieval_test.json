@@ -1,0 +1,304 @@
+{
+  "demonstration_info": {
+    "timestamp": "2025-09-10T03:36:16.212465Z",
+    "description": "ID-based retrieval demonstration across different identifier types",
+    "test_data_summary": {
+      "nmdc_samples": 4,
+      "gold_samples": 4,
+      "total_unique_ids_tested": 20
+    }
+  },
+  "primary_id_retrieval": {
+    "nmdc_primary_id_tests": {
+      "requested_ids": [
+        "nmdc:bsm-11-34xj1150",
+        "nmdc:bsm-11-45ky2260",
+        "nmdc:bsm-nonexistent"
+      ],
+      "found_count": 2,
+      "retrieval_time_seconds": 0.0024,
+      "found_samples": [
+        {
+          "sample_id": "nmdc:bsm-11-34xj1150",
+          "nmdc_biosample_id": "nmdc:bsm-11-34xj1150",
+          "is_enrichable": true
+        },
+        {
+          "sample_id": "nmdc:bsm-11-45ky2260",
+          "nmdc_biosample_id": "nmdc:bsm-11-45ky2260",
+          "is_enrichable": true
+        }
+      ]
+    },
+    "gold_primary_id_tests": {
+      "requested_ids": [
+        "Gb0115231",
+        "Gb0125342",
+        "Gb0999999"
+      ],
+      "found_count": 2,
+      "retrieval_time_seconds": 0.0002,
+      "found_samples": [
+        {
+          "sample_id": "Gb0115231",
+          "gold_biosample_id": "Gb0115231",
+          "is_enrichable": true
+        },
+        {
+          "sample_id": "Gb0125342",
+          "gold_biosample_id": "Gb0125342",
+          "is_enrichable": true
+        }
+      ]
+    },
+    "performance_metrics": {
+      "nmdc_avg_time_per_id": 0.0008,
+      "gold_avg_time_per_id": 0.0001,
+      "total_test_time": 0.0026
+    }
+  },
+  "alternative_id_retrieval": {
+    "alternative_id_tests": {
+      "requested_ids": [
+        "BH_001",
+        "SF_BAY_001",
+        "GOLD_BH_001",
+        "NONEXISTENT_ALT"
+      ],
+      "nmdc_found_count": 2,
+      "gold_found_count": 1,
+      "nmdc_results": [
+        {
+          "sample_id": "nmdc:bsm-11-34xj1150",
+          "matched_alt_ids": [
+            "BH_001"
+          ]
+        },
+        {
+          "sample_id": "nmdc:bsm-11-56lz3370",
+          "matched_alt_ids": [
+            "SF_BAY_001"
+          ]
+        }
+      ],
+      "gold_results": [
+        {
+          "sample_id": "Gb0115231",
+          "matched_alt_ids": [
+            "GOLD_BH_001"
+          ]
+        }
+      ]
+    },
+    "external_id_tests": {
+      "requested_ids": [
+        "SAMN02728123",
+        "EBI:ERS987654",
+        "JGI:502901234",
+        "NONEXISTENT_EXT"
+      ],
+      "nmdc_found_count": 2,
+      "gold_found_count": 1,
+      "nmdc_results": [
+        {
+          "sample_id": "nmdc:bsm-11-34xj1150",
+          "matched_ext_ids": [
+            "SAMN02728123"
+          ]
+        },
+        {
+          "sample_id": "nmdc:bsm-11-45ky2260",
+          "matched_ext_ids": [
+            "EBI:ERS987654"
+          ]
+        }
+      ],
+      "gold_results": [
+        {
+          "sample_id": "Gb0135453",
+          "matched_ext_ids": [
+            "JGI:502901234"
+          ]
+        }
+      ]
+    },
+    "cross_reference_tests": {
+      "cross_references_found": 2,
+      "cross_reference_details": [
+        {
+          "nmdc_sample_id": "nmdc:bsm-11-34xj1150",
+          "references_gold_id": "Gb0115231",
+          "gold_match_found": true,
+          "gold_sample_id": "Gb0115231"
+        },
+        {
+          "gold_sample_id": "Gb0115231",
+          "references_nmdc_id": "nmdc:bsm-11-34xj1150",
+          "nmdc_match_found": true,
+          "nmdc_sample_id": "nmdc:bsm-11-34xj1150"
+        }
+      ]
+    }
+  },
+  "bulk_retrieval_performance": {
+    "bulk_retrieval_tests": [
+      {
+        "bulk_size": 1,
+        "nmdc_test": {
+          "requested_ids": [
+            "nmdc:bsm-11-00000000"
+          ],
+          "found_count": 0,
+          "retrieval_time_seconds": 0.0002,
+          "hit_rate": 0.0
+        },
+        "gold_test": {
+          "requested_ids": [
+            "Gb0000000"
+          ],
+          "found_count": 0,
+          "retrieval_time_seconds": 0.0002,
+          "hit_rate": 0.0
+        }
+      },
+      {
+        "bulk_size": 2,
+        "nmdc_test": {
+          "requested_ids": [
+            "nmdc:bsm-11-34xj1150",
+            "nmdc:bsm-11-00000001"
+          ],
+          "found_count": 1,
+          "retrieval_time_seconds": 0.0002,
+          "hit_rate": 0.5
+        },
+        "gold_test": {
+          "requested_ids": [
+            "Gb0115231",
+            "Gb0000001"
+          ],
+          "found_count": 1,
+          "retrieval_time_seconds": 0.0001,
+          "hit_rate": 0.5
+        }
+      },
+      {
+        "bulk_size": 4,
+        "nmdc_test": {
+          "requested_ids": [
+            "nmdc:bsm-11-34xj1150",
+            "nmdc:bsm-11-00000001",
+            "nmdc:bsm-11-00000002",
+            "nmdc:bsm-11-00000003"
+          ],
+          "found_count": 1,
+          "retrieval_time_seconds": 0.0003,
+          "hit_rate": 0.25
+        },
+        "gold_test": {
+          "requested_ids": [
+            "Gb0115231",
+            "Gb0000001",
+            "Gb0000002",
+            "Gb0000003"
+          ],
+          "found_count": 1,
+          "retrieval_time_seconds": 0.0003,
+          "hit_rate": 0.25
+        }
+      },
+      {
+        "bulk_size": 8,
+        "nmdc_test": {
+          "requested_ids": [
+            "nmdc:bsm-11-34xj1150",
+            "nmdc:bsm-11-00000001",
+            "nmdc:bsm-11-00000002",
+            "nmdc:bsm-11-00000003",
+            "nmdc:bsm-11-00000004",
+            "nmdc:bsm-11-00000005",
+            "nmdc:bsm-11-00000006",
+            "nmdc:bsm-11-00000007"
+          ],
+          "found_count": 1,
+          "retrieval_time_seconds": 0.0002,
+          "hit_rate": 0.125
+        },
+        "gold_test": {
+          "requested_ids": [
+            "Gb0115231",
+            "Gb0000001",
+            "Gb0000002",
+            "Gb0000003",
+            "Gb0000004",
+            "Gb0000005",
+            "Gb0000006",
+            "Gb0000007"
+          ],
+          "found_count": 1,
+          "retrieval_time_seconds": 0.0001,
+          "hit_rate": 0.125
+        }
+      }
+    ],
+    "scalability_analysis": {
+      "nmdc_scalability": {
+        "time_complexity": "O(n * m)",
+        "avg_time_per_id": 6e-05,
+        "scaling_factor": 1.0
+      },
+      "gold_scalability": {
+        "time_complexity": "O(n * m)",
+        "avg_time_per_id": 4.666666666666667e-05,
+        "scaling_factor": 0.5
+      }
+    },
+    "retrieval_efficiency": {
+      "nmdc_overall_hit_rate": 0.2,
+      "gold_overall_hit_rate": 0.2,
+      "total_samples_found": 6,
+      "total_ids_tested": 30
+    }
+  },
+  "id_type_analysis": {
+    "nmdc_id_types": {
+      "has_alternative_identifiers": 4,
+      "has_external_database_identifiers": 3,
+      "has_biosample_identifiers": 1,
+      "has_sample_identifiers": 1,
+      "has_gold_biosample_id": 1
+    },
+    "gold_id_types": {
+      "has_alternative_identifiers": 4,
+      "has_external_database_identifiers": 3,
+      "has_biosample_identifiers": 2,
+      "has_sample_identifiers": 1,
+      "has_nmdc_biosample_id": 1
+    },
+    "cross_reference_stats": {
+      "nmdc_samples_with_gold_refs": 1,
+      "gold_samples_with_nmdc_refs": 1,
+      "bidirectional_links": 2
+    }
+  },
+  "retrieval_summary": {
+    "total_retrieval_tests": 3,
+    "primary_id_success_rate": {
+      "nmdc": 0.6666666666666666,
+      "gold": 0.6666666666666666
+    },
+    "alternative_id_effectiveness": {
+      "alternative_ids_tested": 4,
+      "external_ids_tested": 4,
+      "cross_references_found": 2
+    },
+    "bulk_retrieval_performance": {
+      "largest_bulk_size_tested": 8,
+      "overall_hit_rate": 0.2
+    },
+    "id_coverage_analysis": {
+      "nmdc_samples_with_multiple_id_types": 5,
+      "gold_samples_with_multiple_id_types": 5
+    }
+  }
+}

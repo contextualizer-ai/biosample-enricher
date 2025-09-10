@@ -1,0 +1,179 @@
+{
+  "demonstration_info": {
+    "timestamp": "2025-09-10T03:36:06.360511Z",
+    "connection_string_source": "default",
+    "description": "MongoDB connection and fetcher functionality demonstration"
+  },
+  "basic_connection_test": {
+    "success": true,
+    "connection_time_seconds": 0.567,
+    "available_databases": [
+      "gold_metadata",
+      "misc_metadata",
+      "ncbi_metadata",
+      "nmdc",
+      "nmdc_submissions",
+      "sra_metadata",
+      "staging"
+    ],
+    "connection_string_format": "authenticated_uri"
+  },
+  "nmdc_fetcher_test": {
+    "fetcher_type": "NMDC",
+    "database": "nmdc",
+    "collection": "biosample_set",
+    "connection_test": {
+      "success": true,
+      "connection_time_seconds": 0.002
+    },
+    "count_tests": {
+      "total_samples": 13006,
+      "enrichable_samples": 13006,
+      "enrichable_rate": 1.0,
+      "total_count_time_seconds": 0.558,
+      "enrichable_count_time_seconds": 0.102
+    },
+    "sampling_tests": {
+      "random_sample_count": 3,
+      "enrichable_sample_count": 3,
+      "random_sampling_time_seconds": 0.113,
+      "enrichable_sampling_time_seconds": 0.09,
+      "sample_data": [
+        {
+          "sample_id": "nmdc:bsm-11-16svk968",
+          "database_source": "NMDC",
+          "is_enrichable": true,
+          "location_completeness": 1.0
+        },
+        {
+          "sample_id": "nmdc:bsm-11-eft4hz10",
+          "database_source": "NMDC",
+          "is_enrichable": true,
+          "location_completeness": 1.0
+        }
+      ]
+    },
+    "query_performance": {
+      "id_retrieval_test": {
+        "requested_ids": 2,
+        "found_samples": 2,
+        "retrieval_time_seconds": 0.087
+      }
+    }
+  },
+  "gold_fetcher_test": {
+    "fetcher_type": "GOLD",
+    "database": "gold_metadata",
+    "collection": "biosamples",
+    "connection_test": {
+      "success": true,
+      "connection_time_seconds": 0.001
+    },
+    "count_tests": {
+      "total_samples": 217605,
+      "enrichable_samples": 213450,
+      "enrichable_rate": 0.9809057696284552,
+      "total_count_time_seconds": 0.672,
+      "enrichable_count_time_seconds": 0.343
+    },
+    "sampling_tests": {
+      "random_sample_count": 3,
+      "enrichable_sample_count": 3,
+      "random_sampling_time_seconds": 0.894,
+      "enrichable_sampling_time_seconds": 0.878,
+      "sample_data": [
+        {
+          "sample_id": "Gb0244958",
+          "database_source": "GOLD",
+          "is_enrichable": true,
+          "location_completeness": 0.75,
+          "gold_biosample_id": "Gb0244958"
+        },
+        {
+          "sample_id": "Gb0201824",
+          "database_source": "GOLD",
+          "is_enrichable": true,
+          "location_completeness": 1.0,
+          "gold_biosample_id": "Gb0201824"
+        }
+      ]
+    },
+    "query_performance": {
+      "id_retrieval_test": {
+        "requested_ids": 2,
+        "found_samples": 2,
+        "retrieval_time_seconds": 0.65,
+        "id_field_used": "biosampleGoldId"
+      }
+    }
+  },
+  "unified_fetcher_test": {
+    "fetcher_type": "Unified",
+    "configuration": {
+      "nmdc_configured": true,
+      "gold_configured": true
+    },
+    "statistics_test": {
+      "statistics_time_seconds": 1.538,
+      "statistics_data": {
+        "nmdc": {
+          "total_samples": 13006,
+          "enrichable_samples": 13006
+        },
+        "gold": {
+          "total_samples": 217605,
+          "enrichable_samples": 213450
+        },
+        "summary": {
+          "total_samples": 230611,
+          "total_enrichable_samples": 226456,
+          "enrichable_coverage": 0.9819826461010099
+        }
+      }
+    },
+    "cross_source_sampling": {
+      "combined_sample_count": 5,
+      "nmdc_sample_count": 3,
+      "gold_sample_count": 3,
+      "combined_sampling_time_seconds": 0.432,
+      "nmdc_sampling_time_seconds": 0.089,
+      "gold_sampling_time_seconds": 0.858,
+      "source_distribution": {
+        "nmdc_in_combined": 5,
+        "gold_in_combined": 0
+      }
+    },
+    "performance_comparison": {
+      "database_scale": {
+        "total_samples_available": 230611,
+        "total_enrichable_available": 226456,
+        "sample_to_result_ratio": 2.2079344331790724e-05
+      },
+      "query_efficiency": {
+        "avg_time_per_sample": 0.0864,
+        "samples_per_second": 11.57
+      }
+    }
+  },
+  "overall_assessment": {
+    "basic_connection_works": true,
+    "nmdc_fetcher_works": true,
+    "gold_fetcher_works": true,
+    "unified_fetcher_works": true,
+    "all_systems_operational": true,
+    "available_databases": [
+      "gold_metadata",
+      "misc_metadata",
+      "ncbi_metadata",
+      "nmdc",
+      "nmdc_submissions",
+      "sra_metadata",
+      "staging"
+    ],
+    "performance_summary": {
+      "nmdc_total_samples": 13006,
+      "gold_total_samples": 217605,
+      "combined_enrichable_rate": 0.9819826461010099
+    }
+  }
+}
