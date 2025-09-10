@@ -1,0 +1,226 @@
+[
+  {
+    "source_system": "NMDC",
+    "nmdc_biosample_id": "nmdc:bsm-0001",
+    "gold_biosample_id": null,
+    "name": "Berkeley campus topsoil",
+    "ecosystem_category": "terrestrial_soil",
+    "collection_date": "2019-04-23",
+    "geo": {
+      "latitude": 37.8715,
+      "longitude": -122.273,
+      "country": "United States",
+      "country_code": "US",
+      "admin1": "California",
+      "locality": "Berkeley"
+    },
+    "env_terms": {
+      "env_broad_scale": "terrestrial biome",
+      "env_local_scale": "urban ecosystem",
+      "env_medium": "soil",
+      "envo_terms": [
+        "ENVO:00000446",
+        "ENVO:01000254"
+      ]
+    },
+    "is_usa": true,
+    "is_enrichable": true,
+    "provenance": "synthetic_example"
+  },
+  {
+    "source_system": "GOLD",
+    "nmdc_biosample_id": null,
+    "gold_biosample_id": "gold:Gb000001",
+    "name": "Lake Tahoe surface water",
+    "ecosystem_category": "inland_fresh_water",
+    "collection_date": "2017-07-12",
+    "geo": {
+      "latitude": 39.0968,
+      "longitude": -120.0324,
+      "country": "United States",
+      "country_code": "US",
+      "admin1": "California",
+      "locality": "Lake Tahoe"
+    },
+    "env_terms": {
+      "env_broad_scale": "freshwater biome",
+      "env_local_scale": "lake",
+      "env_medium": "water",
+      "envo_terms": [
+        "ENVO:00002011",
+        "ENVO:00000020"
+      ]
+    },
+    "is_usa": true,
+    "is_enrichable": true,
+    "provenance": "synthetic_example"
+  },
+  {
+    "source_system": "NMDC",
+    "nmdc_biosample_id": "nmdc:bsm-0002",
+    "gold_biosample_id": null,
+    "name": "Cape Cod tidal sand",
+    "ecosystem_category": "coastal",
+    "collection_date": "2021-05-30",
+    "geo": {
+      "latitude": 41.668,
+      "longitude": -70.296,
+      "country": "United States",
+      "country_code": "US",
+      "admin1": "Massachusetts",
+      "locality": "Cape Cod"
+    },
+    "env_terms": {
+      "env_broad_scale": "marine biome",
+      "env_local_scale": "sandy beach",
+      "env_medium": "sediment",
+      "envo_terms": [
+        "ENVO:00000447",
+        "ENVO:01000024"
+      ]
+    },
+    "is_usa": true,
+    "is_enrichable": true,
+    "provenance": "synthetic_example"
+  },
+  {
+    "source_system": "GOLD",
+    "nmdc_biosample_id": null,
+    "gold_biosample_id": "gold:Gb000002",
+    "name": "North Pacific pelagic water",
+    "ecosystem_category": "open_ocean",
+    "collection_date": "2015-09-18",
+    "geo": {
+      "latitude": 28.0,
+      "longitude": -155.0,
+      "country": "United States",
+      "country_code": "US",
+      "admin1": "Hawaii",
+      "locality": "Offshore Hawaii"
+    },
+    "env_terms": {
+      "env_broad_scale": "marine biome",
+      "env_local_scale": "pelagic zone",
+      "env_medium": "water",
+      "envo_terms": [
+        "ENVO:00000208",
+        "ENVO:01000023"
+      ]
+    },
+    "is_usa": true,
+    "is_enrichable": true,
+    "provenance": "synthetic_example"
+  },
+  {
+    "source_system": "GOLD",
+    "nmdc_biosample_id": null,
+    "gold_biosample_id": "gold:Gb100001",
+    "name": "Berlin agricultural soil",
+    "ecosystem_category": "terrestrial_soil",
+    "collection_date": "2020-06-02",
+    "geo": {
+      "latitude": 52.52,
+      "longitude": 13.405,
+      "country": "Germany",
+      "country_code": "DE",
+      "admin1": "Berlin",
+      "locality": "Märkisches Viertel"
+    },
+    "env_terms": {
+      "env_broad_scale": "terrestrial biome",
+      "env_local_scale": "agricultural field",
+      "env_medium": "soil",
+      "envo_terms": [
+        "ENVO:00000446",
+        "ENVO:00000114"
+      ]
+    },
+    "is_usa": false,
+    "is_enrichable": true,
+    "provenance": "synthetic_example"
+  },
+  {
+    "source_system": "NMDC",
+    "nmdc_biosample_id": "nmdc:bsm-1003",
+    "gold_biosample_id": null,
+    "name": "Lake Victoria nearshore water",
+    "ecosystem_category": "inland_fresh_water",
+    "collection_date": "2018-11-04",
+    "geo": {
+      "latitude": -0.22,
+      "longitude": 33.0,
+      "country": "Uganda",
+      "country_code": "UG",
+      "admin1": "Wakiso",
+      "locality": "Entebbe Bay"
+    },
+    "env_terms": {
+      "env_broad_scale": "freshwater biome",
+      "env_local_scale": "lake",
+      "env_medium": "water",
+      "envo_terms": [
+        "ENVO:00002011",
+        "ENVO:00000020"
+      ]
+    },
+    "is_usa": false,
+    "is_enrichable": true,
+    "provenance": "synthetic_example"
+  },
+  {
+    "source_system": "GOLD",
+    "nmdc_biosample_id": null,
+    "gold_biosample_id": "gold:Gb200002",
+    "name": "Osaka Bay intertidal sediment",
+    "ecosystem_category": "coastal",
+    "collection_date": "2016-03-15",
+    "geo": {
+      "latitude": 34.65,
+      "longitude": 135.2,
+      "country": "Japan",
+      "country_code": "JP",
+      "admin1": "Osaka",
+      "locality": "Sakai"
+    },
+    "env_terms": {
+      "env_broad_scale": "marine biome",
+      "env_local_scale": "intertidal zone",
+      "env_medium": "sediment",
+      "envo_terms": [
+        "ENVO:00000447",
+        "ENVO:01000145"
+      ]
+    },
+    "is_usa": false,
+    "is_enrichable": true,
+    "provenance": "synthetic_example"
+  },
+  {
+    "source_system": "NMDC",
+    "nmdc_biosample_id": "nmdc:bsm-2004",
+    "gold_biosample_id": null,
+    "name": "South Atlantic pelagic water",
+    "ecosystem_category": "open_ocean",
+    "collection_date": "2013-01-09",
+    "geo": {
+      "latitude": -30.0,
+      "longitude": -15.0,
+      "country": null,
+      "country_code": null,
+      "admin1": null,
+      "locality": "International waters"
+    },
+    "env_terms": {
+      "env_broad_scale": "marine biome",
+      "env_local_scale": "pelagic zone",
+      "env_medium": "water",
+      "envo_terms": [
+        "ENVO:00000208",
+        "ENVO:01000023"
+      ]
+    },
+    "is_usa": false,
+    "is_enrichable": true,
+    "provenance": "synthetic_example"
+  }
+]

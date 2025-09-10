@@ -1,4 +1,4 @@
-.PHONY: help install install-dev test test-cov lint format type-check check clean build docs run schema-dirs analyze-schemas clean-schema adapter-dirs demo-core demo-infrastructure demo-advanced demo-all demo-mongodb-dependent demo-mock-data clean-adapters clean-all-outputs show-demo-results validate-demo-outputs
+.PHONY: help install install-dev test test-cov lint format type-check check clean build docs run schema-dirs analyze-schemas clean-schema adapter-dirs demo-core demo-infrastructure demo-advanced demo-all demo-mongodb-dependent demo-mock-data clean-adapters clean-all-outputs show-demo-results validate-demo-outputs validate-synthetic validate-biosamples validate-biosamples-make
 .DEFAULT_GOAL := help
 
 # Colors for output
@@ -266,6 +266,35 @@ data/outputs/adapters/random_sampling_test.json: adapter-dirs
 	@mkdir -p $(dir $@)
 	uv run random-sampling-demo --output-file $@
 
+# Synthetic biosample validation with output file target
+data/outputs/adapters/synthetic_validation_test.json: data/input/synthetic_biosamples.json adapter-dirs
+	@echo "$(GREEN)Generating $(notdir $@)...$(RESET)"
+	@mkdir -p $(dir $@)
+	uv run synthetic-validation-demo --input-file $< --output-file $@
+
+# File target for validation results (follows make convention: target name = output file)
+validate-synthetic-biosamples: data/outputs/adapters/synthetic_validation_test.json ## Generate validation results file for synthetic biosamples
+	@echo "$(GREEN)✅ Synthetic biosample validation completed: $<$(RESET)"
+
+# Standalone validation target
+validate-synthetic: ## Validate synthetic biosamples and show results
+	@echo "$(GREEN)Validating synthetic biosamples...$(RESET)"
+	@uv run synthetic-validation-demo --input-file data/input/synthetic_biosamples.json
+
+# Flexible validation target with click options
+validate-biosamples: ## Validate biosamples with click options (usage: make validate-biosamples OPTS="--input-file file.json --output-file results.json")
+	@echo "$(GREEN)Validating biosamples with options: $(OPTS)...$(RESET)"
+	@uv run synthetic-validation-demo $(OPTS)
+
+# Alternative validation target with make parameters (for backward compatibility)
+validate-biosamples-make: ## Validate biosamples (usage: make validate-biosamples-make INPUT=file.json OUTPUT=results.json)
+	@echo "$(GREEN)Validating biosamples from $(INPUT)...$(RESET)"
+	@if [ -n "$(OUTPUT)" ]; then \
+		uv run synthetic-validation-demo --input-file $(INPUT) --output-file $(OUTPUT); \
+	else \
+		uv run synthetic-validation-demo --input-file $(INPUT); \
+	fi
+
 # Meta-targets for demonstration workflows (phony targets that aggregate file targets)
 demo-core: data/outputs/adapters/nmdc_adapter_test.json data/outputs/adapters/gold_adapter_test.json data/outputs/adapters/unified_adapter_test.json ## Run core adapter demonstrations
 	@echo "$(GREEN)✅ Core adapter demonstrations completed$(RESET)"
@@ -286,7 +315,7 @@ demo-mongodb-dependent: data/outputs/adapters/mongodb_adapter_test.json data/out
 	@echo "$(GREEN)✅ MongoDB-dependent demonstrations completed$(RESET)"
 
 # Mock data demonstrations (work without MongoDB)
-demo-mock-data: data/outputs/adapters/nmdc_adapter_test.json data/outputs/adapters/gold_adapter_test.json data/outputs/adapters/unified_adapter_test.json data/outputs/adapters/pydantic_validation_test.json data/outputs/adapters/id_retrieval_test.json ## Run demonstrations using mock data
+demo-mock-data: data/outputs/adapters/nmdc_adapter_test.json data/outputs/adapters/gold_adapter_test.json data/outputs/adapters/unified_adapter_test.json data/outputs/adapters/pydantic_validation_test.json data/outputs/adapters/id_retrieval_test.json data/outputs/adapters/synthetic_validation_test.json ## Run demonstrations using mock data
 	@echo "$(GREEN)✅ Mock data demonstrations completed$(RESET)"
 
 # Clean adapter demonstration outputs
