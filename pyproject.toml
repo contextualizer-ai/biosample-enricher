@@ -45,6 +45,11 @@ elevation-demos = "biosample_enricher.elevation_demos:cli"
 biosample-elevation = "biosample_enricher.cli_biosample_elevation:cli"
 # Cache management
 http-cache-manager = "biosample_enricher.cache_management:cli"
+# Schema analysis tools
+schema-inference = "biosample_enricher.schema_inference:main"
+schema-statistics = "biosample_enricher.schema_statistics:main"
+# Utility commands
+biosample-version = "biosample_enricher.cli:show_version"
 # Demonstration scripts
 nmdc-adapter-demo = "biosample_enricher.nmdc_adapter_demo:main"
 gold-adapter-demo = "biosample_enricher.gold_adapter_demo:main"

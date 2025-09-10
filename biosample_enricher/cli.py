@@ -6,10 +6,16 @@ import click
 from rich.console import Console
 from rich.table import Table
 
+from biosample_enricher import __version__
 from biosample_enricher.cli_elevation import elevation_cli
 from biosample_enricher.core import BiosampleEnricher
 
 console = Console()
+
+
+def show_version() -> None:
+    """Print the biosample-enricher version."""
+    print(__version__)
 
 
 @click.group()
