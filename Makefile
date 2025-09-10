@@ -25,9 +25,9 @@ install-dev: ## Install package with development dependencies
 	uv sync --dev
 
 ## Testing
-test: ## Run tests
-	@echo "$(GREEN)Running tests...$(RESET)"
-	uv run pytest tests/ -v
+test: ## Run tests with timing
+	@echo "$(GREEN)Running tests with timing...$(RESET)"
+	uv run pytest tests/ -v --durations=0
 
 test-cov: ## Run tests with coverage
 	@echo "$(GREEN)Running tests with coverage...$(RESET)"
@@ -36,6 +36,39 @@ test-cov: ## Run tests with coverage
 test-watch: ## Run tests in watch mode
 	@echo "$(GREEN)Running tests in watch mode...$(RESET)"
 	uv run pytest tests/ -v --cov=biosample_enricher -f
+
+test-unit: ## Run unit tests only (fast, no external dependencies)
+	@echo "$(GREEN)Running unit tests...$(RESET)"
+	uv run pytest tests/ -v -m "unit"
+
+test-integration: ## Run integration tests (includes database/mock dependencies)
+	@echo "$(GREEN)Running integration tests...$(RESET)"
+	uv run pytest tests/ -v -m "integration"
+
+test-network: ## Run network tests (requires internet connection)
+	@echo "$(GREEN)Running network tests...$(RESET)"
+	uv run pytest tests/ -v -m "network"
+
+test-slow: ## Run slow tests (includes timing-dependent tests)
+	@echo "$(GREEN)Running slow tests...$(RESET)"
+	uv run pytest tests/ -v -m "slow"
+
+test-fast: ## Run fast tests (excludes slow and network tests)
+	@echo "$(GREEN)Running fast tests...$(RESET)"
+	uv run pytest tests/ -v -m "not slow and not network"
+
+test-cache: ## Run HTTP cache tests specifically
+	@echo "$(GREEN)Running HTTP cache tests...$(RESET)"
+	uv run pytest tests/test_http_cache.py -v
+
+test-cache-network: ## Run HTTP cache network integration tests
+	@echo "$(GREEN)Running HTTP cache network tests...$(RESET)"
+	uv run pytest tests/test_http_cache.py -v -m "network"
+
+test-sunrise-demo: ## Run Sunrise-Sunset API cache demonstration (requires internet)
+	@echo "$(GREEN)Running Sunrise-Sunset API cache demonstration...$(RESET)"
+	@echo "$(YELLOW)Note: This requires internet connection to api.sunrise-sunset.org$(RESET)"
+	uv run python tests/examples/test_sunrise_api_demo.py
 
 ## Code Quality
 lint: ## Run linting with ruff
@@ -58,11 +91,15 @@ type-check: ## Run type checking with mypy
 	@echo "$(GREEN)Running type checking...$(RESET)"
 	uv run mypy biosample_enricher/
 
+dep-check: ## Check for unused dependencies with deptry
+	@echo "$(GREEN)Checking dependencies...$(RESET)"
+	uv run deptry .
+
 ## Combined checks
-check: lint type-check test ## Run all checks (lint, type-check, test)
+check: lint type-check dep-check test ## Run all checks (lint, type-check, dep-check, test)
 	@echo "$(GREEN)All checks completed!$(RESET)"
 
-check-ci: lint format-check type-check test ## Run all CI checks (lint, format-check, type-check, test)
+check-ci: lint format-check type-check dep-check test ## Run all CI checks (lint, format-check, type-check, dep-check, test)
 	@echo "$(GREEN)All CI checks completed!$(RESET)"
 
 ## Package building
@@ -364,3 +401,50 @@ validate-demo-outputs: ## Validate that all demonstration outputs are valid JSON
 	else \
 		echo "$(YELLOW)No demonstration outputs found.$(RESET)"; \
 	fi
+
+## HTTP Cache Management
+cache-stats: ## Show HTTP cache statistics
+	@echo "$(GREEN)HTTP Cache Statistics:$(RESET)"
+	@uv run http-cache-manager stats
+
+cache-query: ## Query cache entries (usage: make cache-query CACHE_OPTS="--method GET --limit 10")
+	@echo "$(GREEN)Querying HTTP cache...$(RESET)"
+	@uv run http-cache-manager query $(CACHE_OPTS)
+
+cache-clear: ## Clear HTTP cache (usage: make cache-clear [HOURS=24] to clear entries older than N hours)
+	@echo "$(GREEN)Clearing HTTP cache...$(RESET)"
+	@if [ -n "$(HOURS)" ]; then \
+		uv run http-cache-manager clear --older-than-hours $(HOURS) --confirm; \
+	else \
+		uv run http-cache-manager clear --confirm; \
+	fi
+
+cache-test: ## Test cache functionality with a sample request
+	@echo "$(GREEN)Testing HTTP cache functionality...$(RESET)"
+	@uv run http-cache-manager test "https://httpbin.org/json"
+
+cache-export: ## Export cache entries to JSON (usage: make cache-export OUTPUT=cache_export.json)
+	@echo "$(GREEN)Exporting HTTP cache...$(RESET)"
+	@if [ -n "$(OUTPUT)" ]; then \
+		uv run http-cache-manager export --output $(OUTPUT); \
+	else \
+		uv run http-cache-manager export --output data/outputs/cache_export.json; \
+	fi
+
+cache-help: ## Show cache management help
+	@echo "$(CYAN)HTTP Cache Management Commands:$(RESET)"
+	@echo ""
+	@echo "$(GREEN)Basic Operations:$(RESET)"
+	@echo "  make cache-stats          - Show cache statistics"
+	@echo "  make cache-query          - Query cache entries"
+	@echo "  make cache-clear          - Clear all cache entries"
+	@echo "  make cache-test           - Test cache functionality"
+	@echo ""
+	@echo "$(GREEN)Advanced Operations:$(RESET)"
+	@echo "  make cache-query CACHE_OPTS=\"--method GET --limit 10\""
+	@echo "  make cache-clear HOURS=24  - Clear entries older than 24 hours"
+	@echo "  make cache-export OUTPUT=my_cache.json"
+	@echo ""
+	@echo "$(GREEN)Direct CLI Usage:$(RESET)"
+	@echo "  uv run http-cache-manager --help"
+	@echo "  uv run http-cache-manager query --help"
