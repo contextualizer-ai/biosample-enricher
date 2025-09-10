@@ -56,6 +56,7 @@ mongodb-connection-demo = "biosample_enricher.mongodb_connection_demo:main"
 pydantic-validation-demo = "biosample_enricher.pydantic_validation_demo:main"
 id-retrieval-demo = "biosample_enricher.id_retrieval_demo:main"
 random-sampling-demo = "biosample_enricher.random_sampling_demo:main"
+synthetic-validation-demo = "biosample_enricher.synthetic_validation_demo:main"
 
 [project.urls]
 Homepage = "https://github.com/contextualizer-ai/biosample-enricher"
