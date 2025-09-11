@@ -1,4 +1,4 @@
-"""Biosample Enricher: Infer AI-friendly metadata about biosamples from multiple sources."""
+"""Biosample Enricher: Infer AI-friendly metadata about biosamples."""
 
 __version__ = "0.1.0"
 

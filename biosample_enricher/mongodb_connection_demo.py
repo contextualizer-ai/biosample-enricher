@@ -9,7 +9,6 @@ Tests actual MongoDB connectivity and fetcher functionality:
 - Performance metrics for different query types
 """
 
-import contextlib
 import json
 import os
 import sys
@@ -159,8 +158,11 @@ def test_nmdc_fetcher(connection_string: str) -> dict[str, Any]:
 
     except Exception as e:
         result["error"] = {"message": "NMDC fetcher test failed", "details": str(e)}
-        with contextlib.suppress(Exception):
+        try:
             fetcher.disconnect()
+        except Exception as disconnect_error:
+            # Log disconnect error but don't override main error
+            result["error"]["disconnect_error"] = str(disconnect_error)
 
     return result
 
@@ -270,8 +272,11 @@ def test_gold_fetcher(connection_string: str) -> dict[str, Any]:
 
     except Exception as e:
         result["error"] = {"message": "GOLD fetcher test failed", "details": str(e)}
-        with contextlib.suppress(Exception):
+        try:
             fetcher.disconnect()
+        except Exception as disconnect_error:
+            # Log disconnect error but don't override main error
+            result["error"]["disconnect_error"] = str(disconnect_error)
 
     return result
 
