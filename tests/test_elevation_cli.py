@@ -184,8 +184,6 @@ class TestElevationCLI:
                     str(csv_file),
                     "--output",
                     str(output_file),
-                    "--batch-size",
-                    "2",
                     "--timeout",
                     "30",
                 ],
@@ -226,8 +224,6 @@ class TestElevationCLI:
                     "--output",
                     str(output_file),
                     "--no-cache",
-                    "--batch-size",
-                    "1",
                 ],
             )
 
@@ -260,8 +256,6 @@ class TestElevationCLI:
                     "longitude",
                     "--id-col",
                     "sample_id",
-                    "--batch-size",
-                    "1",
                 ],
             )
 
@@ -287,7 +281,7 @@ class TestElevationCLI:
         result = self.runner.invoke(elevation_cli, ["batch", "--help"])
         assert result.exit_code == 0
         assert "Process elevation lookups from CSV/TSV file" in result.output
-        assert "--batch-size" in result.output
+        assert "--timeout" in result.output  # Check for a different option
 
 
 class TestElevationCLIIntegration:
