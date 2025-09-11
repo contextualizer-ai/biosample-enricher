@@ -16,6 +16,7 @@ from typing import Any
 
 import pymongo
 
+from biosample_enricher.host_detector import get_host_detector
 from biosample_enricher.models import BiosampleLocation
 
 
@@ -65,6 +66,13 @@ class NMDCBiosampleAdapter(BiosampleAdapter):
         # Assess date precision
         date_precision = self._assess_date_precision(collection_date)
 
+        # Extract ENVO terms and check for host association
+        # NMDC stores ENVO terms as complex nested objects, extract the name/id
+        env_broad_scale = self._extract_envo_term(biosample_data.get("env_broad_scale"))
+        env_local_scale = self._extract_envo_term(biosample_data.get("env_local_scale"))
+        env_medium = self._extract_envo_term(biosample_data.get("env_medium"))
+        is_host_associated = self._detect_host_association(biosample_data)
+
         return BiosampleLocation(
             latitude=latitude,
             longitude=longitude,
@@ -85,6 +93,11 @@ class NMDCBiosampleAdapter(BiosampleAdapter):
             nmdc_studies=nmdc_studies,
             gold_studies=None,
             location_completeness=None,
+            env_broad_scale=env_broad_scale,
+            env_local_scale=env_local_scale,
+            env_medium=env_medium,
+            sample_type=None,  # Can be derived from env fields later
+            is_host_associated=is_host_associated,
         )
 
     def extract_locations_batch(
@@ -207,6 +220,36 @@ class NMDCBiosampleAdapter(BiosampleAdapter):
                         return str(raw_value.strip())
 
         return None
+
+    def _extract_envo_term(self, envo_value: Any) -> str | None:
+        """Extract string representation from NMDC ENVO term structure.
+        
+        NMDC stores ENVO terms as: {"term": {"id": "ENVO:...", "name": "..."}, "type": "..."}
+        """
+        if not envo_value:
+            return None
+            
+        if isinstance(envo_value, str):
+            return envo_value
+            
+        if isinstance(envo_value, dict):
+            # Try to extract from nested structure
+            term_obj = envo_value.get("term")
+            if isinstance(term_obj, dict):
+                # Prefer name over ID for readability
+                return term_obj.get("name") or term_obj.get("id")
+            # Fallback to other possible fields
+            return envo_value.get("has_raw_value") or envo_value.get("name")
+            
+        return str(envo_value) if envo_value else None
+
+    def _detect_host_association(self, data: dict[str, Any]) -> bool:
+        """Detect if sample is host-associated based on multiple fields.
+
+        Uses configuration-based detection from host_detector module.
+        """
+        detector = get_host_detector()
+        return detector.is_host_associated_nmdc(data)
 
     def _extract_nmdc_ids(
         self, data: dict[str, Any]
@@ -383,6 +426,14 @@ class GOLDBiosampleAdapter(BiosampleAdapter):
         # Assess date precision
         date_precision = self._assess_date_precision(collection_date)
 
+        # Check for host association
+        is_host_associated = self._detect_host_association_gold(biosample_data)
+
+        # Extract ecosystem path for additional context
+        ecosystem_path = biosample_data.get("ecosystemPath") or biosample_data.get(
+            "ecosystem_path"
+        )
+
         return BiosampleLocation(
             latitude=latitude,
             longitude=longitude,
@@ -403,6 +454,11 @@ class GOLDBiosampleAdapter(BiosampleAdapter):
             gold_studies=gold_studies,
             nmdc_studies=None,
             location_completeness=None,
+            env_broad_scale=None,  # GOLD doesn't typically have ENVO terms
+            env_local_scale=None,
+            env_medium=None,
+            sample_type=ecosystem_path,  # Store ecosystem path in sample_type
+            is_host_associated=is_host_associated,
         )
 
     def extract_locations_batch(
@@ -410,6 +466,14 @@ class GOLDBiosampleAdapter(BiosampleAdapter):
     ) -> list[BiosampleLocation]:
         """Extract location data from multiple GOLD biosamples."""
         return [self.extract_location(biosample) for biosample in biosamples]
+
+    def _detect_host_association_gold(self, data: dict[str, Any]) -> bool:
+        """Detect if GOLD sample is host-associated.
+
+        Uses configuration-based detection from host_detector module.
+        """
+        detector = get_host_detector()
+        return detector.is_host_associated_gold(data)
 
     def _parse_gold_date(self, data: dict[str, Any]) -> str | None:
         """Parse GOLD dateCollected field."""

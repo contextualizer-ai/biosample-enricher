@@ -203,6 +203,10 @@ class OSMReverseGeocodingProvider(BaseReverseGeocodingProvider):
             Parsed location or None if invalid
         """
         try:
+            # Check if item is valid
+            if not item or not isinstance(item, dict):
+                return None
+                
             # Extract basic information
             display_name = item.get("display_name", "")
             place_id = str(item.get("place_id", ""))

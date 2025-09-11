@@ -4,6 +4,7 @@ import click
 
 from biosample_enricher import __version__
 from biosample_enricher.cli_elevation import elevation_cli
+from biosample_enricher.cli_metrics import metrics
 
 
 def show_version() -> None:
@@ -19,6 +20,8 @@ def main() -> None:
 
 # Add elevation CLI as a subcommand
 main.add_command(elevation_cli, name="elevation")
+# Add metrics CLI as a subcommand
+main.add_command(metrics, name="metrics")
 
 
 if __name__ == "__main__":

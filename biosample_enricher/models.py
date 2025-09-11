@@ -74,6 +74,15 @@ class BiosampleLocation(BaseModel):
         None, ge=0.0, le=1.0, description="Completeness score 0.0-1.0"
     )
 
+    # Sample type indicators (for filtering)
+    env_broad_scale: str | None = Field(None, description="ENVO broad scale")
+    env_local_scale: str | None = Field(None, description="ENVO local scale")
+    env_medium: str | None = Field(None, description="ENVO medium")
+    sample_type: str | None = Field(None, description="Sample type category")
+    is_host_associated: bool | None = Field(
+        None, description="Is host-associated sample"
+    )
+
     @model_validator(mode="after")
     def calculate_completeness(self) -> "BiosampleLocation":
         """Calculate location completeness score based on available fields."""
