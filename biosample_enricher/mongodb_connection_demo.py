@@ -19,7 +19,7 @@ from typing import Any
 import click
 import pymongo
 
-from .adapters import (
+from biosample_enricher.adapters import (
     MongoGOLDBiosampleFetcher,
     MongoNMDCBiosampleFetcher,
     UnifiedBiosampleFetcher,

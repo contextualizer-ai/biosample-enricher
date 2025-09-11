@@ -18,12 +18,12 @@ from typing import Any
 
 import click
 
-from .adapters import (
+from biosample_enricher.adapters import (
     GOLDBiosampleAdapter,
     NMDCBiosampleAdapter,
     UnifiedBiosampleFetcher,
 )
-from .models import BiosampleLocation
+from biosample_enricher.models import BiosampleLocation
 
 
 def get_sample_nmdc_biosamples() -> list[dict[str, Any]]:

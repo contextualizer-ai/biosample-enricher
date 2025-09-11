@@ -16,7 +16,7 @@ from typing import Any
 
 import pymongo
 
-from .models import BiosampleLocation
+from biosample_enricher.models import BiosampleLocation
 
 
 class BiosampleAdapter(ABC):

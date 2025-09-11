@@ -10,7 +10,7 @@ import requests_cache
 from pymongo import MongoClient
 from requests_cache import CachedSession
 
-from .logging_config import get_logger
+from biosample_enricher.logging_config import get_logger
 
 logger = get_logger(__name__)
 

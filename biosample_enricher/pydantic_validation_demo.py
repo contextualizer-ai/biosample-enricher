@@ -17,7 +17,7 @@ from typing import Any
 import click
 from pydantic import ValidationError
 
-from .models import BiosampleLocation
+from biosample_enricher.models import BiosampleLocation
 
 
 def get_validation_test_cases() -> list[dict[str, Any]]:

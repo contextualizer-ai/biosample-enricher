@@ -12,7 +12,7 @@ from typing import Any
 import click
 from rich.console import Console
 
-from .http_cache import get_session, request
+from biosample_enricher.http_cache import get_session, request
 
 console = Console()
 

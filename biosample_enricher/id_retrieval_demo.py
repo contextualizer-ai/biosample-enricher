@@ -19,7 +19,7 @@ from typing import Any
 
 import click
 
-from .adapters import (
+from biosample_enricher.adapters import (
     GOLDBiosampleAdapter,
     NMDCBiosampleAdapter,
 )
