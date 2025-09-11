@@ -9,7 +9,7 @@ biosample data structures and elevation lookup requests.
 
 from typing import Any
 
-from .models import ElevationRequest
+from biosample_enricher.models import ElevationRequest
 
 
 class BiosampleElevationMapper:

@@ -2,10 +2,10 @@
 
 from typing import Any
 
-from ...http_cache import request
-from ...logging_config import get_logger
-from ...models import FetchResult, GeoPoint
-from .base import BaseElevationProvider
+from biosample_enricher.http_cache import request
+from biosample_enricher.logging_config import get_logger
+from biosample_enricher.models import FetchResult, GeoPoint
+from biosample_enricher.elevation.providers.base import BaseElevationProvider
 
 logger = get_logger(__name__)
 

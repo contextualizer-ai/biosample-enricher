@@ -8,9 +8,10 @@ from pathlib import Path
 import click
 from rich.console import Console
 
-from .elevation import ElevationService
-from .logging_config import get_logger, setup_logging
-from .models import ElevationRequest
+from biosample_enricher.elevation import ElevationService
+from biosample_enricher.logging_config import get_logger, setup_logging
+from biosample_enricher.models import ElevationRequest
+from biosample_enricher.providers import ElevationProvider
 
 console = Console()
 logger = get_logger(__name__)
@@ -32,8 +33,11 @@ def elevation_cli(log_level: str) -> None:
 @click.option("--lat", type=float, required=True, help="Latitude in decimal degrees")
 @click.option("--lon", type=float, required=True, help="Longitude in decimal degrees")
 @click.option(
-    "--providers",
-    help="Comma-separated list of preferred providers (google,usgs,osm)",
+    "--provider",
+    "providers",
+    multiple=True,
+    type=click.Choice(ElevationProvider.choices(), case_sensitive=False),
+    help="Preferred providers (can be specified multiple times). Default: tries all available.",
 )
 @click.option("--output", "-o", help="Output file path (JSON)")
 @click.option("--subject-id", default="elevation-lookup", help="Subject ID for output")
@@ -44,7 +48,7 @@ def elevation_cli(log_level: str) -> None:
 def lookup_elevation(
     lat: float,
     lon: float,
-    providers: str | None,
+    providers: tuple[str, ...],
     output: str | None,
     subject_id: str,
     timeout: float,
@@ -56,10 +60,8 @@ def lookup_elevation(
 
     def run_lookup() -> None:
         try:
-            # Parse providers
-            provider_list = None
-            if providers:
-                provider_list = [p.strip() for p in providers.split(",")]
+            # Convert providers tuple to list (already validated by Click)
+            provider_list = list(providers) if providers else None
 
             # Create service
             service = ElevationService.from_env()
@@ -148,8 +150,11 @@ def lookup_elevation(
 )
 @click.option("--output", "-o", required=True, help="Output JSONL file path")
 @click.option(
-    "--providers",
-    help="Comma-separated list of preferred providers (google,usgs,osm)",
+    "--provider",
+    "providers",
+    multiple=True,
+    type=click.Choice(ElevationProvider.choices(), case_sensitive=False),
+    help="Preferred providers (can be specified multiple times). Default: tries all available.",
 )
 @click.option("--timeout", default=20.0, type=float, help="Request timeout in seconds")
 @click.option("--lat-col", default="lat", help="Latitude column name")
@@ -161,7 +166,7 @@ def lookup_elevation(
 def batch_elevation(
     input_file: Path,
     output: str,
-    providers: str | None,
+    providers: tuple[str, ...],
     timeout: float,
     lat_col: str,
     lon_col: str,
@@ -174,10 +179,8 @@ def batch_elevation(
 
     def run_batch() -> None:
         try:
-            # Parse providers
-            provider_list = None
-            if providers:
-                provider_list = [p.strip() for p in providers.split(",")]
+            # Convert providers tuple to list (already validated by Click)
+            provider_list = list(providers) if providers else None
 
             # Create service
             service = ElevationService.from_env()

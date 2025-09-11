@@ -8,8 +8,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from ..logging_config import get_logger
-from ..models import (
+from biosample_enricher.logging_config import get_logger
+from biosample_enricher.models import (
     CoordinateClassification,
     ElevationRequest,
     ElevationResult,
@@ -22,15 +22,15 @@ from ..models import (
     ValueStatus,
     Variable,
 )
-from .classifier import CoordinateClassifier
-from .providers import (
+from biosample_enricher.elevation.classifier import CoordinateClassifier
+from biosample_enricher.elevation.providers import (
     ElevationProvider,
     GoogleElevationProvider,
     OpenTopoDataProvider,
     OSMElevationProvider,
     USGSElevationProvider,
 )
-from .utils import calculate_distance_m
+from biosample_enricher.elevation.utils import calculate_distance_m
 
 # Load .env file if it exists
 env_path = Path(__file__).parent.parent.parent / ".env"

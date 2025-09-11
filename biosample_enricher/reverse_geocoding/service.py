@@ -2,11 +2,11 @@
 
 from typing import Any
 
-from ..logging_config import get_logger
-from ..reverse_geocoding_models import ReverseGeocodeResult
-from .providers.base import ReverseGeocodingProvider
-from .providers.google import GoogleReverseGeocodingProvider
-from .providers.osm import OSMReverseGeocodingProvider
+from biosample_enricher.logging_config import get_logger
+from biosample_enricher.reverse_geocoding_models import ReverseGeocodeResult
+from biosample_enricher.reverse_geocoding.providers.base import ReverseGeocodingProvider
+from biosample_enricher.reverse_geocoding.providers.google import GoogleReverseGeocodingProvider
+from biosample_enricher.reverse_geocoding.providers.osm import OSMReverseGeocodingProvider
 
 logger = get_logger(__name__)
 
