@@ -180,6 +180,7 @@ class TestElevationCLI:
                 elevation_cli,
                 [
                     "batch",
+                    "--input-file",
                     str(csv_file),
                     "--output",
                     str(output_file),
@@ -220,6 +221,7 @@ class TestElevationCLI:
                 elevation_cli,
                 [
                     "batch",
+                    "--input-file",
                     str(csv_file),
                     "--output",
                     str(output_file),
@@ -248,6 +250,7 @@ class TestElevationCLI:
                 elevation_cli,
                 [
                     "batch",
+                    "--input-file",
                     str(csv_file),
                     "--output",
                     str(output_file),
