@@ -1,0 +1,282 @@
+# Field mappings between NMDC, GOLD, and enrichment outputs
+# This file defines how fields from different sources map to common concepts
+
+# Location fields
+location:
+  latitude:
+    nmdc:
+      - path: "lat_lon[0]"
+        type: "array_index"
+      - path: "latitude"
+        type: "direct"
+    gold:
+      - path: "latitude"
+        type: "direct"
+      - path: "location.latitude"
+        type: "nested"
+    enrichment:
+      - path: "location.latitude"
+        type: "nested"
+  
+  longitude:
+    nmdc:
+      - path: "lat_lon[1]"
+        type: "array_index"
+      - path: "longitude"
+        type: "direct"
+    gold:
+      - path: "longitude"
+        type: "direct"
+      - path: "location.longitude"
+        type: "nested"
+    enrichment:
+      - path: "location.longitude"
+        type: "nested"
+  
+  elevation:
+    nmdc:
+      - path: "elev"
+        type: "direct"
+      - path: "elevation"
+        type: "direct"
+    gold:
+      - path: "elevation"
+        type: "direct"
+      - path: "altitudeMeters"
+        type: "direct"
+    enrichment:
+      - path: "elevation.value"
+        type: "nested"
+      - path: "elevation_m"
+        type: "direct"
+  
+  country:
+    nmdc:
+      - path: "geo_loc_name"
+        type: "parse_first"  # Parse first part before colon
+    gold:
+      - path: "country"
+        type: "direct"
+      - path: "geoLocation"
+        type: "parse_country"
+    enrichment:
+      - path: "reverse_geocoding.country"
+        type: "nested"
+      - path: "location.country"
+        type: "nested"
+  
+  state_province:
+    nmdc:
+      - path: "geo_loc_name"
+        type: "parse_second"  # Parse second part after colon
+    gold:
+      - path: "state"
+        type: "direct"
+      - path: "stateProvince"
+        type: "direct"
+    enrichment:
+      - path: "reverse_geocoding.state"
+        type: "nested"
+      - path: "location.state_province"
+        type: "nested"
+
+# Climate/Weather fields
+climate:
+  temperature:
+    nmdc:
+      - path: "temp"
+        type: "direct"
+      - path: "temperature"
+        type: "direct"
+    gold:
+      - path: "temperature"
+        type: "direct"
+      - path: "envTemperature"
+        type: "direct"
+    enrichment:
+      - path: "weather.temperature"
+        type: "nested"
+      - path: "climate.temperature_c"
+        type: "direct"
+  
+  precipitation:
+    nmdc:
+      - path: "annual_precpt"
+        type: "direct"
+      - path: "precipitation"
+        type: "direct"
+    gold:
+      - path: "precipitation"
+        type: "direct"
+      - path: "annualPrecipitation"
+        type: "direct"
+    enrichment:
+      - path: "weather.precipitation"
+        type: "nested"
+      - path: "climate.precipitation_mm"
+        type: "direct"
+  
+  humidity:
+    nmdc:
+      - path: "humidity"
+        type: "direct"
+      - path: "rel_humidity_soil"
+        type: "direct"
+    gold:
+      - path: "humidity"
+        type: "direct"
+      - path: "relativeHumidity"
+        type: "direct"
+    enrichment:
+      - path: "weather.humidity"
+        type: "nested"
+      - path: "climate.humidity_percent"
+        type: "direct"
+
+# Soil fields
+soil:
+  soil_type:
+    nmdc:
+      - path: "soil_type"
+        type: "direct"
+      - path: "soil_text_class"
+        type: "direct"
+    gold:
+      - path: "soilClass"
+        type: "direct"
+      - path: "soilType"
+        type: "direct"
+    enrichment:
+      - path: "soil.classification"
+        type: "nested"
+      - path: "soil_type"
+        type: "direct"
+  
+  ph:
+    nmdc:
+      - path: "ph"
+        type: "direct"
+      - path: "soil_ph"
+        type: "direct"
+    gold:
+      - path: "soilPh"
+        type: "direct"
+      - path: "ph"
+        type: "direct"
+    enrichment:
+      - path: "soil.ph"
+        type: "nested"
+      - path: "soil_properties.ph"
+        type: "nested"
+  
+  organic_carbon:
+    nmdc:
+      - path: "tot_org_carb"
+        type: "direct"
+      - path: "org_carb"
+        type: "direct"
+    gold:
+      - path: "organicCarbon"
+        type: "direct"
+      - path: "totalOrganicCarbon"
+        type: "direct"
+    enrichment:
+      - path: "soil.organic_carbon"
+        type: "nested"
+      - path: "soil_properties.soc"
+        type: "nested"
+
+# Vegetation/Land Use fields
+vegetation:
+  land_cover:
+    nmdc:
+      - path: "cur_vegetation"
+        type: "direct"
+      - path: "current_vegetation"
+        type: "direct"
+    gold:
+      - path: "landUse"
+        type: "direct"
+      - path: "vegetationType"
+        type: "direct"
+    enrichment:
+      - path: "land_cover.classification"
+        type: "nested"
+      - path: "ecosystem.land_cover"
+        type: "nested"
+  
+  ecosystem_type:
+    nmdc:
+      - path: "ecosystem_type"
+        type: "direct"
+      - path: "env_broad_scale"
+        type: "direct"
+    gold:
+      - path: "ecosystem"
+        type: "direct"
+      - path: "biome"
+        type: "direct"
+    enrichment:
+      - path: "ecosystem.type"
+        type: "nested"
+      - path: "ecoregion.biome"
+        type: "nested"
+
+# Temporal fields
+temporal:
+  collection_date:
+    nmdc:
+      - path: "collection_date"
+        type: "direct"
+      - path: "collection_date_inc"
+        type: "direct"
+    gold:
+      - path: "collectionDate"
+        type: "direct"
+      - path: "dateCollected"
+        type: "direct"
+    enrichment:
+      - path: "collection_date"
+        type: "direct"
+  
+  collection_time:
+    nmdc:
+      - path: "collection_time"
+        type: "direct"
+      - path: "collection_time_inc"
+        type: "direct"
+    gold:
+      - path: "collectionTime"
+        type: "direct"
+      - path: "timeCollected"
+        type: "direct"
+    enrichment:
+      - path: "collection_time"
+        type: "direct"
+
+# Data type categories for metrics reporting
+data_types:
+  - name: "Elevation"
+    category: "location"
+    field: "elevation"
+  - name: "Place Name"
+    category: "location"
+    fields: ["country", "state_province"]
+  - name: "Temperature"
+    category: "climate"
+    field: "temperature"
+  - name: "Precipitation"
+    category: "climate"
+    field: "precipitation"
+  - name: "Soil Type"
+    category: "soil"
+    field: "soil_type"
+  - name: "Soil pH"
+    category: "soil"
+    field: "ph"
+  - name: "Land Cover"
+    category: "vegetation"
+    field: "land_cover"
+  - name: "Ecosystem Type"
+    category: "vegetation"
+    field: "ecosystem_type"

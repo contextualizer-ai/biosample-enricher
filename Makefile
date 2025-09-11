@@ -11,7 +11,8 @@
 	clean-adapters clean-all-outputs \
 	validate-synthetic validate-biosamples validate-biosamples-make \
 	cache-stats cache-query cache-clear cache-test cache-export \
-	elevation-test elevation-batch elevation-all clean-elevation
+	elevation-test elevation-batch elevation-all clean-elevation \
+	metrics-local clean-metrics
 .DEFAULT_GOAL := test
 
 ## Installation
@@ -425,3 +426,29 @@ elevation-all: elevation-test elevation-batch data/outputs/elevation/provider_co
 clean-elevation: ## Remove all elevation output files
 	@echo "Cleaning elevation outputs..."
 	rm -rf data/outputs/elevation/
+
+## Enrichment Metrics Evaluation
+data/outputs/metrics:
+	@echo "Creating metrics output directory..."
+	@mkdir -p $@
+
+# Parameterizable metrics evaluation
+NMDC_SAMPLES ?= 5
+GOLD_SAMPLES ?= 5
+
+metrics-local: | data/outputs/metrics ## Run metrics evaluation (usage: make metrics-local [NMDC_SAMPLES=N] [GOLD_SAMPLES=N])
+	@echo "Running metrics evaluation with $(NMDC_SAMPLES) NMDC and $(GOLD_SAMPLES) GOLD samples..."
+	@echo "Using MongoDB: $(MONGO_URI)"
+	@echo "NMDC database: $(NMDC_DB), GOLD database: $(GOLD_DB)"
+	NMDC_MONGO_CONNECTION="mongodb://ncbi_reader:register_manatee_coach78@localhost:27778/?directConnection=true&authMechanism=DEFAULT&authSource=admin" \
+	GOLD_MONGO_CONNECTION="mongodb://ncbi_reader:register_manatee_coach78@localhost:27778/?directConnection=true&authMechanism=DEFAULT&authSource=admin" \
+	uv run biosample-enricher metrics evaluate \
+		--nmdc-samples $(NMDC_SAMPLES) \
+		--gold-samples $(GOLD_SAMPLES) \
+		--output-dir data/outputs/metrics \
+		--create-plots $(EXTRA_ARGS)
+
+# Clean metrics outputs
+clean-metrics: ## Remove all metrics output files
+	@echo "Cleaning metrics outputs..."
+	rm -rf data/outputs/metrics/

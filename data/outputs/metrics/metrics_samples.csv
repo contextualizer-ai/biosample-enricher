@@ -1,0 +1,7 @@
+sample_id,source,region,is_us,is_ocean,elev_before,elev_after,elev_provider,place_before,place_after,place_providers
+nmdc:bsm-11-06g2dc22,nmdc,,False,False,,,google_elevation,Western Australia: Coral Bay,"Western Australia: Coral Bay, Coral Bay",google
+nmdc:bsm-11-g6q3m668,nmdc,CONUS,True,False,500.0,372.614593506,usgs_epqs,"USA: Michigan, Lake City","USA: Michigan, Lake City",google
+nmdc:bsm-11-gdzpm224,nmdc,CONUS,True,False,401.2,402.765228271,usgs_epqs,"USA: Kansas, Konza Prairie Biological Station","USA: Kansas, Konza Prairie Biological Station","osm, google"
+Gb0368445,gold,CONUS,True,False,,1244.311279297,usgs_epqs,"USA: Scottsbluff, Nebraska","USA: Scottsbluff, Nebraska","osm, google"
+Gb0125371,gold,,False,True,,-4818.900390625,google_elevation,"Hawaii, USA","Hawaii, USA","osm, google"
+Gb0314532,gold,CONUS,True,False,,306.270843506,usgs_epqs,USA: California,"USA: California, Nacomis Indian Rancheria",google
