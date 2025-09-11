@@ -1,9 +1,10 @@
 name: Enrichment Performance Report
 
-on:
-  pull_request:
-    types: [opened, synchronize]
-  workflow_dispatch:
+# Disabled - requires MongoDB access not available in CI
+# on:
+#   pull_request:
+#     types: [opened, synchronize]
+#   workflow_dispatch:
 
 jobs:
   metrics:
