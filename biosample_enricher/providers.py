@@ -2,13 +2,12 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 @dataclass
 class ProviderInfo:
     """Information about a provider including limitations."""
-    
+
     name: str
     description: str
     requires_api_key: bool
@@ -29,9 +28,9 @@ class ElevationProvider(str, Enum):
     def choices(cls) -> list[str]:
         """Get list of provider choices for Click."""
         return [p.value for p in cls]
-    
+
     @classmethod
-    def info(cls, provider: str) -> ProviderInfo:
+    def info(cls, provider: "ElevationProvider | str") -> ProviderInfo:
         """Get detailed information about a provider."""
         info_map = {
             cls.GOOGLE: ProviderInfo(
@@ -40,7 +39,7 @@ class ElevationProvider(str, Enum):
                 requires_api_key=True,
                 coverage="Global",
                 rate_limits="2,500 requests/day free, then pay-per-use",
-                accuracy="±1-3 meters typically"
+                accuracy="±1-3 meters typically",
             ),
             cls.USGS: ProviderInfo(
                 name="USGS National Elevation Dataset",
@@ -48,7 +47,7 @@ class ElevationProvider(str, Enum):
                 requires_api_key=False,
                 coverage="USA, Alaska, Hawaii, Puerto Rico, US territories only",
                 rate_limits="No hard limits, but please be respectful",
-                accuracy="±0.15-3 meters depending on dataset"
+                accuracy="±0.15-3 meters depending on dataset",
             ),
             cls.OSM: ProviderInfo(
                 name="OpenStreetMap/Open-Elevation",
@@ -56,7 +55,7 @@ class ElevationProvider(str, Enum):
                 requires_api_key=False,
                 coverage="Global (using SRTM data)",
                 rate_limits="Please limit to 1 request/second",
-                accuracy="±10-30 meters (SRTM resolution)"
+                accuracy="±10-30 meters (SRTM resolution)",
             ),
             cls.OPEN_TOPO_DATA: ProviderInfo(
                 name="Open Topo Data",
@@ -64,34 +63,55 @@ class ElevationProvider(str, Enum):
                 requires_api_key=False,
                 coverage="Global (varies by dataset)",
                 rate_limits="100 requests/second, 1000 locations per request",
-                accuracy="±5-30 meters depending on dataset"
+                accuracy="±5-30 meters depending on dataset",
             ),
         }
-        return info_map.get(provider, ProviderInfo(
-            name=provider,
-            description="Unknown provider",
-            requires_api_key=False,
-            coverage="Unknown",
-            rate_limits="Unknown",
-            accuracy="Unknown"
-        ))
+        # Handle both string and enum inputs
+        try:
+            # Try to convert string to enum if it's a string
+            provider_enum = cls(provider) if isinstance(provider, str) else provider
+
+            # Get info from map or return default
+            return info_map.get(
+                provider_enum,
+                ProviderInfo(
+                    name=provider_enum.value,
+                    description="Unknown provider",
+                    requires_api_key=False,
+                    coverage="Unknown",
+                    rate_limits="Unknown",
+                    accuracy="Unknown",
+                ),
+            )
+        except ValueError:
+            # Invalid string that doesn't match any enum value
+            return ProviderInfo(
+                name=str(provider),
+                description="Unknown provider",
+                requires_api_key=False,
+                coverage="Unknown",
+                rate_limits="Unknown",
+                accuracy="Unknown",
+            )
 
     @classmethod
     def description(cls) -> str:
         """Get formatted description of all available providers."""
         lines = ["Available elevation providers:"]
         lines.append("")
-        
+
         for provider in cls:
             info = cls.info(provider)
             lines.append(f"  {provider.value}:")
             lines.append(f"    • Description: {info.description}")
-            lines.append(f"    • API Key Required: {'Yes' if info.requires_api_key else 'No'}")
+            lines.append(
+                f"    • API Key Required: {'Yes' if info.requires_api_key else 'No'}"
+            )
             lines.append(f"    • Coverage: {info.coverage}")
             lines.append(f"    • Rate Limits: {info.rate_limits}")
             lines.append(f"    • Accuracy: {info.accuracy}")
             lines.append("")
-        
+
         return "\n".join(lines)
 
 
@@ -105,9 +125,9 @@ class ReverseGeocodingProvider(str, Enum):
     def choices(cls) -> list[str]:
         """Get list of provider choices for Click."""
         return [p.value for p in cls]
-    
+
     @classmethod
-    def info(cls, provider: str) -> ProviderInfo:
+    def info(cls, provider: "ReverseGeocodingProvider | str") -> ProviderInfo:
         """Get detailed information about a provider."""
         info_map = {
             cls.GOOGLE: ProviderInfo(
@@ -116,7 +136,7 @@ class ReverseGeocodingProvider(str, Enum):
                 requires_api_key=True,
                 coverage="Global",
                 rate_limits="$5 per 1000 requests, daily limits based on billing",
-                accuracy="High - includes place names, administrative boundaries, postal codes"
+                accuracy="High - includes place names, administrative boundaries, postal codes",
             ),
             cls.OSM: ProviderInfo(
                 name="OpenStreetMap Nominatim",
@@ -124,38 +144,59 @@ class ReverseGeocodingProvider(str, Enum):
                 requires_api_key=False,
                 coverage="Global (quality varies by region)",
                 rate_limits="1 request/second max (please respect!)",
-                accuracy="Good - depends on OSM data completeness in the region"
+                accuracy="Good - depends on OSM data completeness in the region",
             ),
         }
-        return info_map.get(provider, ProviderInfo(
-            name=provider,
-            description="Unknown provider",
-            requires_api_key=False,
-            coverage="Unknown",
-            rate_limits="Unknown",
-            accuracy="Unknown"
-        ))
+        # Handle both string and enum inputs
+        try:
+            # Try to convert string to enum if it's a string
+            provider_enum = cls(provider) if isinstance(provider, str) else provider
+
+            # Get info from map or return default
+            return info_map.get(
+                provider_enum,
+                ProviderInfo(
+                    name=provider_enum.value,
+                    description="Unknown provider",
+                    requires_api_key=False,
+                    coverage="Unknown",
+                    rate_limits="Unknown",
+                    accuracy="Unknown",
+                ),
+            )
+        except ValueError:
+            # Invalid string that doesn't match any enum value
+            return ProviderInfo(
+                name=str(provider),
+                description="Unknown provider",
+                requires_api_key=False,
+                coverage="Unknown",
+                rate_limits="Unknown",
+                accuracy="Unknown",
+            )
 
     @classmethod
     def description(cls) -> str:
         """Get formatted description of all available providers."""
         lines = ["Available reverse geocoding providers:"]
         lines.append("")
-        
+
         for provider in cls:
             info = cls.info(provider)
             lines.append(f"  {provider.value}:")
             lines.append(f"    • Description: {info.description}")
-            lines.append(f"    • API Key Required: {'Yes' if info.requires_api_key else 'No'}")
+            lines.append(
+                f"    • API Key Required: {'Yes' if info.requires_api_key else 'No'}"
+            )
             lines.append(f"    • Coverage: {info.coverage}")
             lines.append(f"    • Rate Limits: {info.rate_limits}")
             lines.append(f"    • Accuracy: {info.accuracy}")
             lines.append("")
-        
+
         return "\n".join(lines)
 
 
-def validate_elevation_providers(providers_str: Optional[str]) -> Optional[list[str]]:
+def validate_elevation_providers(providers_str: str | None) -> list[str] | None:
     """
     Validate and parse elevation provider string.
 
@@ -184,7 +225,7 @@ def validate_elevation_providers(providers_str: Optional[str]) -> Optional[list[
     return providers
 
 
-def validate_geocoding_providers(providers_str: Optional[str]) -> Optional[list[str]]:
+def validate_geocoding_providers(providers_str: str | None) -> list[str] | None:
     """
     Validate and parse reverse geocoding provider string.
 

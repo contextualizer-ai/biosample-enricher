@@ -1,8 +1,8 @@
 """Geographic coordinate classification for elevation service."""
 
+from biosample_enricher.elevation.location_detector import LocationDetector
 from biosample_enricher.logging_config import get_logger
 from biosample_enricher.models import CoordinateClassification
-from biosample_enricher.elevation.location_detector import LocationDetector
 
 logger = get_logger(__name__)
 

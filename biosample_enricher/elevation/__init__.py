@@ -1,5 +1,6 @@
 """Elevation lookup service for biosample-enricher."""
 
+from biosample_enricher.elevation.service import ElevationService
 from biosample_enricher.models import (
     CoordinateClassification,
     ElevationRequest,
@@ -11,7 +12,6 @@ from biosample_enricher.models import (
     ValueStatus,
     Variable,
 )
-from biosample_enricher.elevation.service import ElevationService
 
 __all__ = [
     "CoordinateClassification",

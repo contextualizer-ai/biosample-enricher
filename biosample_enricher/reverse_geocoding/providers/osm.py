@@ -5,6 +5,9 @@ from typing import Any
 
 from biosample_enricher.http_cache import request
 from biosample_enricher.logging_config import get_logger
+from biosample_enricher.reverse_geocoding.providers.base import (
+    BaseReverseGeocodingProvider,
+)
 from biosample_enricher.reverse_geocoding_models import (
     AddressComponent,
     AddressComponentType,
@@ -15,7 +18,6 @@ from biosample_enricher.reverse_geocoding_models import (
     ReverseGeocodeProvider,
     ReverseGeocodeResult,
 )
-from biosample_enricher.reverse_geocoding.providers.base import BaseReverseGeocodingProvider
 
 logger = get_logger(__name__)
 
