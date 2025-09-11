@@ -75,12 +75,20 @@ class HostDetector:
                         envo_term_text = term_obj.get("name") or term_obj.get("id")
                     else:
                         # Fallback to other possible structures
-                        envo_term_text = value.get("has_raw_value") or value.get("name") or str(value)
+                        envo_term_text = (
+                            value.get("has_raw_value")
+                            or value.get("name")
+                            or str(value)
+                        )
                 else:
                     envo_term_text = str(value) if value else None
-                
+
                 # Only check if we have a string term
-                if envo_term_text and isinstance(envo_term_text, str) and envo_term_text in self.host_envo_terms:
+                if (
+                    envo_term_text
+                    and isinstance(envo_term_text, str)
+                    and envo_term_text in self.host_envo_terms
+                ):
                     logger.debug(f"Host ENVO term found: {envo_term_text}")
                     return True
 

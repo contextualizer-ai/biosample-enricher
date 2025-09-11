@@ -67,15 +67,15 @@ def metrics() -> None:
     help="Enable verbose logging",
 )
 @click.option(
-    "--debug-samples", 
-    is_flag=True, 
-    help="Show detailed sample data at each processing stage"
+    "--debug-samples",
+    is_flag=True,
+    help="Show detailed sample data at each processing stage",
 )
 @click.option(
     "--workspace-dir",
     type=click.Path(path_type=Path),
     default="data/workspace",
-    help="Directory for detailed debug files (raw docs, API responses, etc.)"
+    help="Directory for detailed debug files (raw docs, API responses, etc.)",
 )
 def evaluate(
     nmdc_samples: int,
@@ -106,7 +106,7 @@ def evaluate(
     # Create output directory
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Create workspace directory if debug is enabled
     if debug_samples:
         workspace_dir = Path(workspace_dir)
@@ -132,48 +132,65 @@ def evaluate(
 
             if locations:
                 logger.info(f"Evaluating {len(locations)} NMDC samples...")
-                
+
                 # Debug sample data if requested
                 if debug_samples:
                     import json
+
                     # Write detailed debug files to workspace
                     nmdc_workspace = workspace_dir / "nmdc"
                     nmdc_workspace.mkdir(exist_ok=True)
-                    
-                    for i, (raw_doc, location) in enumerate(zip(raw_docs, locations, strict=False)):
-                        sample_id = location.sample_id.replace(":", "_")
-                        
+
+                    for i, (raw_doc, location) in enumerate(
+                        zip(raw_docs, locations, strict=False)
+                    ):
+                        sample_id = (
+                            location.sample_id.replace(":", "_")
+                            if location.sample_id
+                            else "unknown"
+                        )
+
                         # Write raw document
                         with open(nmdc_workspace / f"{sample_id}_raw.json", "w") as f:
                             json.dump(raw_doc, f, indent=2, default=str)
-                        
+
                         # Write normalized location
-                        with open(nmdc_workspace / f"{sample_id}_normalized.json", "w") as f:
+                        with open(
+                            nmdc_workspace / f"{sample_id}_normalized.json", "w"
+                        ) as f:
                             json.dump(location.model_dump(), f, indent=2, default=str)
-                        
-                        logger.info(f"\n=== NMDC SAMPLE {i+1} DEBUG ===")
+
+                        logger.info(f"\n=== NMDC SAMPLE {i + 1} DEBUG ===")
                         logger.info(f"Sample ID: {location.sample_id}")
-                        logger.info(f"Raw doc saved: {nmdc_workspace / f'{sample_id}_raw.json'}")
-                        logger.info(f"Normalized saved: {nmdc_workspace / f'{sample_id}_normalized.json'}")
+                        logger.info(
+                            f"Raw doc saved: {nmdc_workspace / f'{sample_id}_raw.json'}"
+                        )
+                        logger.info(
+                            f"Normalized saved: {nmdc_workspace / f'{sample_id}_normalized.json'}"
+                        )
                         logger.info("=" * 50)
-                
+
                 samples = list(zip(raw_docs, locations, strict=False))
                 nmdc_results = evaluator.evaluate_batch(samples, "nmdc")
-                
+
                 # Debug evaluation results if requested
                 if debug_samples:
                     for i, result in enumerate(nmdc_results):
                         sample_id = result["sample_id"].replace(":", "_")
-                        
+
                         # Write evaluation result
-                        with open(nmdc_workspace / f"{sample_id}_evaluation.json", "w") as f:
+                        with open(
+                            nmdc_workspace / f"{sample_id}_evaluation.json", "w"
+                        ) as f:
                             json.dump(result, f, indent=2, default=str)
-                        
-                        logger.info(f"\n=== NMDC EVALUATION RESULT {i+1} ===")
+
+                        logger.info(f"\n=== NMDC EVALUATION RESULT {i + 1} ===")
                         logger.info(f"Sample ID: {result['sample_id']}")
-                        logger.info(f"Evaluation saved: {nmdc_workspace / f'{sample_id}_evaluation.json'}")
+                        logger.info(
+                            f"Evaluation saved: {nmdc_workspace / f'{sample_id}_evaluation.json'}"
+                        )
                         logger.info("=" * 50)
-                
+
                 all_evaluations.extend(nmdc_results)
 
                 # Report host-associated statistics
@@ -195,47 +212,65 @@ def evaluate(
 
             if locations:
                 logger.info(f"Evaluating {len(locations)} GOLD samples...")
-                
+
                 # Debug sample data if requested
                 if debug_samples:
                     # Write detailed debug files to workspace
                     gold_workspace = workspace_dir / "gold"
                     gold_workspace.mkdir(exist_ok=True)
-                    
-                    for i, (raw_doc, location) in enumerate(zip(raw_docs, locations, strict=False)):
-                        sample_id = location.sample_id.replace(":", "_").replace("/", "_")
-                        
+
+                    for i, (raw_doc, location) in enumerate(
+                        zip(raw_docs, locations, strict=False)
+                    ):
+                        sample_id = (
+                            location.sample_id.replace(":", "_").replace("/", "_")
+                            if location.sample_id
+                            else "unknown"
+                        )
+
                         # Write raw document
                         with open(gold_workspace / f"{sample_id}_raw.json", "w") as f:
                             json.dump(raw_doc, f, indent=2, default=str)
-                        
+
                         # Write normalized location
-                        with open(gold_workspace / f"{sample_id}_normalized.json", "w") as f:
+                        with open(
+                            gold_workspace / f"{sample_id}_normalized.json", "w"
+                        ) as f:
                             json.dump(location.model_dump(), f, indent=2, default=str)
-                        
-                        logger.info(f"\n=== GOLD SAMPLE {i+1} DEBUG ===")
+
+                        logger.info(f"\n=== GOLD SAMPLE {i + 1} DEBUG ===")
                         logger.info(f"Sample ID: {location.sample_id}")
-                        logger.info(f"Raw doc saved: {gold_workspace / f'{sample_id}_raw.json'}")
-                        logger.info(f"Normalized saved: {gold_workspace / f'{sample_id}_normalized.json'}")
+                        logger.info(
+                            f"Raw doc saved: {gold_workspace / f'{sample_id}_raw.json'}"
+                        )
+                        logger.info(
+                            f"Normalized saved: {gold_workspace / f'{sample_id}_normalized.json'}"
+                        )
                         logger.info("=" * 50)
-                
+
                 samples = list(zip(raw_docs, locations, strict=False))
                 gold_results = evaluator.evaluate_batch(samples, "gold")
-                
+
                 # Debug evaluation results if requested
                 if debug_samples:
                     for i, result in enumerate(gold_results):
-                        sample_id = result["sample_id"].replace(":", "_").replace("/", "_")
-                        
+                        sample_id = (
+                            result["sample_id"].replace(":", "_").replace("/", "_")
+                        )
+
                         # Write evaluation result
-                        with open(gold_workspace / f"{sample_id}_evaluation.json", "w") as f:
+                        with open(
+                            gold_workspace / f"{sample_id}_evaluation.json", "w"
+                        ) as f:
                             json.dump(result, f, indent=2, default=str)
-                        
-                        logger.info(f"\n=== GOLD EVALUATION RESULT {i+1} ===")
+
+                        logger.info(f"\n=== GOLD EVALUATION RESULT {i + 1} ===")
                         logger.info(f"Sample ID: {result['sample_id']}")
-                        logger.info(f"Evaluation saved: {gold_workspace / f'{sample_id}_evaluation.json'}")
+                        logger.info(
+                            f"Evaluation saved: {gold_workspace / f'{sample_id}_evaluation.json'}"
+                        )
                         logger.info("=" * 50)
-                
+
                 all_evaluations.extend(gold_results)
 
                 # Report host-associated statistics

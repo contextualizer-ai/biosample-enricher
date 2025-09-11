@@ -92,7 +92,11 @@ class BiosampleMetricsFetcher:
                     cursor = self.nmdc_fetcher._collection.find({"id": {"$in": ids}})
                     docs_by_id = {doc["id"]: doc for doc in cursor}
                     # Rebuild raw_docs in the same order as locations
-                    raw_docs = [docs_by_id[sample_id] for sample_id in ids if sample_id in docs_by_id]
+                    raw_docs = [
+                        docs_by_id[sample_id]
+                        for sample_id in ids
+                        if sample_id in docs_by_id
+                    ]
 
             logger.info(f"Retrieved {len(locations)} NMDC samples")
             return raw_docs, locations
@@ -144,7 +148,11 @@ class BiosampleMetricsFetcher:
                     )
                     docs_by_id = {doc["biosampleGoldId"]: doc for doc in cursor}
                     # Rebuild raw_docs in the same order as locations
-                    raw_docs = [docs_by_id[sample_id] for sample_id in ids if sample_id in docs_by_id]
+                    raw_docs = [
+                        docs_by_id[sample_id]
+                        for sample_id in ids
+                        if sample_id in docs_by_id
+                    ]
 
             logger.info(f"Retrieved {len(locations)} GOLD samples")
             return raw_docs, locations
