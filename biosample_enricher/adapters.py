@@ -223,15 +223,15 @@ class NMDCBiosampleAdapter(BiosampleAdapter):
 
     def _extract_envo_term(self, envo_value: Any) -> str | None:
         """Extract string representation from NMDC ENVO term structure.
-        
+
         NMDC stores ENVO terms as: {"term": {"id": "ENVO:...", "name": "..."}, "type": "..."}
         """
         if not envo_value:
             return None
-            
+
         if isinstance(envo_value, str):
             return envo_value
-            
+
         if isinstance(envo_value, dict):
             # Try to extract from nested structure
             term_obj = envo_value.get("term")
@@ -240,7 +240,7 @@ class NMDCBiosampleAdapter(BiosampleAdapter):
                 return term_obj.get("name") or term_obj.get("id")
             # Fallback to other possible fields
             return envo_value.get("has_raw_value") or envo_value.get("name")
-            
+
         return str(envo_value) if envo_value else None
 
     def _detect_host_association(self, data: dict[str, Any]) -> bool:

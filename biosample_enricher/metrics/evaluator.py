@@ -89,10 +89,14 @@ class CoverageEvaluator:
             Elevation coverage metrics
         """
         logger.info(f"\n🔍 ELEVATION ANALYSIS for {location.sample_id}")
-        logger.info(f"Raw document elevation fields: elev={raw_doc.get('elev')}, elevation={raw_doc.get('elevation')}")
-        logger.info(f"Normalized location coordinates: lat={location.latitude}, lon={location.longitude}")
+        logger.info(
+            f"Raw document elevation fields: elev={raw_doc.get('elev')}, elevation={raw_doc.get('elevation')}"
+        )
+        logger.info(
+            f"Normalized location coordinates: lat={location.latitude}, lon={location.longitude}"
+        )
         logger.info(f"Source: {source}")
-        
+
         # Check original elevation data
         before_value = None
         if source == "nmdc":
@@ -105,7 +109,9 @@ class CoverageEvaluator:
             )
 
         has_before = before_value is not None and before_value != ""
-        logger.info(f"📊 ELEVATION BEFORE: value={before_value}, has_before={has_before}")
+        logger.info(
+            f"📊 ELEVATION BEFORE: value={before_value}, has_before={has_before}"
+        )
 
         # Try enrichment if we have coordinates
         after_value = None
@@ -121,17 +127,26 @@ class CoverageEvaluator:
                 )
 
                 # Get elevation from service
-                logger.info(f"🚀 CALLING ELEVATION SERVICE for {location.latitude}, {location.longitude}")
+                logger.info(
+                    f"🚀 CALLING ELEVATION SERVICE for {location.latitude}, {location.longitude}"
+                )
                 observations = self.elevation_service.get_elevation(request)
                 logger.info(f"📨 ELEVATION RESPONSE: {len(observations)} observations")
 
                 # Find best observation
                 for i, obs in enumerate(observations):
-                    logger.info(f"🔬 OBSERVATION {i+1}: status={obs.value_status}, value={obs.value_numeric}, provider={obs.provider.name if obs.provider else None}")
-                    if obs.value_status == ValueStatus.OK and obs.value_numeric is not None:
+                    logger.info(
+                        f"🔬 OBSERVATION {i + 1}: status={obs.value_status}, value={obs.value_numeric}, provider={obs.provider.name if obs.provider else None}"
+                    )
+                    if (
+                        obs.value_status == ValueStatus.OK
+                        and obs.value_numeric is not None
+                    ):
                         after_value = obs.value_numeric
                         provider_used = obs.provider.name if obs.provider else None
-                        logger.info(f"✅ SELECTED OBSERVATION: value={after_value}, provider={provider_used}")
+                        logger.info(
+                            f"✅ SELECTED OBSERVATION: value={after_value}, provider={provider_used}"
+                        )
                         break
 
                 if after_value is None and observations:
@@ -174,7 +189,7 @@ class CoverageEvaluator:
         """
         logger.info(f"\n🏷️  PLACE NAME ANALYSIS for {location.sample_id}")
         logger.info(f"Source: {source}")
-        
+
         # Extract original place name
         before_value = None
         if source == "nmdc":
@@ -187,7 +202,7 @@ class CoverageEvaluator:
             )
 
         logger.info(f"📍 RAW PLACE NAME DATA: {before_value}")
-        
+
         # Parse original place name into components
         # Handle both string values and dict values (NMDC might use complex structures)
         geo_loc_text = None
@@ -197,12 +212,16 @@ class CoverageEvaluator:
                 logger.info(f"✅ String format: {geo_loc_text}")
             elif isinstance(before_value, dict):
                 # Extract from dict structure, similar to ENVO terms
-                geo_loc_text = before_value.get("has_raw_value") or before_value.get("name") or str(before_value)
+                geo_loc_text = (
+                    before_value.get("has_raw_value")
+                    or before_value.get("name")
+                    or str(before_value)
+                )
                 logger.info(f"🔧 Dict format converted to: {geo_loc_text}")
             else:
                 geo_loc_text = str(before_value)
                 logger.info(f"🔄 Other format converted to: {geo_loc_text}")
-        
+
         before_components = (
             self._parse_geo_loc_name(geo_loc_text) if geo_loc_text else {}
         )
@@ -216,12 +235,16 @@ class CoverageEvaluator:
 
         if location.latitude is not None and location.longitude is not None:
             try:
-                logger.info(f"🌐 CALLING REVERSE GEOCODING for {location.latitude}, {location.longitude}")
+                logger.info(
+                    f"🌐 CALLING REVERSE GEOCODING for {location.latitude}, {location.longitude}"
+                )
                 # Get reverse geocoding results from multiple providers
                 results = self.geocoding_service.reverse_geocode_multiple(
                     location.latitude, location.longitude, providers=["osm", "google"]
                 )
-                logger.info(f"📨 REVERSE GEOCODING RESPONSE: {len(results)} provider results")
+                logger.info(
+                    f"📨 REVERSE GEOCODING RESPONSE: {len(results)} provider results"
+                )
 
                 # Merge results from all providers
                 for provider_name, result in results.items():
@@ -263,17 +286,19 @@ class CoverageEvaluator:
 
         # Create flattened representations for comparison
         before_flat = self._create_geo_loc_name(before_components)
-        after_flat = self._create_geo_loc_name(after_components)
-
-        has_after = len(after_components) > 0
 
         # Apply additive-only enrichment: preserve original components, only add missing ones
         final_components = before_components.copy()
         for component_type in ["country", "state", "locality"]:
-            if component_type not in final_components and component_type in after_components:
+            if (
+                component_type not in final_components
+                and component_type in after_components
+            ):
                 final_components[component_type] = after_components[component_type]
-                logger.info(f"🎯 ADDITIVE ENRICHMENT: Added missing {component_type}: {after_components[component_type]}")
-        
+                logger.info(
+                    f"🎯 ADDITIVE ENRICHMENT: Added missing {component_type}: {after_components[component_type]}"
+                )
+
         # Detailed component-level comparison
         component_coverage = {
             "country": {
@@ -293,7 +318,7 @@ class CoverageEvaluator:
         # Calculate final metrics using additive-only approach
         final_flat = self._create_geo_loc_name(final_components)
         has_final = len(final_components) > 0
-        
+
         return {
             "before": has_before,
             "before_value": before_value,
