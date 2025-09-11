@@ -6,7 +6,6 @@ This CLI provides specialized commands for processing biosample collections
 with automatic field mapping and elevation lookup integration.
 """
 
-import asyncio
 import csv
 import json
 from pathlib import Path
@@ -58,7 +57,6 @@ def cli(log_level: str) -> None:
     default="json",
     help="Output format",
 )
-@click.option("--batch-size", default=5, type=int, help="Concurrent requests")
 @click.option("--timeout", default=30.0, type=float, help="Request timeout in seconds")
 @click.option("--no-cache", is_flag=True, help="Disable caching")
 @click.option("--providers", help="Comma-separated list of preferred providers")
@@ -67,7 +65,6 @@ def enrich(
     input_file: Path,
     output: Path,
     output_format: str,
-    batch_size: int,
     timeout: float,
     no_cache: bool,
     providers: str,
@@ -75,7 +72,7 @@ def enrich(
 ) -> None:
     """Enrich biosamples with elevation data using automatic field mapping."""
 
-    async def run_enrichment() -> None:
+    def run_enrichment() -> None:
         try:
             # Load biosamples
             console.print(f"📁 Loading biosamples from {input_file}")
@@ -150,86 +147,81 @@ def enrich(
             # Initialize service
             service = ElevationService.from_env()
 
-            # Process samples
-            semaphore = asyncio.Semaphore(batch_size)
-            results = []
+            # Process samples sequentially
+            results: list[dict[str, Any]] = []
 
             with Progress() as progress:
                 task = progress.add_task(
                     "Enriching biosamples...", total=len(valid_samples)
                 )
 
-                async def process_sample(sample: dict[str, Any]) -> dict[str, Any]:
-                    async with semaphore:
-                        # Extract sample info using mapper
-                        sample_id = BiosampleElevationMapper.get_biosample_id(sample)
-                        elevation_request = (
-                            BiosampleElevationMapper.create_elevation_request(
-                                sample, preferred_providers=provider_list
-                            )
+                for sample in valid_samples:
+                    # Extract sample info using mapper
+                    sample_id = BiosampleElevationMapper.get_biosample_id(sample)
+                    elevation_request = (
+                        BiosampleElevationMapper.create_elevation_request(
+                            sample, preferred_providers=provider_list
                         )
+                    )
 
-                        if not elevation_request:
-                            progress.advance(task)
-                            return {
+                    if not elevation_request:
+                        progress.advance(task)
+                        results.append(
+                            {
                                 "sample": sample,
                                 "error": "No valid coordinates found",
                             }
+                        )
+                        continue
 
-                        try:
-                            # Get elevation observations
-                            observations = service.get_elevation(
-                                elevation_request,
-                                timeout_s=timeout,
-                                read_from_cache=use_cache,
-                                write_to_cache=use_cache,
-                            )
+                    try:
+                        # Get elevation observations
+                        observations = service.get_elevation(
+                            elevation_request,
+                            timeout_s=timeout,
+                            read_from_cache=use_cache,
+                            write_to_cache=use_cache,
+                        )
 
-                            # Create output envelope
-                            envelope = service.create_output_envelope(
-                                sample_id, observations
-                            )
+                        # Create output envelope
+                        envelope = service.create_output_envelope(
+                            sample_id, observations
+                        )
 
-                            # Get best elevation
-                            best = service.get_best_elevation(observations)
+                        # Get best elevation
+                        best = service.get_best_elevation(observations)
 
-                            # Enhanced result with original sample data
-                            result = {
-                                "original_sample": sample,
-                                "elevation_envelope": envelope.model_dump(),
-                                "best_elevation_m": best.elevation_meters
-                                if best
-                                else None,
-                                "best_provider": best.provider if best else None,
-                                "num_successful_providers": len(
-                                    [
-                                        obs
-                                        for obs in observations
-                                        if obs.value_status.value == "ok"
-                                    ]
-                                ),
-                                "location_context": (
-                                    BiosampleElevationMapper.get_location_context(
-                                        sample
-                                    )
-                                ),
-                            }
+                        # Enhanced result with original sample data
+                        result = {
+                            "original_sample": sample,
+                            "elevation_envelope": envelope.model_dump(),
+                            "best_elevation_m": best.elevation_meters if best else None,
+                            "best_provider": best.provider if best else None,
+                            "num_successful_providers": len(
+                                [
+                                    obs
+                                    for obs in observations
+                                    if obs.value_status.value == "ok"
+                                ]
+                            ),
+                            "location_context": (
+                                BiosampleElevationMapper.get_location_context(sample)
+                            ),
+                        }
 
-                            progress.advance(task)
-                            return result
+                        progress.advance(task)
+                        results.append(result)
 
-                        except Exception as e:
-                            logger.error(f"Failed to process {sample_id}: {e}")
-                            progress.advance(task)
-                            return {
+                    except Exception as e:
+                        logger.error(f"Failed to process {sample_id}: {e}")
+                        progress.advance(task)
+                        results.append(
+                            {
                                 "sample": sample,
                                 "error": str(e),
                                 "sample_id": sample_id,
                             }
-
-                # Process all samples concurrently
-                tasks = [process_sample(sample) for sample in valid_samples]
-                results = await asyncio.gather(*tasks)
+                        )
 
             # Write output
             if output:
@@ -266,16 +258,21 @@ def enrich(
                         )
 
                         for result in results:
-                            sample = result.get(
+                            sample_raw = result.get(
                                 "original_sample", result.get("sample", {})
                             )
+                            # Ensure sample is a dict
+                            sample = sample_raw if isinstance(sample_raw, dict) else {}
                             sample_id = BiosampleElevationMapper.get_biosample_id(
                                 sample
                             )
                             coords = BiosampleElevationMapper.extract_coordinates(
                                 sample
                             )
-                            context = result.get("location_context", {})
+                            context_raw = result.get("location_context", {})
+                            context = (
+                                context_raw if isinstance(context_raw, dict) else {}
+                            )
 
                             writer.writerow(
                                 [
@@ -320,7 +317,7 @@ def enrich(
             provider_counts: dict[str, int] = {}
             for result in results:
                 provider = result.get("best_provider")
-                if provider:
+                if provider and isinstance(provider, str):
                     provider_counts[provider] = provider_counts.get(provider, 0) + 1
 
             if provider_counts:
@@ -335,7 +332,7 @@ def enrich(
             logger.error(f"Enrichment failed: {e}")
             raise
 
-    asyncio.run(run_enrichment())
+    run_enrichment()
 
 
 @cli.command()

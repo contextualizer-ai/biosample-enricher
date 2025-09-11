@@ -1,6 +1,5 @@
 """CLI interface for elevation lookups."""
 
-import asyncio
 import csv
 import json
 import sys
@@ -55,7 +54,7 @@ def lookup_elevation(
 ) -> None:
     """Look up elevation for a single coordinate."""
 
-    async def run_lookup() -> None:
+    def run_lookup() -> None:
         try:
             # Parse providers
             provider_list = None
@@ -136,7 +135,7 @@ def lookup_elevation(
             console.print(f"❌ Error: {e}")
             sys.exit(1)
 
-    asyncio.run(run_lookup())
+    run_lookup()
 
 
 @elevation_cli.command(name="batch")
@@ -152,9 +151,6 @@ def lookup_elevation(
     "--providers",
     help="Comma-separated list of preferred providers (google,usgs,osm)",
 )
-@click.option(
-    "--batch-size", default=10, type=int, help="Number of concurrent requests"
-)
 @click.option("--timeout", default=20.0, type=float, help="Request timeout in seconds")
 @click.option("--lat-col", default="lat", help="Latitude column name")
 @click.option("--lon-col", default="lon", help="Longitude column name")
@@ -166,7 +162,6 @@ def batch_elevation(
     input_file: Path,
     output: str,
     providers: str | None,
-    batch_size: int,
     timeout: float,
     lat_col: str,
     lon_col: str,
@@ -177,7 +172,7 @@ def batch_elevation(
 ) -> None:
     """Process elevation lookups from CSV/TSV file."""
 
-    async def run_batch() -> None:
+    def run_batch() -> None:
         try:
             # Parse providers
             provider_list = None
@@ -222,59 +217,42 @@ def batch_elevation(
             output_path = Path(output)
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # Process in batches
-            semaphore = asyncio.Semaphore(batch_size)
-
-            async def process_coordinate(
-                subject_id: str, lat: float, lon: float
-            ) -> None:
-                async with semaphore:
-                    try:
-                        request = ElevationRequest(
-                            latitude=lat,
-                            longitude=lon,
-                            preferred_providers=provider_list,
-                        )
-
-                        observations = service.get_elevation(
-                            request,
-                            timeout_s=timeout,
-                            read_from_cache=use_read_cache,
-                            write_to_cache=use_write_cache,
-                        )
-                        envelope = service.create_output_envelope(
-                            subject_id, observations
-                        )
-
-                        # Append to output file
-                        with open(output_path, "a") as f:
-                            json.dump(envelope.model_dump(), f, default=str)
-                            f.write("\n")
-
-                        # Progress
-                        best = service.get_best_elevation(observations)
-                        if best:
-                            console.print(
-                                f"✅ {subject_id}: {best.elevation_meters:.1f}m"
-                            )
-                        else:
-                            console.print(f"❌ {subject_id}: No elevation data")
-
-                    except Exception as e:
-                        logger.error(f"Failed to process {subject_id}: {e}")
-                        console.print(f"❌ {subject_id}: {e}")
-
             # Clear output file
             if output_path.exists():
                 output_path.unlink()
 
-            # Process all coordinates concurrently
-            tasks = [
-                process_coordinate(subject_id, lat, lon)
-                for subject_id, lat, lon in coordinates
-            ]
+            # Process all coordinates sequentially
+            for subject_id, lat, lon in coordinates:
+                try:
+                    request = ElevationRequest(
+                        latitude=lat,
+                        longitude=lon,
+                        preferred_providers=provider_list,
+                    )
 
-            await asyncio.gather(*tasks)
+                    observations = service.get_elevation(
+                        request,
+                        timeout_s=timeout,
+                        read_from_cache=use_read_cache,
+                        write_to_cache=use_write_cache,
+                    )
+                    envelope = service.create_output_envelope(subject_id, observations)
+
+                    # Append to output file
+                    with open(output_path, "a") as f:
+                        json.dump(envelope.model_dump(), f, default=str)
+                        f.write("\n")
+
+                    # Progress
+                    best = service.get_best_elevation(observations)
+                    if best:
+                        console.print(f"✅ {subject_id}: {best.elevation_meters:.1f}m")
+                    else:
+                        console.print(f"❌ {subject_id}: No elevation data")
+
+                except Exception as e:
+                    logger.error(f"Failed to process {subject_id}: {e}")
+                    console.print(f"❌ {subject_id}: {e}")
 
             console.print(
                 f"💾 Batch processing complete. Results saved to {output_path}"
@@ -285,7 +263,7 @@ def batch_elevation(
             console.print(f"❌ Error: {e}")
             sys.exit(1)
 
-    asyncio.run(run_batch())
+    run_batch()
 
 
 if __name__ == "__main__":

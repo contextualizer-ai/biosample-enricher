@@ -6,11 +6,9 @@ This module provides specialized functions for demonstrating elevation lookups
 with biosamples and creating various output formats.
 """
 
-import asyncio
 import csv
 import json
 from pathlib import Path
-from typing import Any
 
 import click
 from rich.console import Console
@@ -52,7 +50,6 @@ def cli(log_level: str) -> None:
     required=True,
     help="Output file for results",
 )
-@click.option("--batch-size", default=5, type=int, help="Number of concurrent requests")
 @click.option("--timeout", default=30.0, type=float, help="Request timeout in seconds")
 @click.option("--no-cache", is_flag=True, help="Disable caching")
 @click.option("--providers", help="Comma-separated list of preferred providers")
@@ -66,7 +63,6 @@ def cli(log_level: str) -> None:
 def process_biosamples(
     input_file: Path,
     output_file: Path,
-    batch_size: int,
     timeout: float,
     no_cache: bool,
     providers: str,
@@ -74,7 +70,7 @@ def process_biosamples(
 ) -> None:
     """Process elevation lookups for synthetic biosamples JSON file."""
 
-    async def run_processing() -> None:
+    def run_processing() -> None:
         try:
             # Load biosamples
             console.print(f"📁 Loading biosamples from {input_file}")
@@ -113,8 +109,7 @@ def process_biosamples(
             # Create output directory
             output_file.parent.mkdir(parents=True, exist_ok=True)
 
-            # Process in batches with progress tracking
-            semaphore = asyncio.Semaphore(batch_size)
+            # Process samples sequentially with progress tracking
             results = []
 
             with Progress() as progress:
@@ -122,67 +117,62 @@ def process_biosamples(
                     "Processing biosamples...", total=len(valid_samples)
                 )
 
-                async def process_sample(sample: dict[str, Any]) -> dict[str, Any]:
-                    async with semaphore:
-                        geo = sample["geo"]
-                        sample_id = sample.get(
-                            "nmdc_biosample_id", sample.get("name", "unknown")
+                for sample in valid_samples:
+                    geo = sample["geo"]
+                    sample_id = sample.get(
+                        "nmdc_biosample_id", sample.get("name", "unknown")
+                    )
+
+                    request = ElevationRequest(
+                        latitude=geo["latitude"],
+                        longitude=geo["longitude"],
+                        preferred_providers=provider_list,
+                    )
+
+                    try:
+                        observations = service.get_elevation(
+                            request,
+                            timeout_s=timeout,
+                            read_from_cache=use_cache,
+                            write_to_cache=use_cache,
                         )
 
-                        request = ElevationRequest(
-                            latitude=geo["latitude"],
-                            longitude=geo["longitude"],
-                            preferred_providers=provider_list,
+                        envelope = service.create_output_envelope(
+                            sample_id, observations
                         )
 
-                        try:
-                            observations = service.get_elevation(
-                                request,
-                                timeout_s=timeout,
-                                read_from_cache=use_cache,
-                                write_to_cache=use_cache,
-                            )
+                        # Get best elevation for summary
+                        best = service.get_best_elevation(observations)
 
-                            envelope = service.create_output_envelope(
-                                sample_id, observations
-                            )
+                        result = {
+                            "sample": sample,
+                            "envelope": envelope,
+                            "best_elevation": best.elevation_meters if best else None,
+                            "best_provider": best.provider if best else None,
+                            "num_providers": len(
+                                [
+                                    obs
+                                    for obs in observations
+                                    if obs.value_status.value == "ok"
+                                ]
+                            ),
+                        }
 
-                            # Get best elevation for summary
-                            best = service.get_best_elevation(observations)
+                        progress.advance(task)
+                        results.append(result)
 
-                            result = {
-                                "sample": sample,
-                                "envelope": envelope,
-                                "best_elevation": best.elevation_meters
-                                if best
-                                else None,
-                                "best_provider": best.provider if best else None,
-                                "num_providers": len(
-                                    [
-                                        obs
-                                        for obs in observations
-                                        if obs.value_status.value == "ok"
-                                    ]
-                                ),
-                            }
-
-                            progress.advance(task)
-                            return result
-
-                        except Exception as e:
-                            logger.error(f"Failed to process {sample_id}: {e}")
-                            progress.advance(task)
-                            return {
+                    except Exception as e:
+                        logger.error(f"Failed to process {sample_id}: {e}")
+                        progress.advance(task)
+                        results.append(
+                            {
                                 "sample": sample,
                                 "error": str(e),
                                 "best_elevation": None,
                                 "best_provider": None,
                                 "num_providers": 0,
                             }
-
-                # Process all samples concurrently
-                tasks = [process_sample(sample) for sample in valid_samples]
-                results = await asyncio.gather(*tasks)
+                        )
 
             # Write output in requested format
             console.print(f"💾 Writing results to {output_file}")
@@ -262,7 +252,7 @@ def process_biosamples(
             logger.error(f"Processing failed: {e}")
             raise
 
-    asyncio.run(run_processing())
+    run_processing()
 
 
 @cli.command()
@@ -273,7 +263,7 @@ def process_biosamples(
 def compare_providers(lat: float, lon: float, providers: str, output: str) -> None:
     """Compare elevation results from different providers for a single coordinate."""
 
-    async def run_comparison() -> None:
+    def run_comparison() -> None:
         service = ElevationService.from_env()
 
         # Get provider list
@@ -332,7 +322,7 @@ def compare_providers(lat: float, lon: float, providers: str, output: str) -> No
                 json.dump(envelope.model_dump(), f, indent=2, default=str)
             console.print(f"💾 Detailed results saved to {output}")
 
-    asyncio.run(run_comparison())
+    run_comparison()
 
 
 if __name__ == "__main__":
