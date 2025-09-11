@@ -1,21 +1,22 @@
 name: Deploy Enrichment Metrics to GitHub Pages
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, closed]
-  workflow_dispatch:
-    inputs:
-      nmdc_samples:
-        description: 'Number of NMDC samples to evaluate'
-        required: false
-        default: '500'
-      gold_samples:
-        description: 'Number of GOLD samples to evaluate'
-        required: false
-        default: '500'
+# Disabled - requires MongoDB access not available in CI
+# on:
+#   push:
+#     branches: [main]
+#   pull_request:
+#     branches: [main]
+#     types: [opened, synchronize, closed]
+#   workflow_dispatch:
+#     inputs:
+#       nmdc_samples:
+#         description: 'Number of NMDC samples to evaluate'
+#         required: false
+#         default: '500'
+#       gold_samples:
+#         description: 'Number of GOLD samples to evaluate'
+#         required: false
+#         default: '500'
 
 permissions:
   contents: read
