@@ -308,7 +308,9 @@ class BiosampleElevationMapper:
                     "latitude": {"min": -90, "max": 90},
                     "longitude": {"min": -180, "max": 180},
                 },
-                "type_conversion": "Automatic string to float conversion with error handling",
+                "type_conversion": (
+                    "Automatic string to float conversion with error handling"
+                ),
             },
         }
 
@@ -460,10 +462,12 @@ def demonstrate_field_mapping() -> None:
     if "coordinate_bounds" in summary:
         bounds = summary["coordinate_bounds"]
         print(
-            f"Latitude range: {bounds['latitude']['min']:.4f} to {bounds['latitude']['max']:.4f}"
+            f"Latitude range: {bounds['latitude']['min']:.4f} to "
+            f"{bounds['latitude']['max']:.4f}"
         )
         print(
-            f"Longitude range: {bounds['longitude']['min']:.4f} to {bounds['longitude']['max']:.4f}"
+            f"Longitude range: {bounds['longitude']['min']:.4f} to "
+            f"{bounds['longitude']['max']:.4f}"
         )
 
 

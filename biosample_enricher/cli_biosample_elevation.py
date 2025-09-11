@@ -208,8 +208,10 @@ def enrich(
                                         if obs.value_status.value == "ok"
                                     ]
                                 ),
-                                "location_context": BiosampleElevationMapper.get_location_context(
-                                    sample
+                                "location_context": (
+                                    BiosampleElevationMapper.get_location_context(
+                                        sample
+                                    )
                                 ),
                             }
 

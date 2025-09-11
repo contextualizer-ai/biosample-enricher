@@ -844,7 +844,7 @@ def _generate_performance_recommendations(results: dict[str, Any]) -> list[str]:
 @click.option(
     "--mongo-uri", help="MongoDB connection URI (default: environment or hardcoded)"
 )
-def main(output_file: str, indent: int, mongo_uri: str):
+def main(output_file: str, indent: int, mongo_uri: str) -> None:
     """Run the random sampling demonstration and output results as JSON."""
     try:
         connection_string = get_mongo_connection_string(mongo_uri)

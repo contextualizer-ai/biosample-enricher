@@ -101,7 +101,8 @@ def lookup_elevation(
                 status_icon = "✅" if obs.value_status.value == "ok" else "❌"
                 if obs.value_numeric is not None:
                     console.print(
-                        f"  {status_icon} {obs.provider.name}: {obs.value_numeric:.1f}m "
+                        f"  {status_icon} {obs.provider.name}: "
+                        f"{obs.value_numeric:.1f}m "
                         f"(±{obs.spatial_resolution_m or 'unknown'}m)"
                     )
                 else:
@@ -113,7 +114,8 @@ def lookup_elevation(
             best = service.get_best_elevation(observations)
             if best:
                 console.print(
-                    f"\n🎯 Best elevation: {best.elevation_meters:.1f}m from {best.provider}"
+                    f"\n🎯 Best elevation: {best.elevation_meters:.1f}m "
+                    f"from {best.provider}"
                 )
 
             # Save output

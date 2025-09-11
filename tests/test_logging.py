@@ -249,11 +249,15 @@ class TestLoggingErrorHandling:
         """Test handling of read-only log directories."""
         # This would typically fail in a real read-only directory
         # For testing, we'll just ensure the function doesn't crash
-        import contextlib
-
-        with contextlib.suppress(PermissionError, OSError):
-            setup_logging(log_file="/readonly/path/test.log", enable_file_logging=True)
-            # If it succeeds, that's fine too
+        try:
+            logger = setup_logging(
+                log_file="/readonly/path/test.log", enable_file_logging=True
+            )
+            # If it succeeds, that's fine too - some systems might allow it
+            assert logger is not None
+        except (PermissionError, OSError):
+            # Expected in a read-only directory - this is the normal case
+            assert True  # Explicitly mark this as expected behavior
 
     def test_multiple_setup_calls(self):
         """Test that multiple setup calls work correctly."""

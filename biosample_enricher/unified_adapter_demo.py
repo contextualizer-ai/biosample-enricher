@@ -180,8 +180,12 @@ def demonstrate_unified_adapter() -> dict[str, Any]:
     mock_gold = MockMongoFetcher(GOLDBiosampleAdapter, gold_data)
 
     # Replace the fetchers in unified interface
-    unified_fetcher.nmdc_mongo = mock_nmdc  # type: ignore[assignment]
-    unified_fetcher.gold_mongo = mock_gold  # type: ignore[assignment]
+    # Note: This is a demo with mock data, proper typing would require refactoring
+    # Using cast to satisfy type checker for mock objects in demo code
+    from typing import cast
+
+    unified_fetcher.nmdc_mongo = cast("Any", mock_nmdc)
+    unified_fetcher.gold_mongo = cast("Any", mock_gold)
 
     results = {
         "demonstration_info": {
