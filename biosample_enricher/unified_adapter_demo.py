@@ -181,9 +181,11 @@ def demonstrate_unified_adapter() -> dict[str, Any]:
 
     # Replace the fetchers in unified interface
     # Note: This is a demo with mock data, proper typing would require refactoring
-    # Using direct assignment for mock objects in demo code
-    unified_fetcher.nmdc_mongo = mock_nmdc
-    unified_fetcher.gold_mongo = mock_gold
+    # Using cast to satisfy type checker for mock objects in demo code
+    from typing import cast
+
+    unified_fetcher.nmdc_mongo = cast("Any", mock_nmdc)
+    unified_fetcher.gold_mongo = cast("Any", mock_gold)
 
     results = {
         "demonstration_info": {
