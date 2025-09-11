@@ -145,6 +145,7 @@ markers = [
     "network: marks tests as requiring network (deselected in CI)",
     "unit: marks tests as unit tests",
     "integration: marks tests as integration tests",
+    "flaky: marks tests as flaky (may fail intermittently due to external dependencies)",
 ]
 
 [tool.coverage.run]
@@ -167,6 +168,7 @@ dev = [
     "pre-commit>=4.3.0",
     "pytest>=8.4.2",
     "pytest-cov>=7.0.0",
+    "pytest-rerunfailures>=14.0",
     "ruff>=0.12.12",
     "types-requests>=2.32.4.20250809",
     "pandas-stubs>=2.0.0",

@@ -137,6 +137,7 @@ class TestElevationProviders:
     """Test individual elevation providers with live API calls."""
 
     @pytest.mark.integration
+    @pytest.mark.flaky(reruns=2, reruns_delay=10)
     def test_usgs_provider_live(self):
         """Test USGS provider with live API call to known US location."""
         provider = USGSElevationProvider()
@@ -200,6 +201,7 @@ class TestElevationProviders:
         assert result.location is not None
 
     @pytest.mark.integration
+    @pytest.mark.flaky(reruns=2, reruns_delay=10)
     def test_usgs_provider_ocean_location(self):
         """Test USGS provider with ocean location (should return no data)."""
         provider = USGSElevationProvider()
