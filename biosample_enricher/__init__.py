@@ -4,6 +4,4 @@ __version__ = "0.1.0"
 __author__ = "contextualizer-ai"
 __email__ = "info@contextualizer.ai"
 
-from biosample_enricher.core import BiosampleEnricher
-
-__all__ = ["BiosampleEnricher"]
+__all__: list[str] = []
