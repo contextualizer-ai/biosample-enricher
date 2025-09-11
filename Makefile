@@ -99,7 +99,7 @@ dep-check: ## Check for unused dependencies with deptry
 check: lint type-check dep-check test ## Run all checks (lint, type-check, dep-check, test)
 	@echo "All checks completed!"
 
-check-ci: format-check lint type-check dep-check test ## Run all CI checks (format-check, lint, type-check, dep-check, test)
+check-ci: format lint type-check dep-check test ## Run all CI checks (format, lint, type-check, dep-check, test)
 	@echo "All CI checks completed!"
 
 ## Package building
