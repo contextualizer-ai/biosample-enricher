@@ -209,10 +209,11 @@ class TestElevationProviders:
 
         # USGS returns various errors for ocean locations
         assert result.ok is False
-        # Could be JSON parsing error or "no data" message
+        # Could be JSON parsing error, "no data" message, or invalid parameters
         assert (
             "No elevation data available" in result.error
             or "Expecting value" in result.error
+            or "Invalid or missing input parameters" in result.error
         )
 
     def test_provider_invalid_coordinates(self):
@@ -247,7 +248,7 @@ class TestElevationService:
 
         assert classification.is_us_territory is True
         # Should prefer USGS for US territory
-        assert providers[0].name == "usgs_epqs"
+        assert providers[0].name == "usgs_3dep"
 
     def test_service_provider_selection_non_us(self):
         """Test provider selection for non-US coordinates."""
@@ -284,7 +285,7 @@ class TestElevationService:
         assert len(successful_obs) >= 1
 
         # Check USGS observation specifically
-        usgs_obs = [obs for obs in observations if obs.provider.name == "usgs_epqs"]
+        usgs_obs = [obs for obs in observations if obs.provider.name == "usgs_3dep"]
         assert len(usgs_obs) == 1
         assert usgs_obs[0].value_numeric is not None
         assert usgs_obs[0].value_numeric > 1000  # Mount Rushmore elevation
