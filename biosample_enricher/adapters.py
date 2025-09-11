@@ -14,6 +14,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import pymongo
+
 from biosample_enricher.models import BiosampleLocation
 
 
@@ -157,7 +159,8 @@ class NMDCBiosampleAdapter(BiosampleAdapter):
             except ValueError:
                 pass
         elif isinstance(collection_date, dict):
-            # Handle NMDC structured date format like {"has_raw_value": "2014-11-25", "type": "nmdc:TimestampValue"}
+            # Handle NMDC structured date format
+            # like {"has_raw_value": "2014-11-25", "type": "nmdc:TimestampValue"}
             raw_value = collection_date.get("has_raw_value")
             if raw_value and isinstance(raw_value, str):
                 try:
@@ -196,7 +199,9 @@ class NMDCBiosampleAdapter(BiosampleAdapter):
                 if isinstance(value, str) and value.strip():
                     return value.strip()
                 elif isinstance(value, dict):
-                    # Handle NMDC structured format like {"has_raw_value": "USA: Columbia River, Washington", "type": "nmdc:TextValue"}
+                    # Handle NMDC structured format like:
+                    # {"has_raw_value": "USA: Columbia River, Washington",
+                    #  "type": "nmdc:TextValue"}
                     raw_value = value.get("has_raw_value")
                     if raw_value and isinstance(raw_value, str) and raw_value.strip():
                         return str(raw_value.strip())
@@ -221,7 +226,8 @@ class NMDCBiosampleAdapter(BiosampleAdapter):
             value = data.get(field)
             if value:
                 if isinstance(value, list) and value:
-                    # Extract from list like ["gold:Gb0115231"] - take first item and remove prefix
+                    # Extract from list like ["gold:Gb0115231"]
+                    # Take first item and remove prefix
                     gold_val = str(value[0])
                     gold_id = gold_val[5:] if gold_val.startswith("gold:") else gold_val
                     break
@@ -540,7 +546,10 @@ class GOLDBiosampleAdapter(BiosampleAdapter):
     def _extract_gold_studies(
         self, data: dict[str, Any], database: Any = None
     ) -> list[str] | None:
-        """Extract associated studies from GOLD biosample by looking up seq_projects collection."""
+        """Extract associated studies from GOLD biosample.
+
+        Looks up seq_projects collection to find associated studies.
+        """
         biosample_gold_id = data.get("biosampleGoldId")
         if not biosample_gold_id or database is None:
             return None
@@ -589,15 +598,9 @@ class MongoNMDCBiosampleFetcher:
     def connect(self) -> bool:
         """Establish MongoDB connection."""
         try:
-            import pymongo
-
             self._client = pymongo.MongoClient(self.connection_string)
             self._collection = self._client[self.database_name][self.collection_name]
             return True
-        except ImportError:
-            raise ImportError(
-                "pymongo is required for MongoDB operations. Install with: pip install pymongo"
-            ) from None
         except Exception as e:
             print(f"MongoDB connection failed: {e}")
             return False
@@ -736,15 +739,9 @@ class MongoGOLDBiosampleFetcher:
     def connect(self) -> bool:
         """Establish MongoDB connection."""
         try:
-            import pymongo
-
             self._client = pymongo.MongoClient(self.connection_string)
             self._collection = self._client[self.database_name][self.collection_name]
             return True
-        except ImportError:
-            raise ImportError(
-                "pymongo is required for MongoDB operations. Install with: pip install pymongo"
-            ) from None
         except Exception as e:
             print(f"MongoDB connection failed: {e}")
             return False

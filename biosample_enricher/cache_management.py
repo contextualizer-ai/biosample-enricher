@@ -71,7 +71,7 @@ def clear(ctx: click.Context, confirm: bool) -> None:
 
 
 @cli.command()
-@click.argument("url")
+@click.option("--url", "-u", required=True, help="URL to test")
 @click.option("--method", default="GET", help="HTTP method")
 @click.option("--params", help="Query parameters as JSON")
 @click.pass_context

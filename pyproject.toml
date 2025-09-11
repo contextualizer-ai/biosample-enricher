@@ -33,13 +33,23 @@ dependencies = [
     "genson>=1.2.2",
     "pymongo>=4.5.0",
     "pandas>=2.0.0",
+    "python-dotenv>=1.1.1",
 ]
 
 
 [project.scripts]
 biosample-enricher = "biosample_enricher.cli:main"
+# Elevation service CLI
+elevation-lookup = "biosample_enricher.cli_elevation:elevation_cli"
+elevation-demos = "biosample_enricher.elevation_demos:cli"
+biosample-elevation = "biosample_enricher.cli_biosample_elevation:cli"
 # Cache management
 http-cache-manager = "biosample_enricher.cache_management:cli"
+# Schema analysis tools
+schema-inference = "biosample_enricher.schema_inference:main"
+schema-statistics = "biosample_enricher.schema_statistics:main"
+# Utility commands
+biosample-version = "biosample_enricher.cli:show_version"
 # Demonstration scripts
 nmdc-adapter-demo = "biosample_enricher.nmdc_adapter_demo:main"
 gold-adapter-demo = "biosample_enricher.gold_adapter_demo:main"
@@ -73,13 +83,17 @@ select = [
     "TCH", # flake8-type-checking
 ]
 ignore = [
-    "E501",  # line too long, handled by black
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
+    # Line length: some strings (URLs, example data) cannot be reasonably split
+    "E501",
+    # Function calls in defaults: Click decorators require this pattern
+    "B008",
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*" = ["ARG", "S101"]
+# Tests require assert statements for pytest
+"tests/**/*" = ["S101"]
+# Test fixtures may have unused arguments by design
+"tests/conftest.py" = ["ARG001"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -97,34 +111,15 @@ warn_unreachable = true
 strict_equality = true
 
 [[tool.mypy.overrides]]
+# Tests often need more flexible typing for mocking and fixtures
 module = "tests.*"
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
+# Third-party library without type stubs
 module = "genson"
 ignore_missing_imports = true
 
-[[tool.mypy.overrides]]
-module = [
-    "biosample_enricher.nmdc_adapter_demo",
-    "biosample_enricher.gold_adapter_demo", 
-    "biosample_enricher.unified_adapter_demo",
-    "biosample_enricher.mongodb_connection_demo",
-    "biosample_enricher.pydantic_validation_demo",
-    "biosample_enricher.id_retrieval_demo",
-    "biosample_enricher.random_sampling_demo",
-    "biosample_enricher.synthetic_validation_demo"
-]
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-warn_return_any = false
-check_untyped_defs = false
-disallow_any_generics = false
-disallow_any_unimported = false
-disallow_any_expr = false
-disallow_subclassing_any = false
-warn_unreachable = false
-strict_equality = false
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -154,16 +149,12 @@ branch = true
 
 [tool.coverage.report]
 exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
+    # Standard Python patterns that are not testable
     "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
+    # Defensive programming patterns
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
 ]
 
 [dependency-groups]
@@ -171,7 +162,6 @@ dev = [
     "mypy>=1.17.1",
     "pre-commit>=4.3.0",
     "pytest>=8.4.2",
-    "pytest-asyncio>=1.1.0",
     "pytest-cov>=7.0.0",
     "ruff>=0.12.12",
     "types-requests>=2.32.4.20250809",

@@ -7,6 +7,7 @@ from typing import Any
 
 import requests
 import requests_cache
+from pymongo import MongoClient
 from requests_cache import CachedSession
 
 from biosample_enricher.logging_config import get_logger
@@ -52,8 +53,6 @@ def get_session() -> CachedSession:
         )
     else:
         try:
-            from pymongo import MongoClient
-
             mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
             logger.debug(f"Attempting MongoDB connection to {mongo_uri}")
             client: MongoClient = MongoClient(mongo_uri, serverSelectionTimeoutMS=1000)
@@ -68,8 +67,26 @@ def get_session() -> CachedSession:
     return CachedSession(backend=backend)
 
 
-def request(method: str, url: str, **kwargs: Any) -> requests.Response:
-    """Make cached HTTP request with coordinate canonicalization."""
+def request(
+    method: str,
+    url: str,
+    read_from_cache: bool = True,
+    write_to_cache: bool = True,
+    **kwargs: Any,
+) -> requests.Response:
+    """
+    Make cached HTTP request with coordinate canonicalization.
+
+    Args:
+        method: HTTP method
+        url: Request URL
+        read_from_cache: Whether to read from cache
+        write_to_cache: Whether to write to cache
+        **kwargs: Additional request parameters
+
+    Returns:
+        HTTP response
+    """
     # Canonicalize coordinates in params
     if "params" in kwargs:
         original_params = kwargs["params"].copy() if kwargs["params"] else {}
@@ -80,10 +97,58 @@ def request(method: str, url: str, **kwargs: Any) -> requests.Response:
             )
 
     logger.debug(f"Making {method} request to {url}")
-    session = get_session()
-    response = session.request(method, url, **kwargs)
 
-    cache_status = "HIT" if getattr(response, "from_cache", False) else "MISS"
-    logger.debug(f"{method} {url} -> {response.status_code} (Cache: {cache_status})")
+    # Handle cache control
+    if not read_from_cache or not write_to_cache:
+        # Create a temporary session with different cache settings
+        if not read_from_cache and not write_to_cache:
+            # No caching at all
+            session = requests.Session()
+        elif not read_from_cache:
+            # Write to cache but don't read from it (force refresh)
+            session = get_session()
+            # Force cache bypass by adding a cache-busting parameter
+            if "params" not in kwargs:
+                kwargs["params"] = {}
+            # We'll handle this by clearing cache for this specific request
+            if hasattr(session.cache, "delete_url"):
+                session.cache.delete_url(url, kwargs.get("params", {}))
+        else:
+            # Read from cache but don't write (read-only mode)
+            session = get_session()
+            # This is trickier - we'll need to use the session normally
+            # but prevent writing by temporarily disabling cache
+            original_disabled = getattr(session.cache, "disabled", False)
+            if hasattr(session.cache, "disabled"):
+                session.cache.disabled = True
+    else:
+        # Normal cached operation
+        session = get_session()
 
-    return response
+    try:
+        response = session.request(method, url, **kwargs)
+
+        # Restore cache state if we modified it
+        if (
+            not write_to_cache
+            and hasattr(session, "cache")
+            and hasattr(session.cache, "disabled")
+        ):
+            session.cache.disabled = False
+
+        cache_status = "HIT" if getattr(response, "from_cache", False) else "MISS"
+        if not read_from_cache:
+            cache_status = "BYPASS"
+        logger.debug(
+            f"{method} {url} -> {response.status_code} (Cache: {cache_status})"
+        )
+
+        return response
+    finally:
+        # Ensure cache state is restored
+        if (
+            hasattr(session, "cache")
+            and hasattr(session.cache, "disabled")
+            and "original_disabled" in locals()
+        ):
+            session.cache.disabled = original_disabled

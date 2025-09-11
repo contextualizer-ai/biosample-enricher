@@ -10,6 +10,7 @@ Tests the unified interface that combines NMDC and GOLD adapters:
 """
 
 import json
+import random
 import sys
 from collections.abc import Iterator
 from datetime import datetime
@@ -141,8 +142,6 @@ class MockMongoFetcher:
                 yield self.adapter.extract_location(data)
 
     def fetch_random_locations(self, n: int = 10) -> Iterator[BiosampleLocation]:
-        import random
-
         sampled = random.sample(self.sample_data, min(n, len(self.sample_data)))
         for data in sampled:
             yield self.adapter.extract_location(data)
@@ -158,8 +157,6 @@ class MockMongoFetcher:
                     enrichable.append(location)
             except Exception:
                 pass
-
-        import random
 
         sampled = random.sample(enrichable, min(n, len(enrichable)))
         for location in sampled:
@@ -183,8 +180,12 @@ def demonstrate_unified_adapter() -> dict[str, Any]:
     mock_gold = MockMongoFetcher(GOLDBiosampleAdapter, gold_data)
 
     # Replace the fetchers in unified interface
-    unified_fetcher.nmdc_mongo = mock_nmdc  # type: ignore[assignment]
-    unified_fetcher.gold_mongo = mock_gold  # type: ignore[assignment]
+    # Note: This is a demo with mock data, proper typing would require refactoring
+    # Using cast to satisfy type checker for mock objects in demo code
+    from typing import cast
+
+    unified_fetcher.nmdc_mongo = cast("Any", mock_nmdc)
+    unified_fetcher.gold_mongo = cast("Any", mock_gold)
 
     results = {
         "demonstration_info": {

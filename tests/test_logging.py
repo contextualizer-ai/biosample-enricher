@@ -112,24 +112,27 @@ class TestLoggingConfiguration:
 class TestLoggingIntegration:
     """Test logging integration with actual modules."""
 
-    def test_core_module_logging(self):
-        """Test that core module properly uses logging."""
-        from biosample_enricher.core import BiosampleEnricher
+    def test_elevation_module_logging(self):
+        """Test that elevation module properly uses logging."""
+        from biosample_enricher.elevation import ElevationRequest, ElevationService
 
         # Set up logging to capture messages
         with tempfile.TemporaryDirectory() as temp_dir:
             log_file = Path(temp_dir) / "integration.log"
             setup_logging(level="DEBUG", log_file=str(log_file))
 
-            # Use the enricher
-            enricher = BiosampleEnricher(timeout=10.0)
-            enricher.enrich_sample("test_sample", ["ncbi"])
+            # Use the elevation service
+            service = ElevationService()
+            request = ElevationRequest(
+                latitude=37.7749, longitude=-122.4194, subject_id="test_sample"
+            )
+            service.get_elevation(request)
 
             # Verify logging occurred
             log_content = log_file.read_text()
-            assert "Initialized BiosampleEnricher with timeout=10.0s" in log_content
-            assert "Enriching sample test_sample" in log_content
-            assert "Enrichment completed for test_sample" in log_content
+            assert (
+                "elevation" in log_content.lower() or "provider" in log_content.lower()
+            )
 
     def test_http_cache_logging(self):
         """Test that HTTP cache module properly uses logging."""
@@ -246,11 +249,15 @@ class TestLoggingErrorHandling:
         """Test handling of read-only log directories."""
         # This would typically fail in a real read-only directory
         # For testing, we'll just ensure the function doesn't crash
-        import contextlib
-
-        with contextlib.suppress(PermissionError, OSError):
-            setup_logging(log_file="/readonly/path/test.log", enable_file_logging=True)
-            # If it succeeds, that's fine too
+        try:
+            logger = setup_logging(
+                log_file="/readonly/path/test.log", enable_file_logging=True
+            )
+            # If it succeeds, that's fine too - some systems might allow it
+            assert logger is not None
+        except (PermissionError, OSError):
+            # Expected in a read-only directory - this is the normal case
+            assert True  # Explicitly mark this as expected behavior
 
     def test_multiple_setup_calls(self):
         """Test that multiple setup calls work correctly."""

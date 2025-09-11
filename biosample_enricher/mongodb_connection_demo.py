@@ -9,7 +9,6 @@ Tests actual MongoDB connectivity and fetcher functionality:
 - Performance metrics for different query types
 """
 
-import contextlib
 import json
 import os
 import sys
@@ -18,6 +17,7 @@ from datetime import datetime
 from typing import Any
 
 import click
+import pymongo
 
 from biosample_enricher.adapters import (
     MongoGOLDBiosampleFetcher,
@@ -39,8 +39,6 @@ def get_mongo_connection_string(mongo_uri: str | None = None) -> str:
 def test_mongodb_connection(connection_string: str) -> dict[str, Any]:
     """Test basic MongoDB connection."""
     try:
-        import pymongo
-
         start_time = time.time()
         client: pymongo.MongoClient = pymongo.MongoClient(connection_string)
 
@@ -59,12 +57,6 @@ def test_mongodb_connection(connection_string: str) -> dict[str, Any]:
             else "simple_uri",
         }
 
-    except ImportError:
-        return {
-            "success": False,
-            "error": "pymongo not available",
-            "details": "MongoDB operations require pymongo package",
-        }
     except Exception as e:
         return {"success": False, "error": "connection_failed", "details": str(e)}
 
@@ -165,9 +157,13 @@ def test_nmdc_fetcher(connection_string: str) -> dict[str, Any]:
         fetcher.disconnect()
 
     except Exception as e:
-        result["error"] = {"message": "NMDC fetcher test failed", "details": str(e)}
-        with contextlib.suppress(Exception):
+        error_info = {"message": "NMDC fetcher test failed", "details": str(e)}
+        try:
             fetcher.disconnect()
+        except Exception as disconnect_error:
+            # Log disconnect error but don't override main error
+            error_info["disconnect_error"] = str(disconnect_error)
+        result["error"] = error_info
 
     return result
 
@@ -276,9 +272,13 @@ def test_gold_fetcher(connection_string: str) -> dict[str, Any]:
         fetcher.disconnect()
 
     except Exception as e:
-        result["error"] = {"message": "GOLD fetcher test failed", "details": str(e)}
-        with contextlib.suppress(Exception):
+        error_info = {"message": "GOLD fetcher test failed", "details": str(e)}
+        try:
             fetcher.disconnect()
+        except Exception as disconnect_error:
+            # Log disconnect error but don't override main error
+            error_info["disconnect_error"] = str(disconnect_error)
+        result["error"] = error_info
 
     return result
 
@@ -483,7 +483,9 @@ def _get_performance_summary(results: dict[str, Any]) -> dict[str, Any]:
 )
 @click.option("--nmdc-db", default="nmdc", help="NMDC database name")
 @click.option("--gold-db", default="gold_metadata", help="GOLD database name")
-def main(output_file: str, indent: int, mongo_uri: str, nmdc_db: str, gold_db: str):
+def main(
+    output_file: str, indent: int, mongo_uri: str, nmdc_db: str, gold_db: str
+) -> None:
     """Run the MongoDB connection demonstration and output results as JSON."""
     try:
         connection_string = get_mongo_connection_string(mongo_uri)

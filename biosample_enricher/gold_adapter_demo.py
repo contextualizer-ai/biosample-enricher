@@ -436,7 +436,7 @@ def _analyze_non_enrichable_reasons(
 @click.command()
 @click.option("--output-file", "-o", help="Output file path (default: stdout)")
 @click.option("--indent", default=2, help="JSON indentation level", type=int)
-def main(output_file: str, indent: int):
+def main(output_file: str, indent: int) -> None:
     """Run the GOLD adapter demonstration and output results as JSON."""
     try:
         results = demonstrate_gold_adapter()

@@ -139,16 +139,16 @@ def get_sample_gold_data_with_ids() -> list[dict[str, Any]]:
 class MockFetcherWithIDs:
     """Mock fetcher that supports ID-based retrieval for demonstration."""
 
-    def __init__(self, adapter_class, sample_data):
+    def __init__(self, adapter_class: Any, sample_data: list[dict[str, Any]]) -> None:
         self.adapter = adapter_class()
         self.sample_data = sample_data
         self._connected = False
 
-    def connect(self):
+    def connect(self) -> bool:
         self._connected = True
         return True
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         self._connected = False
 
     def fetch_locations_by_ids(self, ids: list[str], id_field: str = "id") -> list:
@@ -736,7 +736,7 @@ def demonstrate_id_retrieval() -> dict[str, Any]:
 @click.command()
 @click.option("--output-file", "-o", help="Output file path (default: stdout)")
 @click.option("--indent", default=2, help="JSON indentation level", type=int)
-def main(output_file: str, indent: int):
+def main(output_file: str, indent: int) -> None:
     """Run the ID retrieval demonstration and output results as JSON."""
     try:
         results = demonstrate_id_retrieval()
