@@ -16,12 +16,13 @@ from rich.console import Console
 from rich.progress import Progress
 from rich.table import Table
 
-from .biosample_elevation_mapper import (
+from biosample_enricher.biosample_elevation_mapper import (
     BiosampleElevationBatch,
     BiosampleElevationMapper,
 )
-from .elevation.service import ElevationService
-from .logging_config import get_logger, setup_logging
+from biosample_enricher.elevation.service import ElevationService
+from biosample_enricher.logging_config import get_logger, setup_logging
+from biosample_enricher.providers import ElevationProvider
 
 console = Console()
 logger = get_logger(__name__)
@@ -59,7 +60,13 @@ def cli(log_level: str) -> None:
 )
 @click.option("--timeout", default=30.0, type=float, help="Request timeout in seconds")
 @click.option("--no-cache", is_flag=True, help="Disable caching")
-@click.option("--providers", help="Comma-separated list of preferred providers")
+@click.option(
+    "--provider",
+    "providers",
+    multiple=True,
+    type=click.Choice(ElevationProvider.choices(), case_sensitive=False),
+    help="Preferred providers (can be specified multiple times). Default: tries all available.",
+)
 @click.option("--show-mapping", is_flag=True, help="Show field mapping analysis")
 def enrich(
     input_file: Path,
@@ -67,7 +74,7 @@ def enrich(
     output_format: str,
     timeout: float,
     no_cache: bool,
-    providers: str,
+    providers: tuple[str, ...],
     show_mapping: bool,
 ) -> None:
     """Enrich biosamples with elevation data using automatic field mapping."""
@@ -131,10 +138,9 @@ def enrich(
                 f"🚀 Processing {len(valid_samples)} samples with valid coordinates"
             )
 
-            # Parse providers
-            provider_list = None
-            if providers:
-                provider_list = [p.strip() for p in providers.split(",")]
+            # Convert providers tuple to list (already validated by Click)
+            provider_list = list(providers) if providers else None
+            if provider_list:
                 console.print(
                     f"📡 Using preferred providers: {', '.join(provider_list)}"
                 )

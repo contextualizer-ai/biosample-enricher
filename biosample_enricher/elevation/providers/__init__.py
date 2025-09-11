@@ -1,10 +1,13 @@
 """Elevation data providers."""
 
-from .base import ElevationProvider
-from .google import GoogleElevationProvider
-from .open_topo_data import OpenTopoDataProvider, SmartOpenTopoDataProvider
-from .osm import OSMElevationProvider
-from .usgs import USGSElevationProvider
+from biosample_enricher.elevation.providers.base import ElevationProvider
+from biosample_enricher.elevation.providers.google import GoogleElevationProvider
+from biosample_enricher.elevation.providers.open_topo_data import (
+    OpenTopoDataProvider,
+    SmartOpenTopoDataProvider,
+)
+from biosample_enricher.elevation.providers.osm import OSMElevationProvider
+from biosample_enricher.elevation.providers.usgs import USGSElevationProvider
 
 __all__ = [
     "ElevationProvider",

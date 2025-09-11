@@ -91,8 +91,10 @@ class TestElevationCLI:
                 "43.8791",
                 "--lon",
                 "-103.4591",
-                "--providers",
-                "usgs,open_topo_data",
+                "--provider",
+                "usgs",
+                "--provider",
+                "open_topo_data",
                 "--subject-id",
                 "test-providers",
             ],
@@ -276,6 +278,10 @@ class TestElevationCLI:
         assert "--lat" in result.output
         assert "--lon" in result.output
         assert "--no-cache" in result.output
+        assert "--provider" in result.output
+        # Check that provider choices are shown in help
+        assert "google" in result.output.lower()
+        assert "usgs" in result.output.lower()
 
         # Test batch help
         result = self.runner.invoke(elevation_cli, ["batch", "--help"])

@@ -15,9 +15,10 @@ from rich.console import Console
 from rich.progress import Progress
 from rich.table import Table
 
-from .elevation.service import ElevationService
-from .logging_config import get_logger, setup_logging
-from .models import ElevationRequest
+from biosample_enricher.elevation.service import ElevationService
+from biosample_enricher.logging_config import get_logger, setup_logging
+from biosample_enricher.models import ElevationRequest
+from biosample_enricher.providers import ElevationProvider
 
 console = Console()
 logger = get_logger(__name__)
@@ -52,7 +53,13 @@ def cli(log_level: str) -> None:
 )
 @click.option("--timeout", default=30.0, type=float, help="Request timeout in seconds")
 @click.option("--no-cache", is_flag=True, help="Disable caching")
-@click.option("--providers", help="Comma-separated list of preferred providers")
+@click.option(
+    "--provider",
+    "providers",
+    multiple=True,
+    type=click.Choice(ElevationProvider.choices(), case_sensitive=False),
+    help="Preferred providers (can be specified multiple times). Default: tries all available.",
+)
 @click.option(
     "--format",
     "output_format",
@@ -65,7 +72,7 @@ def process_biosamples(
     output_file: Path,
     timeout: float,
     no_cache: bool,
-    providers: str,
+    providers: tuple[str, ...],
     output_format: str,
 ) -> None:
     """Process elevation lookups for synthetic biosamples JSON file."""
@@ -90,10 +97,9 @@ def process_biosamples(
                 f"📍 Found {len(valid_samples)} samples with coordinates (out of {len(biosamples)} total)"
             )
 
-            # Parse providers
-            provider_list = None
-            if providers:
-                provider_list = [p.strip() for p in providers.split(",")]
+            # Convert providers tuple to list (already validated by Click)
+            provider_list = list(providers) if providers else None
+            if provider_list:
                 console.print(
                     f"📡 Using preferred providers: {', '.join(provider_list)}"
                 )
