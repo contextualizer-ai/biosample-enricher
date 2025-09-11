@@ -38,8 +38,20 @@ def cli(log_level: str) -> None:
 
 
 @cli.command()
-@click.argument("input_file", type=click.Path(exists=True, path_type=Path))
-@click.argument("output_file", type=click.Path(path_type=Path))
+@click.option(
+    "--input-file",
+    "-i",
+    type=click.Path(exists=True, path_type=Path),
+    required=True,
+    help="Input JSON file with biosamples",
+)
+@click.option(
+    "--output-file",
+    "-o",
+    type=click.Path(path_type=Path),
+    required=True,
+    help="Output file for results",
+)
 @click.option("--batch-size", default=5, type=int, help="Number of concurrent requests")
 @click.option("--timeout", default=30.0, type=float, help="Request timeout in seconds")
 @click.option("--no-cache", is_flag=True, help="Disable caching")

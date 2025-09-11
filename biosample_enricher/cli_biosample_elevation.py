@@ -41,7 +41,13 @@ def cli(log_level: str) -> None:
 
 
 @cli.command()
-@click.argument("input_file", type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--input-file",
+    "-i",
+    type=click.Path(exists=True, path_type=Path),
+    required=True,
+    help="Input JSON file with biosamples",
+)
 @click.option(
     "--output", "-o", type=click.Path(path_type=Path), help="Output file path"
 )
@@ -331,7 +337,13 @@ def enrich(
 
 
 @cli.command()
-@click.argument("input_file", type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--input-file",
+    "-i",
+    type=click.Path(exists=True, path_type=Path),
+    required=True,
+    help="Input JSON file with biosamples",
+)
 def analyze(input_file: Path) -> None:
     """Analyze biosample field mapping without performing elevation lookups."""
 

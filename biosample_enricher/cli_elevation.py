@@ -138,7 +138,13 @@ def lookup_elevation(
 
 
 @elevation_cli.command(name="batch")
-@click.argument("input_file", type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--input-file",
+    "-i",
+    type=click.Path(exists=True, path_type=Path),
+    required=True,
+    help="Input CSV/TSV file with coordinates",
+)
 @click.option("--output", "-o", required=True, help="Output JSONL file path")
 @click.option(
     "--providers",
