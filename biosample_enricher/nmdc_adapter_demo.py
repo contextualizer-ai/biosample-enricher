@@ -17,7 +17,7 @@ from typing import Any
 
 import click
 
-from .adapters import NMDCBiosampleAdapter
+from biosample_enricher.adapters import NMDCBiosampleAdapter
 
 
 def get_sample_nmdc_biosamples() -> list[dict[str, Any]]:

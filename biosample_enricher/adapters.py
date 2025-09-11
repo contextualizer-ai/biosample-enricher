@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from .models import BiosampleLocation
+from biosample_enricher.models import BiosampleLocation
 
 
 class BiosampleAdapter(ABC):

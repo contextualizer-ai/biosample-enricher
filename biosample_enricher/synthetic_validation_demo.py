@@ -15,7 +15,7 @@ from typing import Any
 import click
 from pydantic import ValidationError
 
-from .models import BiosampleLocation
+from biosample_enricher.models import BiosampleLocation
 
 
 def map_synthetic_to_model(synthetic_data: dict[str, Any]) -> dict[str, Any]:

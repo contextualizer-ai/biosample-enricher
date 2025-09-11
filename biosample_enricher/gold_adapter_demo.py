@@ -17,7 +17,7 @@ from typing import Any
 
 import click
 
-from .adapters import GOLDBiosampleAdapter
+from biosample_enricher.adapters import GOLDBiosampleAdapter
 
 
 def get_sample_gold_biosamples() -> list[dict[str, Any]]:

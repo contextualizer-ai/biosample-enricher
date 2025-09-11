@@ -5,7 +5,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 from rich.console import Console
 
-from .logging_config import get_logger
+from biosample_enricher.logging_config import get_logger
 
 console = Console()
 logger = get_logger(__name__)
