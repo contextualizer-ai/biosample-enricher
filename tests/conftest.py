@@ -37,3 +37,15 @@ def google_api_key():
     if not api_key:
         pytest.skip("Google API key not available")
     return api_key
+
+
+@pytest.fixture(autouse=True)
+def clear_config_cache():
+    """Clear both old and new config caches before each test to ensure isolation."""
+    try:
+        from biosample_enricher.config import clear_config_cache, clear_settings_cache
+        clear_config_cache()
+        clear_settings_cache()
+    except ImportError:
+        pass  # Functions may not exist during transition
+    yield

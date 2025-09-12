@@ -87,21 +87,26 @@ class TestLoggingConfiguration:
         assert logger2.name == "test.module2"
         assert logger1 is logger3  # Should be the same instance
 
-    @patch.dict(os.environ, {}, clear=True)
-    def test_configure_from_env_defaults(self):
+    def test_configure_from_env_defaults(self, monkeypatch):
         """Test environment configuration with defaults."""
+        # Clear specific env vars for clean test (don't nuke everything)
+        monkeypatch.delenv("LOG_LEVEL", raising=False)
+        monkeypatch.delenv("LOG_FILE", raising=False)
+        monkeypatch.delenv("DISABLE_FILE_LOGGING", raising=False)
+
         logger = configure_from_env()
 
         assert logger.level == logging.INFO
         # Should have both console and file handlers by default
         assert len(logger.handlers) == 2
 
-    @patch.dict(
-        os.environ,
-        {"LOG_LEVEL": "DEBUG", "LOG_FILE": "custom.log", "DISABLE_FILE_LOGGING": "1"},
-    )
-    def test_configure_from_env_custom(self):
+    def test_configure_from_env_custom(self, monkeypatch):
         """Test environment configuration with custom values."""
+        # Set specific env vars for test (targeted, not destructive)
+        monkeypatch.setenv("LOG_LEVEL", "DEBUG")
+        monkeypatch.setenv("LOG_FILE", "custom.log")
+        monkeypatch.setenv("DISABLE_FILE_LOGGING", "1")
+
         logger = configure_from_env()
 
         assert logger.level == logging.DEBUG

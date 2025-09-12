@@ -53,9 +53,11 @@ def get_session() -> CachedSession:
         )
     else:
         try:
-            mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-            logger.debug(f"Attempting MongoDB connection to {mongo_uri}")
-            client: MongoClient = MongoClient(mongo_uri, serverSelectionTimeoutMS=1000)
+            mongo_uri = os.getenv("CACHE_MONGO_CONNECTION", "mongodb://localhost:27017")
+            # Remove database name from URI since it's specified separately to MongoCache
+            base_uri = mongo_uri.split('/')[0] + '//' + mongo_uri.split('//')[1].split('/')[0]
+            logger.debug(f"Attempting MongoDB connection to {base_uri}")
+            client: MongoClient = MongoClient(base_uri, serverSelectionTimeoutMS=1000)
             client.admin.command("ping")  # Test connection
             backend = requests_cache.MongoCache(db_name="http_cache", connection=client)
             logger.info("Using MongoDB cache backend")
@@ -64,7 +66,20 @@ def get_session() -> CachedSession:
             logger.warning(f"MongoDB unavailable, falling back to SQLite: {e}")
             backend = requests_cache.SQLiteCache("http_cache")
 
-    return CachedSession(backend=backend)
+    from biosample_enricher.config import get_settings
+    
+    settings = get_settings()
+    
+    return CachedSession(
+        backend=backend,
+        cache_name=settings.cache.cache_name,
+        allowable_codes=settings.cache.allowable_codes,  # Only cache successful responses
+        cache_control=True,      # Respect Cache-Control headers from APIs
+        expire_after=settings.cache.ttl_seconds,
+        # Ensure auth parameters are part of cache key (don't ignore 'key', 'token', etc.)
+        # This prevents invalid API key responses from being reused for valid keys
+        ignored_parameters=[],   # Empty list = include all parameters in cache key
+    )
 
 
 def request(
