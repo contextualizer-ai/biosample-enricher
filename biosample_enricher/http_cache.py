@@ -8,7 +8,7 @@ from typing import Any
 import requests
 import requests_cache
 from pymongo import MongoClient
-from requests_cache import CachedSession
+from requests_cache import CachedSession, create_key
 
 from biosample_enricher.logging_config import get_logger
 
@@ -42,6 +42,31 @@ def canonicalize_coords(params: dict[str, Any]) -> dict[str, Any]:
     return canonical
 
 
+def _key_with_auth(request, ignored_parameters=None, match_headers=None, **kwargs):
+    """Include all params (don't ignore 'key') and auth headers to keep auth in cache key."""
+    return create_key(
+        request=request,
+        ignored_parameters=[],  # Don't ignore any parameters, especially 'key'
+        match_headers=['X-Goog-Api-Key', 'Authorization'],
+        **kwargs
+    )
+
+
+def _cache_ok(response):
+    """Don't cache non-200 responses; also skip 200+error payloads from Google endpoints."""
+    if response.status_code != 200:
+        return False
+    url = response.url or ""
+    if 'googleapis.com' in url or 'maps.googleapis.com' in url:
+        try:
+            j = response.json()
+            if ('error' in j and 'message' in j['error']) or 'error_message' in j:
+                return False
+        except Exception:
+            pass
+    return True
+
+
 def get_session() -> CachedSession:
     """Get cached session with MongoDB (dev) or SQLite (CI) backend."""
 
@@ -73,12 +98,11 @@ def get_session() -> CachedSession:
     return CachedSession(
         backend=backend,
         cache_name=settings.cache.cache_name,
-        allowable_codes=settings.cache.allowable_codes,  # Only cache successful responses
+        key_fn=_key_with_auth,
         cache_control=True,      # Respect Cache-Control headers from APIs
+        allowable_codes=(200,),  # Only cache 200 responses
         expire_after=settings.cache.ttl_seconds,
-        # Ensure auth parameters are part of cache key (don't ignore 'key', 'token', etc.)
-        # This prevents invalid API key responses from being reused for valid keys
-        ignored_parameters=[],   # Empty list = include all parameters in cache key
+        filter_fn=_cache_ok,     # Additional filtering for Google error responses
     )
 
 
