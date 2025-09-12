@@ -75,7 +75,7 @@ def metrics() -> None:
     "--workspace-dir",
     type=click.Path(path_type=Path),
     default="data/workspace",
-    help="Directory for detailed debug files (raw docs, API responses, etc.)",
+    help="Directory for detailed debug files (raw docs, API responses, etc.) - ignored by git",
 )
 def evaluate(
     nmdc_samples: int,
