@@ -134,9 +134,15 @@ class TestLoggingIntegration:
                 "elevation" in log_content.lower() or "provider" in log_content.lower()
             )
 
-    def test_http_cache_logging(self):
+    def test_http_cache_logging(self, monkeypatch):
         """Test that HTTP cache module properly uses logging."""
-        from biosample_enricher.http_cache import get_session
+        from biosample_enricher.http_cache import get_session, reset_session
+
+        # Opt out of test cache redirection for this test
+        monkeypatch.setenv("USE_PROD_CACHE_IN_TESTS", "1")
+        
+        # Reset session to force fresh creation
+        reset_session()
 
         # Set up logging to capture messages
         with tempfile.TemporaryDirectory() as temp_dir:
