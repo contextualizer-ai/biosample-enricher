@@ -221,3 +221,6 @@ data/workspace*/
 http_cache.sqlite*
 cache/
 *.sqlite
+
+# Automatic backups of precious files
+.backups/

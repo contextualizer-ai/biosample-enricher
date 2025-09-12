@@ -1,0 +1,23 @@
+# Git attributes for biosample-enricher
+
+# Automatic backup for precious LLM-generated files
+data/outputs/schema/enrichment_analysis*.json filter=backup-precious
+data/outputs/schema/schema_comparison*.json filter=backup-precious
+
+# Ensure consistent line endings
+* text=auto
+*.py text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.sqlite binary

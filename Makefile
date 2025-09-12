@@ -137,7 +137,15 @@ pre-commit-run: ## Run pre-commit on all files
 
 ## Development workflow shortcuts
 dev-setup: install-dev pre-commit-install ## Complete development setup
+	@echo "Setting up git backup filter for precious files..."
+	@git config filter.backup-precious.clean 'sh -c "mkdir -p .backups && tee .backups/$$(basename \"$$1\").$$(date +%s)" --'
+	@git config filter.backup-precious.smudge cat
 	@echo "Development environment setup complete!"
+	@echo ""
+	@echo "🛡️  Protection enabled for precious LLM-generated files:"
+	@echo "   • Pre-commit hooks will warn before deletion"
+	@echo "   • Git filter automatically backs up changes to .backups/"
+	@echo "   • Use 'git commit --no-verify' to override protection"
 
 dev-check: format lint type-check test ## Quick development check
 	@echo "Development check complete!"

@@ -1,27 +1,28 @@
-#!/usr/bin/env python
 """Generate HTML dashboard for GitHub Pages from metrics results."""
+# ruff: noqa: W291, W293
 
-import json
 from pathlib import Path
 
 import pandas as pd
 
 
 def generate_html_dashboard(
-    summary_csv: Path,
-    regional_csv: Path | None = None,
-    output_path: Path | None = None
+    summary_csv: Path, regional_csv: Path | None = None, output_path: Path | None = None
 ) -> str:
     """Generate HTML dashboard with embedded data and charts."""
-    
+
     # Load data
     summary_df = pd.read_csv(summary_csv)
-    regional_df = pd.read_csv(regional_csv) if regional_csv and regional_csv.exists() else None
-    
+    regional_df = (
+        pd.read_csv(regional_csv) if regional_csv and regional_csv.exists() else None
+    )
+
     # Convert to JSON for JavaScript
-    summary_json = summary_df.to_json(orient='records')
-    regional_json = regional_df.to_json(orient='records') if regional_df is not None else "[]"
-    
+    summary_json = summary_df.to_json(orient="records")
+    regional_json = (
+        regional_df.to_json(orient="records") if regional_df is not None else "[]"
+    )
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -233,23 +234,27 @@ def generate_html_dashboard(
     </script>
 </body>
 </html>"""
-    
+
     if output_path:
         output_path.write_text(html)
         print(f"Dashboard saved to {output_path}")
-    
+
     return html
 
 
 if __name__ == "__main__":
     import sys
-    
+
     if len(sys.argv) < 2:
-        print("Usage: generate_metrics_dashboard.py <summary.csv> [regional.csv] [output.html]")
+        print(
+            "Usage: python -m biosample_enricher.metrics.dashboard <summary.csv> [regional.csv] [output.html]"
+        )
         sys.exit(1)
-    
+
     summary_csv = Path(sys.argv[1])
     regional_csv = Path(sys.argv[2]) if len(sys.argv) > 2 else None
-    output_path = Path(sys.argv[3]) if len(sys.argv) > 3 else Path("metrics_dashboard.html")
-    
+    output_path = (
+        Path(sys.argv[3]) if len(sys.argv) > 3 else Path("metrics_dashboard.html")
+    )
+
     generate_html_dashboard(summary_csv, regional_csv, output_path)
