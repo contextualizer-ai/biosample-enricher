@@ -216,3 +216,8 @@ __marimo__/
 
 # Debug workspace directories (contain large debug JSON files)
 data/workspace*/
+
+# HTTP Cache files
+http_cache.sqlite*
+cache/
+*.sqlite

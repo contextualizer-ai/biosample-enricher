@@ -6,13 +6,15 @@ import os
 from typing import Any
 
 import requests
-import requests_cache
 from pymongo import MongoClient
-from requests_cache import CachedSession
+from requests_cache import CachedSession, create_key
 
 from biosample_enricher.logging_config import get_logger
 
 logger = get_logger(__name__)
+
+# Module-level singleton (tests can override/reset)
+_SESSION = None
 
 
 def canonicalize_coords(params: dict[str, Any]) -> dict[str, Any]:
@@ -42,29 +44,125 @@ def canonicalize_coords(params: dict[str, Any]) -> dict[str, Any]:
     return canonical
 
 
-def get_session() -> CachedSession:
-    """Get cached session with MongoDB (dev) or SQLite (CI) backend."""
+def _key_with_auth(request, **kwargs):
+    return create_key(
+        request=request,
+        ignored_parameters=[],  # don't ignore ?key=
+        match_headers=["X-Goog-Api-Key", "Authorization"],
+        **kwargs,
+    )
 
-    # Use SQLite in CI, MongoDB locally
-    if os.getenv("CI") or os.getenv("GITHUB_ACTIONS"):
-        logger.info("Using SQLite cache backend for CI environment")
-        backend: requests_cache.SQLiteCache | requests_cache.MongoCache = (
-            requests_cache.SQLiteCache("http_cache")
-        )
-    else:
+
+def _cache_ok(response):
+    if response.status_code != 200:
+        return False
+    url = getattr(response, "url", "") or ""
+    if "googleapis.com" in url or "maps.googleapis.com" in url:
         try:
-            mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-            logger.debug(f"Attempting MongoDB connection to {mongo_uri}")
-            client: MongoClient = MongoClient(mongo_uri, serverSelectionTimeoutMS=1000)
-            client.admin.command("ping")  # Test connection
-            backend = requests_cache.MongoCache(db_name="http_cache", connection=client)
-            logger.info("Using MongoDB cache backend")
-        except Exception as e:
-            # Fall back to SQLite if MongoDB unavailable
-            logger.warning(f"MongoDB unavailable, falling back to SQLite: {e}")
-            backend = requests_cache.SQLiteCache("http_cache")
+            j = response.json()
+            if ("error" in j and "message" in j["error"]) or "error_message" in j:
+                return False
+        except Exception:
+            pass
+    return True
 
-    return CachedSession(backend=backend)
+
+def _sqlite_session(cache_name: str) -> CachedSession:
+    """Create SQLite-backed cached session."""
+    logger.info(f"Using SQLite cache backend: {cache_name}")
+    return CachedSession(
+        cache_name=cache_name,
+        backend="sqlite",
+        key_fn=_key_with_auth,
+        cache_control=True,
+        allowable_codes=(200,),
+        expire_after=3600,
+        filter_fn=_cache_ok,
+    )
+
+
+def _mongo_session(
+    uri: str, db_name: str, collection_name: str, timeout_ms: int = 5000
+) -> CachedSession:
+    """Create MongoDB-backed cached session."""
+    logger.debug(f"Attempting MongoDB connection to {uri}")
+    client: MongoClient = MongoClient(uri, serverSelectionTimeoutMS=timeout_ms)
+    client.admin.command("ping")  # Fail fast if unreachable
+    logger.info(f"Using MongoDB cache backend: {db_name}.{collection_name}")
+    return CachedSession(
+        cache_name=collection_name,
+        backend="mongodb",
+        connection=client,
+        key_fn=_key_with_auth,
+        cache_control=True,
+        allowable_codes=(200,),
+        expire_after=3600,
+        filter_fn=_cache_ok,
+    )
+
+
+def _make_session() -> CachedSession:
+    """Create a new cached session with current settings."""
+    # Defaults are CI- and prod-friendly (SQLite)
+    backend = os.getenv("CACHE_BACKEND", "sqlite").lower()
+    cache_name = os.getenv("CACHE_NAME", "cache/http")
+
+    # Support pytest-xdist parallel testing with per-worker cache files
+    xdist_worker = os.getenv("PYTEST_XDIST_WORKER")
+    if xdist_worker and backend == "sqlite":
+        cache_name = f"{cache_name}_{xdist_worker}"
+
+    if backend == "mongodb":
+        try:
+            uri = os.environ["MONGO_URI"]  # Required for MongoDB
+            db_name = os.getenv("MONGO_DB", "requests_cache")
+            collection_name = os.getenv("MONGO_COLL", "http")
+            return _mongo_session(uri, db_name, collection_name)
+        except KeyError:
+            logger.warning(
+                "MongoDB backend requested but MONGO_URI not set, falling back to SQLite"
+            )
+            return _sqlite_session(cache_name)
+        except Exception as e:
+            # Graceful fallback keeps tests/CI green
+            logger.warning(f"MongoDB connection failed, falling back to SQLite: {e}")
+            return _sqlite_session(cache_name)
+
+    return _sqlite_session(cache_name)
+
+
+def get_session() -> CachedSession:
+    """
+    Get cached session with SQLite backend (default) or MongoDB (optional dev convenience).
+
+    Environment variables:
+    - CACHE_BACKEND: 'sqlite' (default) or 'mongodb'
+    - CACHE_NAME: Cache file/collection name (default: 'cache/http')
+    - For MongoDB: MONGO_URI (required), MONGO_DB (default: 'requests_cache'), MONGO_COLL (default: 'http')
+
+    MongoDB gracefully falls back to SQLite if connection fails.
+    """
+    global _SESSION
+    if _SESSION is None:
+        _SESSION = _make_session()
+    return _SESSION
+
+
+def reset_session():
+    """Close and clear the module session (for tests)."""
+    global _SESSION
+    try:
+        if _SESSION:
+            _SESSION.close()
+    except Exception:
+        pass
+    _SESSION = None
+
+
+def set_session_for_tests(session: CachedSession):
+    """Force http_cache.get_session() to return a provided session (for tests)."""
+    global _SESSION
+    _SESSION = session
 
 
 def request(
