@@ -1,4 +1,5 @@
 """Generate HTML dashboard for GitHub Pages from metrics results."""
+# ruff: noqa: W291, W293
 
 from pathlib import Path
 

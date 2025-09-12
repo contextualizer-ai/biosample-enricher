@@ -9,7 +9,7 @@ from biosample_enricher.metrics.visualizer import MetricsVisualizer
 
 __all__ = [
     "BiosampleMetricsFetcher",
-    "CoverageEvaluator", 
+    "CoverageEvaluator",
     "MetricsReporter",
     "MetricsVisualizer",
     "generate_html_dashboard",
