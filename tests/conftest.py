@@ -8,6 +8,7 @@ import os
 import time
 import threading
 import uuid
+import importlib
 from pathlib import Path
 
 import pytest
@@ -102,6 +103,29 @@ def _guard_google_env(monkeypatch):
     key = os.environ.get("GOOGLE_MAIN_API_KEY")
     if key:
         monkeypatch.setenv("GOOGLE_MAIN_API_KEY", key)
+    yield
+
+
+@pytest.fixture(autouse=True)
+def _reset_http_cache_state():
+    """Reset http_cache module globals and singletons before each test."""
+    try:
+        hc = importlib.import_module("biosample_enricher.http_cache")
+        # Common patterns: module-level _session or get_session() memoization
+        for attr in ("_session", "SESSION", "session", "cached_session"):
+            if hasattr(hc, attr):
+                s = getattr(hc, attr)
+                try:
+                    if s: s.close()
+                except Exception:
+                    pass
+                setattr(hc, attr, None)
+        # Reset known flags if they exist (harmless if absent)
+        for flag in ("READ_CACHE_ONLY", "OFFLINE", "WRITE_THROUGH", "FORCE_PROVIDER"):
+            if hasattr(hc, flag):
+                setattr(hc, flag, False)
+    except Exception:
+        pass
     yield
 
 

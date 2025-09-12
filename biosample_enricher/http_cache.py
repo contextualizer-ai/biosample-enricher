@@ -3,6 +3,7 @@ Simple HTTP caching with coordinate canonicalization using requests-cache.
 """
 
 import os
+import uuid
 from typing import Any
 
 import requests
@@ -13,6 +14,7 @@ from requests_cache import CachedSession, create_key
 from biosample_enricher.logging_config import get_logger
 
 logger = get_logger(__name__)
+DEBUG = os.getenv("DEBUG_HTTP_CACHE")
 
 
 def canonicalize_coords(params: dict[str, Any]) -> dict[str, Any]:
@@ -95,7 +97,7 @@ def get_session() -> CachedSession:
     
     settings = get_settings()
     
-    return CachedSession(
+    sess = CachedSession(
         backend=backend,
         cache_name=settings.cache.cache_name,
         key_fn=_key_with_auth,
@@ -104,6 +106,16 @@ def get_session() -> CachedSession:
         expire_after=settings.cache.ttl_seconds,
         filter_fn=_cache_ok,     # Additional filtering for Google error responses
     )
+    
+    if DEBUG:
+        rid = os.getenv("RUN_ID") or uuid.uuid4().hex[:8]
+        print(
+            f"[HTTP-CACHE DEBUG {rid}] "
+            f"backend={backend} name={settings.cache.cache_name} "
+            f"allowable_codes={(200,)} filter_fn={_cache_ok.__name__} key_fn={_key_with_auth.__name__}"
+        )
+    
+    return sess
 
 
 def request(
