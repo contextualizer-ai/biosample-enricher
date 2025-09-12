@@ -4,11 +4,12 @@ pytest configuration for biosample-enricher tests.
 Ensures environment variables from .env are loaded for all tests.
 """
 
-import os
-import uuid
+import contextlib
 import importlib
+import os
 import threading
 import time
+import uuid
 from pathlib import Path
 
 import pytest
@@ -46,6 +47,7 @@ def google_api_key():
 
 # Session isolation harness to prevent test state leakage
 
+
 @pytest.fixture(autouse=True)
 def _reset_http_cache_state():
     """Reset the http_cache module's singleton & any flags between tests."""
@@ -75,25 +77,23 @@ def _guard_google_env(monkeypatch):
 @pytest.fixture(autouse=True)
 def _ban_global_requests_cache():
     """Ensure no one globally monkey-patches requests via install_cache()."""
-    try: 
+    with contextlib.suppress(Exception):
         requests_cache.uninstall_cache()
-    except Exception: 
-        pass
     yield
-    try: 
+    with contextlib.suppress(Exception):
         requests_cache.uninstall_cache()
-    except Exception: 
-        pass
 
 
 @pytest.fixture(autouse=True)
 def _google_isolated_session(request, monkeypatch, tmp_path):
     """Automatically route *Google* tests to an isolated cache namespace."""
-    node_text = (str(getattr(request, "fspath", "")).lower() + "::" + request.node.name.lower())
+    node_text = (
+        str(getattr(request, "fspath", "")).lower() + "::" + request.node.name.lower()
+    )
     if "google" not in node_text:
         yield
         return
-    
+
     sid = uuid.uuid4().hex
     session = requests_cache.CachedSession(
         cache_name=str(tmp_path / f"google_{sid}"),
@@ -102,25 +102,27 @@ def _google_isolated_session(request, monkeypatch, tmp_path):
         allowable_codes=(200,),
         expire_after=3600,
     )
-    
+
     import biosample_enricher.http_cache as hc
+
     # Make the app use this isolated session for the duration of the test
     monkeypatch.setattr(hc, "get_session", lambda: session, raising=True)
     yield
-    try: 
+    with contextlib.suppress(Exception):
         session.close()
-    except Exception: 
-        pass
 
 
 # Gentle QPS guard for Google tests only (won't slow unit tests)
 _google_lock = threading.Lock()
 _google_last = [0.0]
 
+
 @pytest.fixture(autouse=True)
 def _google_qps(request):
     """Gentle QPS guard for Google tests only."""
-    node_text = (str(getattr(request, "fspath", "")).lower() + "::" + request.node.name.lower())
+    node_text = (
+        str(getattr(request, "fspath", "")).lower() + "::" + request.node.name.lower()
+    )
     if "google" not in node_text:
         yield
         return
@@ -143,7 +145,7 @@ def _route_all_test_cache_to_tmp(tmp_path, monkeypatch):
 
     # Import here to avoid import-time issues
     import biosample_enricher.http_cache as hc
-    
+
     # Start from a fresh module session
     if hasattr(hc, "reset_session"):
         hc.reset_session()
@@ -155,16 +157,14 @@ def _route_all_test_cache_to_tmp(tmp_path, monkeypatch):
         cache_control=True,
         allowable_codes=(200,),
     )
-    
+
     # Replace the global session before test execution
     original_session = hc._SESSION
     hc._SESSION = test_session
-    
+
     yield
 
     # Restore original session
     hc._SESSION = original_session
-    try:
+    with contextlib.suppress(Exception):
         test_session.close()
-    except Exception:
-        pass

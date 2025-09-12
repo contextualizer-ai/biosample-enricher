@@ -6,7 +6,6 @@ import os
 from typing import Any
 
 import requests
-import requests_cache
 from pymongo import MongoClient
 from requests_cache import CachedSession, create_key
 
@@ -45,11 +44,11 @@ def canonicalize_coords(params: dict[str, Any]) -> dict[str, Any]:
     return canonical
 
 
-def _key_with_auth(request, ignored_parameters=None, match_headers=None, **kwargs):
+def _key_with_auth(request, **kwargs):
     return create_key(
         request=request,
-        ignored_parameters=[],                  # don't ignore ?key=
-        match_headers=['X-Goog-Api-Key', 'Authorization'],
+        ignored_parameters=[],  # don't ignore ?key=
+        match_headers=["X-Goog-Api-Key", "Authorization"],
         **kwargs,
     )
 
@@ -57,11 +56,11 @@ def _key_with_auth(request, ignored_parameters=None, match_headers=None, **kwarg
 def _cache_ok(response):
     if response.status_code != 200:
         return False
-    url = (getattr(response, "url", "") or "")
-    if 'googleapis.com' in url or 'maps.googleapis.com' in url:
+    url = getattr(response, "url", "") or ""
+    if "googleapis.com" in url or "maps.googleapis.com" in url:
         try:
             j = response.json()
-            if ('error' in j and 'message' in j['error']) or 'error_message' in j:
+            if ("error" in j and "message" in j["error"]) or "error_message" in j:
                 return False
         except Exception:
             pass
@@ -82,15 +81,17 @@ def _sqlite_session(cache_name: str) -> CachedSession:
     )
 
 
-def _mongo_session(uri: str, db_name: str, collection_name: str, timeout_ms: int = 5000) -> CachedSession:
+def _mongo_session(
+    uri: str, db_name: str, collection_name: str, timeout_ms: int = 5000
+) -> CachedSession:
     """Create MongoDB-backed cached session."""
     logger.debug(f"Attempting MongoDB connection to {uri}")
-    client = MongoClient(uri, serverSelectionTimeoutMS=timeout_ms)
+    client: MongoClient = MongoClient(uri, serverSelectionTimeoutMS=timeout_ms)
     client.admin.command("ping")  # Fail fast if unreachable
     logger.info(f"Using MongoDB cache backend: {db_name}.{collection_name}")
     return CachedSession(
         cache_name=collection_name,
-        backend="mongodb", 
+        backend="mongodb",
         connection=client,
         key_fn=_key_with_auth,
         cache_control=True,
@@ -105,7 +106,7 @@ def _make_session() -> CachedSession:
     # Defaults are CI- and prod-friendly (SQLite)
     backend = os.getenv("CACHE_BACKEND", "sqlite").lower()
     cache_name = os.getenv("CACHE_NAME", "cache/http")
-    
+
     # Support pytest-xdist parallel testing with per-worker cache files
     xdist_worker = os.getenv("PYTEST_XDIST_WORKER")
     if xdist_worker and backend == "sqlite":
@@ -118,7 +119,9 @@ def _make_session() -> CachedSession:
             collection_name = os.getenv("MONGO_COLL", "http")
             return _mongo_session(uri, db_name, collection_name)
         except KeyError:
-            logger.warning("MongoDB backend requested but MONGO_URI not set, falling back to SQLite")
+            logger.warning(
+                "MongoDB backend requested but MONGO_URI not set, falling back to SQLite"
+            )
             return _sqlite_session(cache_name)
         except Exception as e:
             # Graceful fallback keeps tests/CI green
@@ -131,12 +134,12 @@ def _make_session() -> CachedSession:
 def get_session() -> CachedSession:
     """
     Get cached session with SQLite backend (default) or MongoDB (optional dev convenience).
-    
+
     Environment variables:
     - CACHE_BACKEND: 'sqlite' (default) or 'mongodb'
     - CACHE_NAME: Cache file/collection name (default: 'cache/http')
     - For MongoDB: MONGO_URI (required), MONGO_DB (default: 'requests_cache'), MONGO_COLL (default: 'http')
-    
+
     MongoDB gracefully falls back to SQLite if connection fails.
     """
     global _SESSION

@@ -140,7 +140,7 @@ class TestLoggingIntegration:
 
         # Opt out of test cache redirection for this test
         monkeypatch.setenv("USE_PROD_CACHE_IN_TESTS", "1")
-        
+
         # Reset session to force fresh creation
         reset_session()
 
