@@ -1,0 +1,54 @@
+# Pre-commit hooks for biosample-enricher
+# See https://pre-commit.com for more information
+
+repos:
+  # Protect precious LLM-generated files from accidental deletion
+  - repo: local
+    hooks:
+      - id: protect-precious-files
+        name: Protect precious LLM-generated files
+        entry: .github/hooks/protect-precious-files.sh
+        language: system
+        always_run: true
+        pass_filenames: false
+        description: Prevents accidental deletion of valuable LLM-generated schema analysis files
+
+  # Standard code quality hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^data/
+      - id: end-of-file-fixer
+        exclude: ^data/
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-json
+        exclude: ^data/
+      - id: check-yaml
+        exclude: ^data/
+
+  # Python-specific hooks (integrated with your existing ruff setup)
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+        require_serial: false
+        
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+        require_serial: false
+        
+      - id: mypy
+        name: mypy type checking
+        entry: uv run mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+        additional_dependencies: []
