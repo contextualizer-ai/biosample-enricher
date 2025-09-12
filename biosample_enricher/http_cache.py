@@ -44,7 +44,7 @@ def canonicalize_coords(params: dict[str, Any]) -> dict[str, Any]:
     return canonical
 
 
-def _key_with_auth(request, **kwargs):
+def _key_with_auth(request):
     return create_key(
         request=request,
         ignored_parameters=[],  # don't ignore ?key=
