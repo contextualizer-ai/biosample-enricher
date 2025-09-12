@@ -1,7 +1,7 @@
 # Declare all targets that don't create files as .PHONY
 .PHONY: install install-dev \
 	test test-cov test-watch test-unit test-integration test-network test-slow test-fast test-cache test-cache-network test-sunrise-demo \
-	lint lint-fix format format-check type-check dep-check check check-ci \
+	lint lint-fix format format-check type-check dep-check check check-ci auto-fix-ci \
 	build clean clean-all \
 	pre-commit-install pre-commit-run \
 	dev-setup dev-check \
@@ -101,6 +101,10 @@ check: lint type-check dep-check test ## Run all checks (lint, type-check, dep-c
 
 check-ci: format lint type-check dep-check test ## Run all CI checks (format, lint, type-check, dep-check, test)
 	@echo "All CI checks completed!"
+
+auto-fix-ci: ## Automatically fix CI issues in a loop until all checks pass
+	@echo "Running auto-fix CI loop..."
+	@.github/hooks/auto-fix-ci.sh
 
 ## Package building
 build: ## Build the package
