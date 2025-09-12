@@ -8,6 +8,7 @@ from typing import Any
 from biosample_enricher.elevation.classifier import CoordinateClassifier
 from biosample_enricher.elevation.service import ElevationService
 from biosample_enricher.logging_config import get_logger
+from biosample_enricher.marine.service import MarineService
 from biosample_enricher.models import BiosampleLocation, ElevationRequest, ValueStatus
 from biosample_enricher.reverse_geocoding.service import ReverseGeocodingService
 from biosample_enricher.weather.service import WeatherService
@@ -23,6 +24,7 @@ class CoverageEvaluator:
         self.elevation_service = ElevationService()
         self.geocoding_service = ReverseGeocodingService()
         self.weather_service = WeatherService()
+        self.marine_service = MarineService()
         self.classifier = CoordinateClassifier()
 
     def evaluate_sample(
@@ -52,6 +54,7 @@ class CoverageEvaluator:
                 raw_doc, normalized_location, source
             ),
             "weather": self._evaluate_weather(raw_doc, normalized_location, source),
+            "marine": self._evaluate_marine(raw_doc, normalized_location, source),
         }
 
         return result
@@ -631,6 +634,160 @@ class CoverageEvaluator:
         except Exception:
             # If distance calculation fails, return 0 (same location assumed)
             return 0.0
+
+    def _evaluate_marine(
+        self, raw_doc: dict[str, Any], location: BiosampleLocation, source: str
+    ) -> dict[str, Any]:
+        """Evaluate marine coverage before and after enrichment.
+
+        Args:
+            raw_doc: Original document
+            location: Normalized location
+            source: Data source
+
+        Returns:
+            Marine coverage metrics
+        """
+        logger.info(f"\n🌊 MARINE ANALYSIS for {location.sample_id}")
+        logger.info(f"Source: {source}")
+
+        # Define marine parameter fields for schema mapping
+        marine_fields = {
+            "sea_surface_temperature": [
+                "temp",
+                "sampleCollectionTemperature",
+                "temperature",
+            ],
+            "bathymetry": ["tot_depth_water_col", "depthInMeters", "depth", "elev"],
+            "chlorophyll_a": ["chlorophyll", "chl_a", "chlorophyll_a"],
+            "salinity": ["salinity", "salinityConcentration"],
+            "dissolved_oxygen": ["diss_oxygen", "oxygenConcentration", "oxygen"],
+            "ph": ["ph", "pH"],
+            "ocean_currents": ["current_u", "current_v", "ocean_velocity"],
+            "wave_height": ["wave_height", "significant_wave_height"],
+        }
+
+        # Analyze before coverage
+        before_coverage = {}
+        for marine_param, field_names in marine_fields.items():
+            has_field = False
+            for field_name in field_names:
+                if self._has_marine_field(raw_doc, field_name):
+                    has_field = True
+                    break
+            before_coverage[marine_param] = has_field
+
+        before_count = sum(before_coverage.values())
+        logger.info(
+            f"📊 MARINE BEFORE: {before_count}/{len(marine_fields)} fields present"
+        )
+
+        # Try marine enrichment if we have coordinates and collection date
+        after_coverage = before_coverage.copy()  # Start with existing data
+        enrichment_error = None
+        providers_used = []
+        data_quality = None
+
+        if (
+            location.latitude is not None
+            and location.longitude is not None
+            and location.collection_date is not None
+        ):
+            try:
+                # Create biosample dict for marine service
+                biosample_dict = {
+                    "id": location.sample_id,
+                    "lat_lon": {
+                        "latitude": location.latitude,
+                        "longitude": location.longitude,
+                    },
+                    "collection_date": {
+                        "has_raw_value": location.collection_date.strftime("%Y-%m-%d")
+                        if hasattr(location.collection_date, "strftime")
+                        else str(location.collection_date)
+                    },
+                }
+
+                logger.info(
+                    f"🚀 CALLING MARINE SERVICE for {location.latitude}, {location.longitude} on {location.collection_date}"
+                )
+
+                # Get marine enrichment
+                target_schema = "nmdc" if source.lower() == "nmdc" else "gold"
+                marine_result = self.marine_service.get_marine_data_for_biosample(
+                    biosample_dict, target_schema=target_schema
+                )
+
+                if marine_result.get("enrichment_success"):
+                    logger.info("✅ MARINE ENRICHMENT SUCCESSFUL")
+                    marine_data = marine_result["marine_result"]
+                    providers_used = marine_data.successful_providers
+                    data_quality = marine_data.overall_quality.value
+
+                    # Check which marine parameters were enriched
+                    for marine_param in marine_fields:
+                        if (
+                            hasattr(marine_data, marine_param)
+                            and getattr(marine_data, marine_param) is not None
+                        ):
+                            after_coverage[marine_param] = True
+
+                    logger.info(
+                        f"📈 Marine providers used: {', '.join(providers_used)}"
+                    )
+                    logger.info(f"📈 Marine data quality: {data_quality}")
+                else:
+                    logger.warning("❌ MARINE ENRICHMENT FAILED")
+                    enrichment_error = marine_result.get("error", "Unknown error")
+
+            except Exception as e:
+                logger.error(f"💥 MARINE SERVICE ERROR: {e}")
+                enrichment_error = str(e)
+
+        after_count = sum(after_coverage.values())
+        improvement = after_count > before_count
+
+        logger.info(
+            f"📊 MARINE AFTER: {after_count}/{len(marine_fields)} fields present"
+        )
+        logger.info(f"📈 MARINE IMPROVED: {improvement}")
+
+        return {
+            "before": before_coverage,
+            "after": after_coverage,
+            "before_count": before_count,
+            "after_count": after_count,
+            "total_possible": len(marine_fields),
+            "improved": improvement,
+            "providers": providers_used,
+            "error": enrichment_error,
+            "data_quality": data_quality,
+        }
+
+    def _has_marine_field(self, biosample: dict[str, Any], field_name: str) -> bool:
+        """Check if biosample has data for a specific marine field."""
+        if field_name not in biosample:
+            return False
+
+        value = biosample[field_name]
+
+        # Handle NMDC QuantityValue format
+        if isinstance(value, dict):
+            if "has_numeric_value" in value and value["has_numeric_value"] is not None:
+                return True
+            if "has_raw_value" in value and value["has_raw_value"] is not None:
+                return True
+
+        # Handle direct numeric values or non-empty strings
+        elif (
+            isinstance(value, int | float)
+            and value is not None
+            or isinstance(value, str)
+            and value.strip()
+        ):
+            return True
+
+        return False
 
     def evaluate_batch(
         self, samples: list[tuple[dict[str, Any], BiosampleLocation]], source: str

@@ -212,6 +212,80 @@ class MetricsReporter:
                     }
                 )
 
+            # Marine coverage (overall)
+            marine_before_count = sum(
+                e.get("marine", {}).get("before_count", 0) for e in source_evals
+            )
+            marine_after_count = sum(
+                e.get("marine", {}).get("after_count", 0) for e in source_evals
+            )
+            marine_total_possible = sum(
+                e.get("marine", {}).get("total_possible", 7) for e in source_evals
+            )
+
+            if marine_total_possible > 0:
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": "Marine",
+                        "samples": total,
+                        "before": round(
+                            100 * marine_before_count / marine_total_possible, 1
+                        ),
+                        "after": round(
+                            100 * marine_after_count / marine_total_possible, 1
+                        ),
+                        "improvement": round(
+                            100
+                            * (marine_after_count - marine_before_count)
+                            / marine_total_possible,
+                            1,
+                        ),
+                    }
+                )
+
+            # Individual marine parameters
+            marine_fields = [
+                "sea_surface_temperature",
+                "bathymetry",
+                "chlorophyll_a",
+                "salinity",
+                "dissolved_oxygen",
+                "ph",
+                "wave_height",
+            ]
+
+            for marine_param in marine_fields:
+                param_before = sum(
+                    1
+                    for e in source_evals
+                    if e.get("marine", {}).get("before", {}).get(marine_param, False)
+                )
+                param_after = sum(
+                    1
+                    for e in source_evals
+                    if e.get("marine", {}).get("after", {}).get(marine_param, False)
+                )
+
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": f"Marine - {marine_param.replace('_', ' ').title()}",
+                        "samples": total,
+                        "before": round(100 * param_before / total, 1)
+                        if total > 0
+                        else 0,
+                        "after": round(100 * param_after / total, 1)
+                        if total > 0
+                        else 0,
+                        "improvement": round(
+                            100 * (param_after - param_before) / total, 1
+                        )
+                        if total > 0
+                        else 0,
+                    }
+                )
+
         df = pd.DataFrame(metrics)
 
         # Add formatted improvement column
@@ -345,6 +419,36 @@ class MetricsReporter:
                     "place_after": eval_result.get("place_name", {}).get("after_flat"),
                     "place_providers": ", ".join(
                         eval_result.get("place_name", {}).get("providers", [])
+                    ),
+                    # Marine
+                    "marine_before_count": eval_result.get("marine", {}).get(
+                        "before_count", 0
+                    ),
+                    "marine_after_count": eval_result.get("marine", {}).get(
+                        "after_count", 0
+                    ),
+                    "marine_improvement": eval_result.get("marine", {}).get(
+                        "improved", False
+                    ),
+                    "marine_providers": ", ".join(
+                        eval_result.get("marine", {}).get("providers", [])
+                    ),
+                    "marine_quality": eval_result.get("marine", {}).get("data_quality"),
+                    # Weather
+                    "weather_before_count": eval_result.get("weather", {}).get(
+                        "before_count", 0
+                    ),
+                    "weather_after_count": eval_result.get("weather", {}).get(
+                        "after_count", 0
+                    ),
+                    "weather_improvement": eval_result.get("weather", {}).get(
+                        "improved", False
+                    ),
+                    "weather_providers": ", ".join(
+                        eval_result.get("weather", {}).get("providers", [])
+                    ),
+                    "weather_quality": eval_result.get("weather", {}).get(
+                        "data_quality"
                     ),
                 }
             )

@@ -1,11 +1,11 @@
 source,data_type,samples,before,after,improvement,improvement_fmt
-NMDC,Elevation,10,70.0,100.0,30.0,+30.0%
+NMDC,Elevation,10,100.0,100.0,0.0,0.0%
 NMDC,Place Name,10,100.0,100.0,0.0,0.0%
 NMDC,Place Name - Country,10,100.0,100.0,0.0,0.0%
 NMDC,Place Name - State,10,100.0,100.0,0.0,0.0%
-NMDC,Place Name - Locality,10,70.0,100.0,30.0,+30.0%
-NMDC,Weather,10,5.0,87.5,82.5,+82.5%
-NMDC,Weather - Temperature,10,40.0,100.0,60.0,+60.0%
+NMDC,Place Name - Locality,10,80.0,100.0,20.0,+20.0%
+NMDC,Weather,10,2.5,87.5,85.0,+85.0%
+NMDC,Weather - Temperature,10,20.0,100.0,80.0,+80.0%
 NMDC,Weather - Wind Speed,10,0.0,100.0,100.0,+100.0%
 NMDC,Weather - Wind Direction,10,0.0,100.0,100.0,+100.0%
 NMDC,Weather - Humidity,10,0.0,100.0,100.0,+100.0%
@@ -13,17 +13,33 @@ NMDC,Weather - Solar Radiation,10,0.0,100.0,100.0,+100.0%
 NMDC,Weather - Precipitation,10,0.0,100.0,100.0,+100.0%
 NMDC,Weather - Pressure,10,0.0,100.0,100.0,+100.0%
 NMDC,Weather - Chlorophyll,10,0.0,0.0,0.0,0.0%
+NMDC,Marine,10,17.5,30.0,12.5,+12.5%
+NMDC,Marine - Sea Surface Temperature,10,20.0,20.0,0.0,0.0%
+NMDC,Marine - Bathymetry,10,100.0,100.0,0.0,0.0%
+NMDC,Marine - Chlorophyll A,10,0.0,100.0,100.0,+100.0%
+NMDC,Marine - Salinity,10,0.0,0.0,0.0,0.0%
+NMDC,Marine - Dissolved Oxygen,10,10.0,10.0,0.0,0.0%
+NMDC,Marine - Ph,10,10.0,10.0,0.0,0.0%
+NMDC,Marine - Wave Height,10,0.0,0.0,0.0,0.0%
 GOLD,Elevation,10,0.0,100.0,100.0,+100.0%
 GOLD,Place Name,10,100.0,100.0,0.0,0.0%
-GOLD,Place Name - Country,10,80.0,90.0,10.0,+10.0%
-GOLD,Place Name - State,10,80.0,90.0,10.0,+10.0%
-GOLD,Place Name - Locality,10,20.0,90.0,70.0,+70.0%
-GOLD,Weather,10,0.0,70.0,70.0,+70.0%
-GOLD,Weather - Temperature,10,0.0,80.0,80.0,+80.0%
-GOLD,Weather - Wind Speed,10,0.0,80.0,80.0,+80.0%
-GOLD,Weather - Wind Direction,10,0.0,80.0,80.0,+80.0%
-GOLD,Weather - Humidity,10,0.0,80.0,80.0,+80.0%
-GOLD,Weather - Solar Radiation,10,0.0,80.0,80.0,+80.0%
-GOLD,Weather - Precipitation,10,0.0,80.0,80.0,+80.0%
-GOLD,Weather - Pressure,10,0.0,80.0,80.0,+80.0%
+GOLD,Place Name - Country,10,80.0,100.0,20.0,+20.0%
+GOLD,Place Name - State,10,80.0,100.0,20.0,+20.0%
+GOLD,Place Name - Locality,10,50.0,100.0,50.0,+50.0%
+GOLD,Weather,10,0.0,87.5,87.5,+87.5%
+GOLD,Weather - Temperature,10,0.0,100.0,100.0,+100.0%
+GOLD,Weather - Wind Speed,10,0.0,100.0,100.0,+100.0%
+GOLD,Weather - Wind Direction,10,0.0,100.0,100.0,+100.0%
+GOLD,Weather - Humidity,10,0.0,100.0,100.0,+100.0%
+GOLD,Weather - Solar Radiation,10,0.0,100.0,100.0,+100.0%
+GOLD,Weather - Precipitation,10,0.0,100.0,100.0,+100.0%
+GOLD,Weather - Pressure,10,0.0,100.0,100.0,+100.0%
 GOLD,Weather - Chlorophyll,10,0.0,0.0,0.0,0.0%
+GOLD,Marine,10,3.8,25.0,21.2,+21.2%
+GOLD,Marine - Sea Surface Temperature,10,0.0,0.0,0.0,0.0%
+GOLD,Marine - Bathymetry,10,30.0,100.0,70.0,+70.0%
+GOLD,Marine - Chlorophyll A,10,0.0,100.0,100.0,+100.0%
+GOLD,Marine - Salinity,10,0.0,0.0,0.0,0.0%
+GOLD,Marine - Dissolved Oxygen,10,0.0,0.0,0.0,0.0%
+GOLD,Marine - Ph,10,0.0,0.0,0.0,0.0%
+GOLD,Marine - Wave Height,10,0.0,0.0,0.0,0.0%

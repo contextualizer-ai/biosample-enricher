@@ -1,21 +1,21 @@
-sample_id,source,region,is_us,is_ocean,elev_before,elev_after,elev_provider,place_before,place_after,place_providers
-nmdc:bsm-11-w0ha0049,nmdc,CONUS,True,False,325.0,324.59274292,usgs_3dep,"USA: Iowa, Ames","USA: Iowa, Ames","osm, google"
-nmdc:bsm-11-vyahkv63,nmdc,CONUS,True,False,963.0,962.879577637,usgs_3dep,"USA: Idaho, Orchard Combat Training Center: 1983 OCTC Fire Burned","USA: Idaho, Orchard Combat Training Center: 1983 OCTC Fire Burned","osm, google"
-nmdc:bsm-11-8tff8n40,nmdc,CONUS,True,False,190.0,190.010009766,usgs_3dep,"USA: Massachusetts, Harvard Forest & Quabbin Watershed","USA: Massachusetts, Harvard Forest & Quabbin Watershed","osm, google"
-nmdc:bsm-11-88m21j26,nmdc,CONUS,True,False,,882.136901855,usgs_3dep,USA: Washington,"USA: Washington, Deer Valley","osm, google"
-nmdc:bsm-11-0rqhtj66,nmdc,CONUS,True,False,,3.200999975,usgs_3dep,USA: Louisiana,"USA: Louisiana, Melville",google
-nmdc:bsm-13-mz3ec282,nmdc,CONUS,True,False,,104.849998474,usgs_3dep,"USA: Columbia River, Washington","USA: Columbia River, Washington","osm, google"
-nmdc:bsm-11-8t1twt29,nmdc,CONUS,True,False,258.0,258.947753906,usgs_3dep,USA: Wisconsin,"USA: Wisconsin, Madison","osm, google"
-nmdc:bsm-11-hjfgex58,nmdc,CONUS,True,False,25.8,28.030847549,usgs_3dep,"USA: Florida, Ordway-Swisher Biological Station","USA: Florida, Ordway-Swisher Biological Station","osm, google"
-nmdc:bsm-11-c0wccn75,nmdc,CONUS,True,False,322.2,323.435516357,usgs_3dep,"USA: Tennessee, Oak Ridge","USA: Tennessee, Oak Ridge",google
-nmdc:bsm-11-7z1n0696,nmdc,CONUS,True,False,297.0,296.279266357,usgs_3dep,"USA: Wisconsin, Oregon","USA: Wisconsin, Oregon","osm, google"
-Gb0347361,gold,,False,True,,-5184.25244140625,google_elevation,Atlantic Ocean,Atlantic Ocean,"osm, google"
-Gb0299123,gold,,False,False,,187.3548431396484,google_elevation,United Kingdom: Penicuik,"United Kingdom: Penicuik, Penicuik","osm, google"
-Gb0303185,gold,,False,False,,,google_elevation,Canada: Churchill,"Canada: Churchill, Churchill",google
-Gb0317528,gold,,False,False,,522.3944702148438,google_elevation,Oman: Ash Sharqiyah North Governorate,"Oman: Ash Sharqiyah North Governorate, Dima Wattayeen","osm, google"
-Gb0321267,gold,AK,True,False,,715.299987793,usgs_3dep,USA: Alaska,USA: Alaska,"osm, google"
-Gb0206027,gold,,False,False,,10.9971866607666,google_elevation,China: Hangzhou,"China: Hangzhou, Shangcheng District","osm, google"
-Gb0120555,gold,CONUS,True,False,,140.55519104,usgs_3dep,"UTSWMC, Dallas, Texas, USA","United States: Texas, UTSWMC, Dallas, Texas, USA","osm, google"
-Gb0251897,gold,CONUS,True,False,,11.599477768,usgs_3dep,USA: Boston,"USA: Boston, Boston","osm, google"
-Gb0201870,gold,,False,False,,1629.970825195312,google_elevation,Kenya: Laikipia,"Kenya: Laikipia, Kimanjo","osm, google"
-Gb0338234,gold,,False,False,,887.5347900390625,google_elevation,Myanmar: Nyaungshwe,"Myanmar: Nyaungshwe, Khaungtaing",google
+sample_id,source,region,is_us,is_ocean,elev_before,elev_after,elev_provider,place_before,place_after,place_providers,marine_before_count,marine_after_count,marine_improvement,marine_providers,marine_quality,weather_before_count,weather_after_count,weather_improvement,weather_providers,weather_quality
+nmdc:bsm-11-8xbvzk86,nmdc,CONUS,True,False,325.0,324.59274292,usgs_3dep,"USA: Iowa, Ames","USA: Iowa, Ames","osm, google",1,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+nmdc:bsm-11-p6mjxv77,nmdc,CONUS,True,False,298.0,295.946746826,usgs_3dep,"USA: Michigan, Delton","USA: Michigan, Delton","osm, google",1,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+nmdc:bsm-11-y01a2k15,nmdc,CONUS,True,False,1362.3,1361.928588867,usgs_3dep,"USA: Colorado, North Sterling","USA: Colorado, North Sterling","osm, google",1,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+nmdc:bsm-11-wz307265,nmdc,CONUS,True,False,372.0,372.634613037,usgs_3dep,"USA: Michigan, Lake City","USA: Michigan, Lake City",google,1,2,True,"esa_cci, gebco",satellite_l3,0,7,True,open_meteo,
+nmdc:bsm-11-sjd9dt73,nmdc,CONUS,True,False,258.0,258.947753906,usgs_3dep,USA: Wisconsin,"USA: Wisconsin, Madison","osm, google",3,4,True,"esa_cci, gebco",satellite_l3,1,7,True,"meteostat, open_meteo",
+nmdc:bsm-11-n6479f35,nmdc,CONUS,True,False,238.0,218.442199707,usgs_3dep,"USA: California, Berkeley","USA: California, Berkeley","osm, google",1,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+nmdc:bsm-11-z6js6q42,nmdc,CONUS,True,False,260.1,257.920928955,usgs_3dep,"USA: Tennessee, Oak Ridge","USA: Tennessee, Oak Ridge",google,3,4,True,"esa_cci, gebco",satellite_l3,1,7,True,"meteostat, open_meteo",
+nmdc:bsm-11-exbsj975,nmdc,CONUS,True,False,372.0,372.634613037,usgs_3dep,"USA: Michigan, Lake City","USA: Michigan, Lake City",google,1,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+nmdc:bsm-11-rkm5fe46,nmdc,CONUS,True,False,372.0,372.634613037,usgs_3dep,"USA: Michigan, Lake City","USA: Michigan, Lake City",google,1,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+nmdc:bsm-11-pwk88919,nmdc,CONUS,True,False,432.0,414.638916016,usgs_3dep,USA: California: Angelo Coastal Reserve,"USA: California: Angelo Coastal Reserve, Laytonville","osm, google",1,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+Gb0334587,gold,CONUS,True,False,,1571.660888672,usgs_3dep,"USA: Boulder, Colorado","USA: Boulder, Colorado","osm, google",0,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+Gb0354044,gold,,False,False,,-13.20498752593994,google_elevation,"China: East China Sea, Zhejiang","China: East China Sea, Zhejiang","osm, google",0,2,True,"esa_cci, gebco",satellite_l3,0,7,True,open_meteo,
+Gb0242277,gold,,False,False,,-31.4365062713623,google_elevation,Denmark: Baltic Sea,"Denmark: Baltic Sea, Faaborg","osm, google",0,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+Gb0139066,gold,,False,False,,495.2587585449219,google_elevation,"China: Chengdu, Sichuan","China: Chengdu, Sichuan",google,0,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+Gb0264284,gold,,False,False,,,google_elevation,Spain: Mediterranean Sea,"Spain: Mediterranean Sea, L'Estartit",google,1,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+Gb0407701,gold,,False,False,,-0.5375767946243286,google_elevation,Pacific Ocean,"Papua New Guinea: West New Britain, Pacific Ocean","osm, google",1,2,True,"esa_cci, gebco",satellite_l3,0,7,True,open_meteo,
+Gb0185245,gold,,False,False,,20.04216003417969,google_elevation,"Valencia, Spain","Spain: Valencian Community, Valencia, Spain","osm, google",0,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+Gb0147917,gold,CONUS,True,False,,1237.897827148,usgs_3dep,USA: Utah,"USA: Utah, Moab","osm, google",0,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+Gb0184910,gold,CONUS,True,False,,1128.233764648,usgs_3dep,USA: California,"USA: California, Lebec","osm, google",1,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
+Gb0276612,gold,,False,False,,5.760148525238037,google_elevation,China: Ghuangzhou,"China: Ghuangzhou, Guangzhou",google,0,2,True,"esa_cci, gebco",satellite_l3,0,7,True,"meteostat, open_meteo",
