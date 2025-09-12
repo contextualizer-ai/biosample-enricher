@@ -1,11 +1,29 @@
 source,data_type,samples,before,after,improvement,improvement_fmt
-NMDC,Elevation,5,100.0,100.0,0.0,0.0%
-NMDC,Place Name,5,100.0,100.0,0.0,0.0%
-NMDC,Place Name - Country,5,100.0,100.0,0.0,0.0%
-NMDC,Place Name - State,5,100.0,100.0,0.0,0.0%
-NMDC,Place Name - Locality,5,80.0,100.0,20.0,+20.0%
-GOLD,Elevation,5,0.0,100.0,100.0,+100.0%
-GOLD,Place Name,5,100.0,100.0,0.0,0.0%
-GOLD,Place Name - Country,5,100.0,100.0,0.0,0.0%
-GOLD,Place Name - State,5,100.0,100.0,0.0,0.0%
-GOLD,Place Name - Locality,5,40.0,100.0,60.0,+60.0%
+NMDC,Elevation,10,70.0,100.0,30.0,+30.0%
+NMDC,Place Name,10,100.0,100.0,0.0,0.0%
+NMDC,Place Name - Country,10,100.0,100.0,0.0,0.0%
+NMDC,Place Name - State,10,100.0,100.0,0.0,0.0%
+NMDC,Place Name - Locality,10,70.0,100.0,30.0,+30.0%
+NMDC,Weather,10,5.0,87.5,82.5,+82.5%
+NMDC,Weather - Temperature,10,40.0,100.0,60.0,+60.0%
+NMDC,Weather - Wind Speed,10,0.0,100.0,100.0,+100.0%
+NMDC,Weather - Wind Direction,10,0.0,100.0,100.0,+100.0%
+NMDC,Weather - Humidity,10,0.0,100.0,100.0,+100.0%
+NMDC,Weather - Solar Radiation,10,0.0,100.0,100.0,+100.0%
+NMDC,Weather - Precipitation,10,0.0,100.0,100.0,+100.0%
+NMDC,Weather - Pressure,10,0.0,100.0,100.0,+100.0%
+NMDC,Weather - Chlorophyll,10,0.0,0.0,0.0,0.0%
+GOLD,Elevation,10,0.0,100.0,100.0,+100.0%
+GOLD,Place Name,10,100.0,100.0,0.0,0.0%
+GOLD,Place Name - Country,10,80.0,90.0,10.0,+10.0%
+GOLD,Place Name - State,10,80.0,90.0,10.0,+10.0%
+GOLD,Place Name - Locality,10,20.0,90.0,70.0,+70.0%
+GOLD,Weather,10,0.0,70.0,70.0,+70.0%
+GOLD,Weather - Temperature,10,0.0,80.0,80.0,+80.0%
+GOLD,Weather - Wind Speed,10,0.0,80.0,80.0,+80.0%
+GOLD,Weather - Wind Direction,10,0.0,80.0,80.0,+80.0%
+GOLD,Weather - Humidity,10,0.0,80.0,80.0,+80.0%
+GOLD,Weather - Solar Radiation,10,0.0,80.0,80.0,+80.0%
+GOLD,Weather - Precipitation,10,0.0,80.0,80.0,+80.0%
+GOLD,Weather - Pressure,10,0.0,80.0,80.0,+80.0%
+GOLD,Weather - Chlorophyll,10,0.0,0.0,0.0,0.0%

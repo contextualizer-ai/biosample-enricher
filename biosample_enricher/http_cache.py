@@ -32,8 +32,8 @@ def canonicalize_coords(params: dict[str, Any]) -> dict[str, Any]:
                 canonical[key] = round(float(value), 4)
             except (ValueError, TypeError):
                 canonical[key] = value
-        # Truncate ISO datetimes to dates
-        elif "date" in key_lower or "time" in key_lower:
+        # Truncate ISO datetimes to dates (but not timezone parameters)
+        elif ("date" in key_lower or "time" in key_lower) and key_lower != "timezone":
             if isinstance(value, str) and "T" in value:
                 canonical[key] = value.split("T")[0]
             else:
@@ -44,7 +44,7 @@ def canonicalize_coords(params: dict[str, Any]) -> dict[str, Any]:
     return canonical
 
 
-def _key_with_auth(request):
+def _key_with_auth(request, **_kwargs):
     return create_key(
         request=request,
         ignored_parameters=[],  # don't ignore ?key=

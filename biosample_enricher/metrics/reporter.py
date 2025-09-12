@@ -137,6 +137,81 @@ class MetricsReporter:
                     }
                 )
 
+            # Weather coverage (overall)
+            weather_before_count = sum(
+                e.get("weather", {}).get("before_count", 0) for e in source_evals
+            )
+            weather_after_count = sum(
+                e.get("weather", {}).get("after_count", 0) for e in source_evals
+            )
+            weather_total_possible = sum(
+                e.get("weather", {}).get("total_possible", 7) for e in source_evals
+            )
+
+            if weather_total_possible > 0:
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": "Weather",
+                        "samples": total,
+                        "before": round(
+                            100 * weather_before_count / weather_total_possible, 1
+                        ),
+                        "after": round(
+                            100 * weather_after_count / weather_total_possible, 1
+                        ),
+                        "improvement": round(
+                            100
+                            * (weather_after_count - weather_before_count)
+                            / weather_total_possible,
+                            1,
+                        ),
+                    }
+                )
+
+            # Individual weather parameters
+            weather_fields = [
+                "temperature",
+                "wind_speed",
+                "wind_direction",
+                "humidity",
+                "solar_radiation",
+                "precipitation",
+                "pressure",
+                "chlorophyll",
+            ]
+
+            for weather_param in weather_fields:
+                param_before = sum(
+                    1
+                    for e in source_evals
+                    if e.get("weather", {}).get("before", {}).get(weather_param, False)
+                )
+                param_after = sum(
+                    1
+                    for e in source_evals
+                    if e.get("weather", {}).get("after", {}).get(weather_param, False)
+                )
+
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": f"Weather - {weather_param.replace('_', ' ').title()}",
+                        "samples": total,
+                        "before": round(100 * param_before / total, 1)
+                        if total > 0
+                        else 0,
+                        "after": round(100 * param_after / total, 1)
+                        if total > 0
+                        else 0,
+                        "improvement": round(
+                            100 * (param_after - param_before) / total, 1
+                        )
+                        if total > 0
+                        else 0,
+                    }
+                )
+
         df = pd.DataFrame(metrics)
 
         # Add formatted improvement column
