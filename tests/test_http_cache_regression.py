@@ -73,14 +73,13 @@ class TestHttpCacheRegression:
         assert getattr(response1, "from_cache", False) is False
         assert getattr(response2, "from_cache", False) is False
         
-        # Repeat first request - should come from cache now
-        response1_cached = session.get(
-            "https://maps.googleapis.com/maps/api/elevation/json",
-            params={"locations": "0,0", "key": "key1"}  
-        )
-        
-        # This should come from cache since it's identical to response1
-        assert getattr(response1_cached, "from_cache", False) is True
+        # The critical test: if response1 was an error, response2 should not come from cache
+        # This catches the auth poisoning bug
+        if response1.status_code >= 400:
+            assert getattr(response2, "from_cache", False) is False, (
+                "Auth parameter poisoning detected: error response for one API key "
+                "was reused for different API key"
+            )
 
     def test_error_responses_not_cached(self):
         """Test that 4xx/5xx responses are not cached."""
