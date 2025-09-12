@@ -1,4 +1,5 @@
 source,region,samples,has_coordinates_%,elevation_before_%,elevation_after_%,place_name_before_%,place_name_after_%
-NMDC,CONUS,5,100.0,100.0,100.0,100.0,100.0
-GOLD,CONUS,1,100.0,0.0,100.0,100.0,100.0
-GOLD,,4,100.0,0.0,100.0,100.0,100.0
+NMDC,CONUS,10,100.0,70.0,100.0,100.0,100.0
+GOLD,,7,100.0,0.0,100.0,100.0,100.0
+GOLD,AK,1,100.0,0.0,100.0,100.0,100.0
+GOLD,CONUS,2,100.0,0.0,100.0,100.0,100.0

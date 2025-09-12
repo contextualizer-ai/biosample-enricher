@@ -10,6 +10,7 @@ from biosample_enricher.elevation.service import ElevationService
 from biosample_enricher.logging_config import get_logger
 from biosample_enricher.models import BiosampleLocation, ElevationRequest, ValueStatus
 from biosample_enricher.reverse_geocoding.service import ReverseGeocodingService
+from biosample_enricher.weather.service import WeatherService
 
 logger = get_logger(__name__)
 
@@ -21,6 +22,7 @@ class CoverageEvaluator:
         """Initialize evaluator with enrichment services."""
         self.elevation_service = ElevationService()
         self.geocoding_service = ReverseGeocodingService()
+        self.weather_service = WeatherService()
         self.classifier = CoordinateClassifier()
 
     def evaluate_sample(
@@ -49,6 +51,7 @@ class CoverageEvaluator:
             "place_name": self._evaluate_place_name(
                 raw_doc, normalized_location, source
             ),
+            "weather": self._evaluate_weather(raw_doc, normalized_location, source),
         }
 
         return result
@@ -447,6 +450,209 @@ class CoverageEvaluator:
                 parts.append(components["locality"])
 
             return ", ".join(parts) if parts else ""
+
+    def _evaluate_weather(
+        self, raw_doc: dict[str, Any], location: BiosampleLocation, source: str
+    ) -> dict[str, Any]:
+        """Evaluate weather coverage before and after enrichment.
+
+        Args:
+            raw_doc: Original document
+            location: Normalized location
+            source: Data source
+
+        Returns:
+            Weather coverage metrics
+        """
+        logger.info(f"\n🌤️  WEATHER ANALYSIS for {location.sample_id}")
+        logger.info(f"Source: {source}")
+
+        # Check for existing weather data in raw document
+        weather_fields = {
+            "temperature": ["temp", "avg_temp", "sampleCollectionTemperature"],
+            "wind_speed": ["wind_speed"],
+            "wind_direction": ["wind_direction"],
+            "humidity": ["humidity", "abs_air_humidity"],
+            "solar_radiation": ["solar_irradiance", "photon_flux"],
+            "precipitation": ["precipitation"],
+            "pressure": ["pressure"],
+            "chlorophyll": ["chlorophyll", "chl_a", "chlorophyll_a"],
+        }
+
+        # Analyze before coverage
+        before_coverage = {}
+        for weather_param, field_names in weather_fields.items():
+            has_field = False
+            for field_name in field_names:
+                if self._has_weather_field(raw_doc, field_name):
+                    has_field = True
+                    break
+            before_coverage[weather_param] = has_field
+
+        before_count = sum(before_coverage.values())
+        logger.info(
+            f"📊 WEATHER BEFORE: {before_count}/{len(weather_fields)} fields present"
+        )
+
+        # Try weather enrichment if we have coordinates and collection date
+        after_coverage = before_coverage.copy()  # Start with existing data
+        enrichment_error = None
+        providers_used = []
+        measurement_distance = None
+
+        if (
+            location.latitude is not None
+            and location.longitude is not None
+            and location.collection_date is not None
+        ):
+            try:
+                # Create biosample dict for weather service
+                biosample_dict = {
+                    "id": location.sample_id,
+                    "lat_lon": {
+                        "latitude": location.latitude,
+                        "longitude": location.longitude,
+                    },
+                    "collection_date": {
+                        "has_raw_value": location.collection_date.strftime("%Y-%m-%d")
+                        if hasattr(location.collection_date, "strftime")
+                        else str(location.collection_date)
+                    },
+                }
+
+                logger.info(
+                    f"🚀 CALLING WEATHER SERVICE for {location.latitude}, {location.longitude} on {location.collection_date}"
+                )
+
+                # Get weather enrichment
+                target_schema = "nmdc" if source.lower() == "nmdc" else "gold"
+                weather_result = self.weather_service.get_weather_for_biosample(
+                    biosample_dict, target_schema=target_schema
+                )
+
+                if weather_result.get("enrichment_success"):
+                    logger.info("✅ WEATHER ENRICHMENT SUCCESSFUL")
+                    weather_data = weather_result["weather_result"]
+                    providers_used = weather_data.successful_providers
+
+                    # Calculate distance between requested and measurement location
+                    measurement_distance = self._calculate_weather_distance(
+                        location.latitude, location.longitude, weather_data
+                    )
+
+                    # Check which weather parameters were enriched
+                    for weather_param in weather_fields:
+                        if (
+                            hasattr(weather_data, weather_param)
+                            and getattr(weather_data, weather_param) is not None
+                        ):
+                            after_coverage[weather_param] = True
+
+                    logger.info(
+                        f"📈 Weather providers used: {', '.join(providers_used)}"
+                    )
+                    logger.info(
+                        f"📏 Weather measurement distance: {measurement_distance:.1f} km"
+                    )
+                else:
+                    logger.warning("❌ WEATHER ENRICHMENT FAILED")
+                    enrichment_error = weather_result.get("error", "Unknown error")
+
+            except Exception as e:
+                logger.error(f"💥 WEATHER SERVICE ERROR: {e}")
+                enrichment_error = str(e)
+
+        after_count = sum(after_coverage.values())
+        improvement = after_count > before_count
+
+        logger.info(
+            f"📊 WEATHER AFTER: {after_count}/{len(weather_fields)} fields present"
+        )
+        logger.info(f"📈 WEATHER IMPROVED: {improvement}")
+
+        return {
+            "before": before_coverage,
+            "after": after_coverage,
+            "before_count": before_count,
+            "after_count": after_count,
+            "total_possible": len(weather_fields),
+            "improved": improvement,
+            "providers": providers_used,
+            "error": enrichment_error,
+            "measurement_distance_km": measurement_distance,
+        }
+
+    def _has_weather_field(self, biosample: dict[str, Any], field_name: str) -> bool:
+        """Check if biosample has data for a specific weather field."""
+        if field_name not in biosample:
+            return False
+
+        value = biosample[field_name]
+
+        # Handle NMDC QuantityValue format
+        if isinstance(value, dict):
+            if "has_numeric_value" in value and value["has_numeric_value"] is not None:
+                return True
+            if "has_raw_value" in value and value["has_raw_value"] is not None:
+                return True
+
+        # Handle direct numeric values or non-empty strings
+        elif (
+            isinstance(value, int | float)
+            and value is not None
+            or isinstance(value, str)
+            and value.strip()
+        ):
+            return True
+
+        return False
+
+    def _calculate_weather_distance(
+        self, request_lat: float, request_lon: float, weather_data: Any
+    ) -> float:
+        """
+        Calculate distance between requested location and weather measurement location.
+
+        Args:
+            request_lat: Biosample latitude
+            request_lon: Biosample longitude
+            weather_data: WeatherResult object with location info
+
+        Returns:
+            Distance in kilometers
+        """
+        try:
+            # Get measurement location from weather data
+            measurement_lat = weather_data.location.get("lat", request_lat)
+            measurement_lon = weather_data.location.get("lon", request_lon)
+
+            # Calculate haversine distance
+            import math
+
+            # Convert to radians
+            lat1, lon1, lat2, lon2 = map(
+                math.radians,
+                [request_lat, request_lon, measurement_lat, measurement_lon],
+            )
+
+            # Haversine formula
+            dlat = lat2 - lat1
+            dlon = lon2 - lon1
+            a = (
+                math.sin(dlat / 2) ** 2
+                + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+            )
+            c = 2 * math.asin(math.sqrt(a))
+
+            # Earth radius in kilometers
+            earth_radius_km = 6371.0
+            distance_km = earth_radius_km * c
+
+            return distance_km
+
+        except Exception:
+            # If distance calculation fails, return 0 (same location assumed)
+            return 0.0
 
     def evaluate_batch(
         self, samples: list[tuple[dict[str, Any], BiosampleLocation]], source: str
