@@ -336,9 +336,9 @@ class CoverageEvaluator:
     def _parse_geo_loc_name(self, geo_loc_name: str) -> dict[str, str]:
         """Parse geo_loc_name string into components.
 
-        Format: "Country or Sea: State/Region, Locality/Site"
-        Examples:
-        - "USA: California, San Francisco Bay"
+        Handles multiple formats:
+        - "USA: California, San Francisco Bay" (state, locality)
+        - "USA: Central City, Nebraska" (locality, state) 
         - "Pacific Ocean: North Pacific"
         - "USA: Wisconsin, Lake Mendota"
 
@@ -353,18 +353,40 @@ class CoverageEvaluator:
         if not geo_loc_name:
             return components
 
+        # US state names for smart ordering detection
+        us_states = {
+            "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
+            "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+            "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", 
+            "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
+            "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
+            "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+            "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+        }
+
         # Split by colon first (country : rest)
         if ":" in geo_loc_name:
             country_part, rest = geo_loc_name.split(":", 1)
             components["country"] = country_part.strip()
 
-            # Split rest by comma (state, locality)
+            # Split rest by comma
             if "," in rest:
                 parts = [p.strip() for p in rest.split(",")]
-                if parts[0]:
-                    components["state"] = parts[0]
-                if len(parts) > 1 and parts[1]:
-                    components["locality"] = parts[1]
+                if len(parts) >= 2 and parts[0] and parts[1]:
+                    # Smart ordering detection for US addresses
+                    if components["country"].upper() == "USA":
+                        # Check if second part is a US state (common GOLD pattern: "City, State")
+                        if parts[1] in us_states:
+                            components["locality"] = parts[0]  # First part is city
+                            components["state"] = parts[1]    # Second part is state
+                        else:
+                            # Default NMDC pattern: "State, City"  
+                            components["state"] = parts[0]
+                            components["locality"] = parts[1]
+                    else:
+                        # Non-US: assume first is region/state, second is locality
+                        components["state"] = parts[0]
+                        components["locality"] = parts[1]
             else:
                 # Just state/region, no locality
                 rest = rest.strip()
