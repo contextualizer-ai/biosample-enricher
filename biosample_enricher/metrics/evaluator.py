@@ -341,7 +341,7 @@ class CoverageEvaluator:
 
         Handles multiple formats:
         - "USA: California, San Francisco Bay" (state, locality)
-        - "USA: Central City, Nebraska" (locality, state) 
+        - "USA: Central City, Nebraska" (locality, state)
         - "Pacific Ocean: North Pacific"
         - "USA: Wisconsin, Lake Mendota"
 
@@ -358,13 +358,56 @@ class CoverageEvaluator:
 
         # US state names for smart ordering detection
         us_states = {
-            "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
-            "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
-            "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", 
-            "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
-            "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
-            "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
-            "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+            "Alabama",
+            "Alaska",
+            "Arizona",
+            "Arkansas",
+            "California",
+            "Colorado",
+            "Connecticut",
+            "Delaware",
+            "Florida",
+            "Georgia",
+            "Hawaii",
+            "Idaho",
+            "Illinois",
+            "Indiana",
+            "Iowa",
+            "Kansas",
+            "Kentucky",
+            "Louisiana",
+            "Maine",
+            "Maryland",
+            "Massachusetts",
+            "Michigan",
+            "Minnesota",
+            "Mississippi",
+            "Missouri",
+            "Montana",
+            "Nebraska",
+            "Nevada",
+            "New Hampshire",
+            "New Jersey",
+            "New Mexico",
+            "New York",
+            "North Carolina",
+            "North Dakota",
+            "Ohio",
+            "Oklahoma",
+            "Oregon",
+            "Pennsylvania",
+            "Rhode Island",
+            "South Carolina",
+            "South Dakota",
+            "Tennessee",
+            "Texas",
+            "Utah",
+            "Vermont",
+            "Virginia",
+            "Washington",
+            "West Virginia",
+            "Wisconsin",
+            "Wyoming",
         }
 
         # Split by colon first (country : rest)
@@ -381,9 +424,9 @@ class CoverageEvaluator:
                         # Check if second part is a US state (common GOLD pattern: "City, State")
                         if parts[1] in us_states:
                             components["locality"] = parts[0]  # First part is city
-                            components["state"] = parts[1]    # Second part is state
+                            components["state"] = parts[1]  # Second part is state
                         else:
-                            # Default NMDC pattern: "State, City"  
+                            # Default NMDC pattern: "State, City"
                             components["state"] = parts[0]
                             components["locality"] = parts[1]
                     else:
