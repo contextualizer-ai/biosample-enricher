@@ -219,8 +219,14 @@ data/workspace*/
 
 # HTTP Cache files
 http_cache.sqlite*
-cache/
+cache/*
+!cache/.gitkeep
 *.sqlite
+
+# Log files
+*.log
+logs/*
+!logs/.gitkeep
 
 # Automatic backups of precious files
 .backups/
