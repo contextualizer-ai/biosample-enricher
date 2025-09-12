@@ -49,8 +49,8 @@ def _key_with_auth(request, ignored_parameters=None, match_headers=None, **kwarg
     return create_key(
         request=request,
         ignored_parameters=[],  # Don't ignore any parameters, especially 'key'
-        match_headers=['X-Goog-Api-Key', 'Authorization'],
-        **kwargs
+        match_headers=["X-Goog-Api-Key", "Authorization"],
+        **kwargs,
     )
 
 
@@ -59,10 +59,10 @@ def _cache_ok(response):
     if response.status_code != 200:
         return False
     url = response.url or ""
-    if 'googleapis.com' in url or 'maps.googleapis.com' in url:
+    if "googleapis.com" in url or "maps.googleapis.com" in url:
         try:
             j = response.json()
-            if ('error' in j and 'message' in j['error']) or 'error_message' in j:
+            if ("error" in j and "message" in j["error"]) or "error_message" in j:
                 return False
         except Exception:
             pass
@@ -82,7 +82,9 @@ def get_session() -> CachedSession:
         try:
             mongo_uri = os.getenv("CACHE_MONGO_CONNECTION", "mongodb://localhost:27017")
             # Remove database name from URI since it's specified separately to MongoCache
-            base_uri = mongo_uri.split('/')[0] + '//' + mongo_uri.split('//')[1].split('/')[0]
+            base_uri = (
+                mongo_uri.split("/")[0] + "//" + mongo_uri.split("//")[1].split("/")[0]
+            )
             logger.debug(f"Attempting MongoDB connection to {base_uri}")
             client: MongoClient = MongoClient(base_uri, serverSelectionTimeoutMS=1000)
             client.admin.command("ping")  # Test connection
@@ -94,19 +96,19 @@ def get_session() -> CachedSession:
             backend = requests_cache.SQLiteCache("http_cache")
 
     from biosample_enricher.config import get_settings
-    
+
     settings = get_settings()
-    
+
     sess = CachedSession(
         backend=backend,
         cache_name=settings.cache.cache_name,
         key_fn=_key_with_auth,
-        cache_control=True,      # Respect Cache-Control headers from APIs
+        cache_control=True,  # Respect Cache-Control headers from APIs
         allowable_codes=(200,),  # Only cache 200 responses
         expire_after=settings.cache.ttl_seconds,
-        filter_fn=_cache_ok,     # Additional filtering for Google error responses
+        filter_fn=_cache_ok,  # Additional filtering for Google error responses
     )
-    
+
     if DEBUG:
         rid = os.getenv("RUN_ID") or uuid.uuid4().hex[:8]
         print(
@@ -114,7 +116,7 @@ def get_session() -> CachedSession:
             f"backend={backend} name={settings.cache.cache_name} "
             f"allowable_codes={(200,)} filter_fn={_cache_ok.__name__} key_fn={_key_with_auth.__name__}"
         )
-    
+
     return sess
 
 

@@ -1,0 +1,75 @@
+# Provider Configuration
+# API endpoints, timeouts, rate limits, and provider-specific settings
+
+elevation:
+  providers:
+    google:
+      endpoint: "https://maps.googleapis.com/maps/api/elevation/json"
+      timeout_s: 20.0
+      api_key_env: "GOOGLE_MAIN_API_KEY"
+      enabled: true
+      rate_limit_qps: 50
+      max_batch_size: 512
+      no_data_values: []
+    
+    usgs:
+      endpoint: "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/getSamples"
+      timeout_s: 30.0
+      enabled: true
+      vertical_datum: "NAVD88"
+      default_resolution_m: 10.0
+      no_data_values: [-1000000, -9999]
+      retry_on_errors: [500, 502, 503, 504]
+    
+    osm:
+      endpoint: "https://api.open-elevation.com/api/v1/lookup"
+      timeout_s: 20.0
+      enabled: true
+      vertical_datum: "EGM96"
+      default_resolution_m: 30.0
+      max_batch_size: 50
+      rate_limit_delay_s: 0.1
+    
+    open_topo_data:
+      endpoint: "https://api.opentopodata.org/v1/srtm30m"
+      timeout_s: 20.0
+      enabled: true
+      vertical_datum: "EGM96"
+      default_resolution_m: 30.0
+      max_batch_size: 100
+      retry_on_errors: [429, 500, 502, 503, 504]
+
+reverse_geocoding:
+  providers:
+    osm:
+      endpoint: "https://nominatim.openstreetmap.org/reverse"
+      timeout_s: 20.0
+      enabled: true
+      rate_limit_delay_s: 1.1
+      user_agent: "biosample-enricher/1.0"
+      address_details: true
+      language: "en"
+      zoom_level: 18
+      retry_on_errors: [429, 500, 502, 503, 504]
+    
+    google:
+      endpoint: "https://maps.googleapis.com/maps/api/geocode/json"
+      timeout_s: 20.0
+      api_key_env: "GOOGLE_MAIN_API_KEY"
+      enabled: true
+      rate_limit_qps: 50
+      language: "en"
+      result_type: []
+      location_type: []
+
+# Provider priority order for fallback
+provider_priority:
+  elevation: ["usgs", "google", "osm", "open_topo_data"]
+  reverse_geocoding: ["google", "osm"]
+
+# Global provider settings
+global:
+  max_retries: 2
+  retry_delay_s: 10
+  enable_caching: true
+  cache_ttl_hours: 24

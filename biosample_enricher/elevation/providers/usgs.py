@@ -3,6 +3,7 @@
 import json
 from typing import Any
 
+from biosample_enricher.config import get_provider_config
 from biosample_enricher.elevation.providers.base import BaseElevationProvider
 from biosample_enricher.http_cache import request
 from biosample_enricher.logging_config import get_logger
@@ -21,11 +22,27 @@ class USGSElevationProvider(BaseElevationProvider):
 
     def __init__(self) -> None:
         """Initialize USGS Elevation provider."""
+        # Load provider configuration
+        config = get_provider_config("elevation", "usgs")
+        if not config:
+            raise ValueError("USGS elevation provider configuration not found")
+
+        if not config.enabled:
+            raise ValueError("USGS elevation provider is disabled in configuration")
+
         super().__init__(
             name="usgs_3dep",
-            endpoint="https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/getSamples",
+            endpoint=config.endpoint,
             api_version="arcgis",
         )
+
+        # Store configuration for request parameters
+        self.timeout_s = config.timeout_s
+        self.rate_limit_delay_s = config.rate_limit_delay_s
+        self.vertical_datum = config.vertical_datum or "NAVD88"
+        self.default_resolution_m = config.default_resolution_m
+        self.no_data_values = config.no_data_values or [-32768, -9999]
+
         logger.info("USGS Elevation provider initialized (3DEP ArcGIS service)")
 
     def fetch(
@@ -35,7 +52,7 @@ class USGSElevationProvider(BaseElevationProvider):
         *,
         read_from_cache: bool = True,
         write_to_cache: bool = True,
-        timeout_s: float = 20.0,
+        timeout_s: float | None = None,
     ) -> FetchResult:
         """
         Fetch elevation data from USGS 3DEP ArcGIS service.
@@ -49,12 +66,15 @@ class USGSElevationProvider(BaseElevationProvider):
             lon: Longitude in decimal degrees
             read_from_cache: Whether to read from cache (handled by http_cache)
             write_to_cache: Whether to write to cache (handled by http_cache)
-            timeout_s: Request timeout in seconds
+            timeout_s: Request timeout in seconds (uses provider config default if None)
 
         Returns:
             Fetch result with elevation data
         """
         self._validate_coordinates(lat, lon)
+
+        # Use configured timeout if not specified
+        actual_timeout = timeout_s if timeout_s is not None else self.timeout_s
 
         logger.debug(f"Fetching elevation from USGS 3DEP: {lat:.6f}, {lon:.6f}")
 
@@ -77,7 +97,7 @@ class USGSElevationProvider(BaseElevationProvider):
                 read_from_cache=read_from_cache,
                 write_to_cache=write_to_cache,
                 params=params,
-                timeout=timeout_s,
+                timeout=actual_timeout,
             )
 
             response.raise_for_status()
@@ -149,8 +169,8 @@ class USGSElevationProvider(BaseElevationProvider):
             # Parse elevation value
             elevation_val = float(elevation_str)
 
-            # Check for USGS "no data" sentinel values
-            if elevation_val == -1000000 or elevation_val == -9999:
+            # Check for configured "no data" sentinel values
+            if elevation_val in self.no_data_values:
                 return FetchResult(
                     ok=False,
                     error="No elevation data available at this location",
@@ -168,7 +188,8 @@ class USGSElevationProvider(BaseElevationProvider):
             )
 
             # Get resolution if available (typically in meters)
-            resolution = sample.get("resolution", 10.0)  # Default to 10m for 3DEP
+            default_res = self.default_resolution_m or 10.0
+            resolution = sample.get("resolution", default_res)
 
             logger.debug(f"USGS 3DEP returned elevation: {elevation_val}m")
 
@@ -177,7 +198,7 @@ class USGSElevationProvider(BaseElevationProvider):
                 elevation=elevation_val,
                 location=result_location,
                 resolution_m=float(resolution),
-                vertical_datum="NAVD88",  # USGS 3DEP uses NAVD88
+                vertical_datum=self.vertical_datum,
                 raw=data,
             )
 

@@ -1,0 +1,203 @@
+# Validation Rules and Thresholds
+# Data validation constraints, coverage thresholds, and quality rules
+
+# Coordinate validation
+coordinates:
+  latitude:
+    min: -90.0
+    max: 90.0
+    precision_decimal_places: 6
+    required_precision: 4  # Minimum decimal places for good precision
+  longitude:
+    min: -180.0
+    max: 180.0
+    precision_decimal_places: 6
+    required_precision: 4  # Minimum decimal places for good precision
+  
+  # Special handling for "no data" values
+  no_data_values:
+    latitude: [0.0, -999, -9999]
+    longitude: [0.0, -999, -9999]
+
+# Elevation validation
+elevation:
+  # Reasonable elevation ranges (meters)
+  terrestrial:
+    min: -500     # Below sea level (Death Valley, etc.)
+    max: 9000     # High mountains
+  marine:
+    min: -11000   # Ocean trenches
+    max: 0        # Sea level
+  
+  # Provider-specific "no data" values
+  no_data_values:
+    usgs: [-1000000, -9999]
+    google: []
+    osm: []
+    open_topo_data: [-32768]
+  
+  # Resolution validation (meters)
+  resolution:
+    excellent: 10   # <= 10m resolution
+    good: 30        # <= 30m resolution
+    acceptable: 90  # <= 90m resolution
+
+# Date validation
+dates:
+  # Valid date range for sample collection
+  collection_date:
+    earliest: "1900-01-01"
+    latest: "2030-12-31"  # Allow some future dates for planned sampling
+  
+  # Date format validation patterns
+  formats:
+    strict: "^\\d{4}-\\d{2}-\\d{2}$"           # YYYY-MM-DD
+    with_time: "^\\d{4}-\\d{2}-\\d{2}T.*$"     # ISO datetime
+    year_month: "^\\d{4}-\\d{2}$"              # YYYY-MM
+    year_only: "^\\d{4}$"                      # YYYY
+  
+  # Precision levels
+  precision_levels:
+    day: "excellent"
+    month: "good"
+    year: "acceptable"
+
+# Text field validation
+text_fields:
+  # Location name validation
+  location_names:
+    min_length: 2
+    max_length: 500
+    required_pattern: "^[A-Za-z0-9\\s,.:;-]+$"  # Basic alphanumeric + punctuation
+  
+  # Sample ID validation
+  sample_ids:
+    min_length: 3
+    max_length: 100
+    nmdc_pattern: "^nmdc:bsm-"
+    gold_pattern: "^Gb\\d+"
+  
+  # Host detection text requirements
+  host_keywords:
+    min_matches: 1       # Need at least one keyword match
+    confidence_boost: 2  # Multiple matches increase confidence
+
+# Coverage and Quality Thresholds
+coverage_thresholds:
+  # Metrics evaluation thresholds
+  metrics:
+    excellent: 75    # >= 75% coverage
+    good: 50         # >= 50% coverage  
+    poor: 25         # >= 25% coverage
+    failing: 0       # < 25% coverage
+  
+  # Field coverage requirements
+  fields:
+    required_fields:     # Must have these for valid sample
+      - "sample_id"
+      - "database_source"
+    recommended_fields:  # Should have these for good quality
+      - "latitude"
+      - "longitude"
+      - "collection_date"
+      - "textual_location"
+    
+    # Minimum coverage for dataset quality assessment
+    dataset_quality:
+      excellent: 0.9   # 90% of samples have recommended fields
+      good: 0.7        # 70% of samples have recommended fields
+      acceptable: 0.5  # 50% of samples have recommended fields
+
+# Provider Quality Thresholds
+provider_quality:
+  # Success rate thresholds for provider health
+  success_rates:
+    healthy: 0.95      # >= 95% success rate
+    degraded: 0.80     # >= 80% success rate
+    unhealthy: 0.50    # < 80% success rate
+  
+  # Response time thresholds (seconds)
+  response_times:
+    fast: 5.0          # <= 5 seconds
+    acceptable: 15.0   # <= 15 seconds
+    slow: 30.0         # > 15 seconds
+  
+  # Error rate monitoring
+  error_rates:
+    by_provider:
+      google: 0.02     # Allow 2% error rate
+      usgs: 0.10       # Allow 10% error rate (less reliable)
+      osm: 0.15        # Allow 15% error rate (free service)
+
+# Data Type Validation Rules
+data_types:
+  # Expected data types for validation
+  expected_types:
+    latitude: "float"
+    longitude: "float"
+    elevation: "float"
+    collection_date: "string"
+    sample_id: "string"
+    temperature: "float"
+    precipitation: "float"
+    ph: "float"
+  
+  # Value range validation by data type
+  value_ranges:
+    temperature:       # Celsius
+      min: -100
+      max: 100
+    precipitation:     # mm/year
+      min: 0
+      max: 15000
+    ph:
+      min: 0
+      max: 14
+    organic_carbon:    # percentage
+      min: 0
+      max: 100
+
+# Quality Flags and Warnings
+quality_flags:
+  # Conditions that trigger quality warnings
+  warnings:
+    low_coordinate_precision: 2    # < 2 decimal places
+    old_collection_date: 50        # > 50 years old
+    suspicious_coordinates:        # Exactly 0,0 or other suspicious values
+      - [0.0, 0.0]
+      - [90.0, 180.0]
+      - [-90.0, -180.0]
+    
+  # Conditions that trigger quality errors
+  errors:
+    invalid_coordinates: true      # Outside valid lat/lon ranges
+    invalid_date_format: true      # Unparseable date
+    missing_required_fields: true  # Missing sample_id or source
+    
+  # Automatic data cleaning rules
+  cleaning:
+    remove_no_data_coordinates: true     # Remove 0,0 and -999,-999
+    normalize_date_formats: true         # Convert all dates to YYYY-MM-DD
+    trim_whitespace: true                # Remove leading/trailing spaces
+    validate_field_types: true           # Ensure numeric fields are numeric
+
+# Sampling and Analysis Parameters
+sampling:
+  # Default sample sizes for different operations
+  default_sizes:
+    schema_inference: 50000
+    random_sampling: 100
+    metrics_evaluation: 100
+    quick_test: 5
+  
+  # Batch processing limits
+  batch_limits:
+    max_batch_size: 1000
+    max_concurrent_requests: 10
+    max_memory_usage_mb: 2000
+  
+  # Statistical sampling requirements
+  statistical:
+    min_sample_size: 30           # Minimum for statistical significance
+    confidence_level: 0.95        # 95% confidence intervals
+    margin_of_error: 0.05         # 5% margin of error

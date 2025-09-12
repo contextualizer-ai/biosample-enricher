@@ -1,0 +1,86 @@
+# Database Configuration
+# MongoDB connections, collection names, and database-specific settings
+
+mongodb:
+  # Connection settings
+  connection:
+    timeout_ms: 1000
+    connect_timeout_ms: 5000
+    server_selection_timeout_ms: 3000
+    max_pool_size: 10
+    min_pool_size: 0
+    
+  # Default URIs (can be overridden by environment variables)
+  default_connections:
+    local: "mongodb://localhost:27017/?directConnection=true"
+    cache: "mongodb://localhost:27017/?directConnection=true"
+    
+  # Environment variable mappings for sensitive connection strings
+  connection_env_vars:
+    nmdc: "NMDC_MONGO_CONNECTION"      # Metadata database port 27778
+    gold: "GOLD_MONGO_CONNECTION"      # Metadata database port 27778
+    cache: "CACHE_MONGO_CONNECTION"    # HTTP cache database port 27017
+    default: "MONGO_URI"               # Fallback for metadata
+
+  # Database and collection mappings
+  databases:
+    nmdc:
+      database_name: "nmdc"
+      collections:
+        biosamples: "biosample_set"
+        studies: "study_set"
+        data_objects: "data_object_set"
+        workflows: "workflow_execution_set"
+      
+      # Common query patterns
+      queries:
+        enrichable_samples:
+          $or:
+            - lat_lon: {$exists: true, $ne: null}
+            - $and:
+                - latitude: {$exists: true, $ne: null}
+                - longitude: {$exists: true, $ne: null}
+    
+    gold:
+      database_name: "gold_metadata"
+      collections:
+        biosamples: "biosamples"
+        seq_projects: "seq_projects"
+        studies: "studies"
+        organisms: "organisms"
+      
+      # Common query patterns  
+      queries:
+        enrichable_samples:
+          $and:
+            - latitude: {$exists: true, $ne: null}
+            - longitude: {$exists: true, $ne: null}
+    
+    cache:
+      database_name: "http_cache"
+      collections:
+        requests: "http_requests"
+        responses: "http_responses"
+        metadata: "cache_metadata"
+
+  # Sampling and batch processing
+  sampling:
+    default_sample_size: 50000
+    random_sample_default: 100
+    max_batch_size: 1000
+    aggregation_timeout_ms: 30000
+
+# Cache configuration
+cache:
+  enabled: true
+  default_ttl_hours: 24
+  max_cache_size_mb: 1000
+  cleanup_interval_hours: 6
+  
+  # Cache policies by provider
+  provider_ttl:
+    google_elevation: 168  # 1 week
+    google_geocoding: 168  # 1 week
+    usgs_elevation: 72     # 3 days (less stable)
+    osm_elevation: 24      # 1 day (free service)
+    osm_geocoding: 48      # 2 days

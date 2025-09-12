@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from biosample_enricher.config import get_provider_config
 from biosample_enricher.elevation.providers.base import BaseElevationProvider
 from biosample_enricher.http_cache import request
 from biosample_enricher.logging_config import get_logger
@@ -13,17 +14,33 @@ logger = get_logger(__name__)
 class OSMElevationProvider(BaseElevationProvider):
     """Provider for OpenElevation/OpenTopoData-style APIs."""
 
-    def __init__(
-        self, endpoint: str = "https://api.open-elevation.com/api/v1/lookup"
-    ) -> None:
+    def __init__(self, endpoint: str | None = None) -> None:
         """
         Initialize OSM-like elevation provider.
 
         Args:
-            endpoint: API endpoint URL (defaults to open-elevation.com)
+            endpoint: API endpoint URL (loads from configuration if None)
         """
-        super().__init__(name="osm_elevation", endpoint=endpoint, api_version="v1")
-        logger.info(f"OSM Elevation provider initialized: {endpoint}")
+        # Load provider configuration
+        config = get_provider_config("elevation", "osm")
+        if not config:
+            raise ValueError("OSM elevation provider configuration not found")
+
+        if not config.enabled:
+            raise ValueError("OSM elevation provider is disabled in configuration")
+
+        # Use provided endpoint or load from config
+        endpoint_url = endpoint or config.endpoint
+
+        super().__init__(name="osm_elevation", endpoint=endpoint_url, api_version="v1")
+
+        # Store configuration for request parameters
+        self.timeout_s = config.timeout_s
+        self.rate_limit_delay_s = config.rate_limit_delay_s
+        self.vertical_datum = config.vertical_datum or "WGS84"
+        self.default_resolution_m = config.default_resolution_m
+
+        logger.info(f"OSM Elevation provider initialized: {endpoint_url}")
 
     def fetch(
         self,
@@ -32,7 +49,7 @@ class OSMElevationProvider(BaseElevationProvider):
         *,
         read_from_cache: bool = True,
         write_to_cache: bool = True,
-        timeout_s: float = 20.0,
+        timeout_s: float | None = None,
     ) -> FetchResult:
         """
         Fetch elevation data from OpenElevation-style API.
@@ -42,12 +59,15 @@ class OSMElevationProvider(BaseElevationProvider):
             lon: Longitude in decimal degrees
             read_from_cache: Whether to read from cache
             write_to_cache: Whether to write to cache
-            timeout_s: Request timeout in seconds
+            timeout_s: Request timeout in seconds (uses provider config default if None)
 
         Returns:
             Fetch result with elevation data
         """
         self._validate_coordinates(lat, lon)
+
+        # Use configured timeout if not specified
+        actual_timeout = timeout_s if timeout_s is not None else self.timeout_s
 
         logger.debug(f"Fetching elevation from OSM API: {lat:.6f}, {lon:.6f}")
 
@@ -62,7 +82,7 @@ class OSMElevationProvider(BaseElevationProvider):
                 read_from_cache=read_from_cache,
                 write_to_cache=write_to_cache,
                 json=data,
-                timeout=timeout_s,
+                timeout=actual_timeout,
                 headers={"Content-Type": "application/json"},
             )
 
@@ -118,8 +138,8 @@ class OSMElevationProvider(BaseElevationProvider):
                 ok=True,
                 elevation=float(elevation),
                 location=result_location,
-                resolution_m=90.0,  # OpenElevation typically uses SRTM 90m data
-                vertical_datum="EGM96",  # SRTM uses EGM96 geoid
+                resolution_m=self.default_resolution_m or 90.0,
+                vertical_datum=self.vertical_datum,
                 raw=data,
             )
 

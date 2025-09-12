@@ -20,6 +20,7 @@ logger = get_logger(__name__)
 # Settings models for typed configuration
 class CacheSettings(BaseModel):
     """HTTP cache configuration."""
+
     backend: str = "sqlite"
     cache_name: str = "http_cache"
     allowable_codes: tuple[int, ...] = (200,)
@@ -28,23 +29,25 @@ class CacheSettings(BaseModel):
 
 class AppSettings(BaseModel):
     """Main application settings."""
+
     cache: CacheSettings = CacheSettings()
 
 
 @lru_cache(maxsize=1)
 def get_settings() -> AppSettings:
     """Get application settings with environment override support.
-    
+
     This is the single source of truth for configuration.
     Uses lazy loading to avoid import-time dependencies.
     """
     # Load .env file if present (but not at import time)
     try:
         from dotenv import load_dotenv
+
         load_dotenv(override=False)
     except ImportError:
         pass  # dotenv not available
-    
+
     # For now, return basic settings - will expand in future PRs
     return AppSettings()
 

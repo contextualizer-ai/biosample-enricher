@@ -54,13 +54,13 @@ def _google_qps(request):
     """Rate limit Google API calls to prevent quota/burst issues."""
     # Only apply to tests marked with 'google' or containing google in the test path
     if not (
-        "google" in request.keywords 
+        "google" in request.keywords
         or "google" in str(request.fspath).lower()
         or "google" in request.node.name.lower()
     ):
         yield
         return
-        
+
     with _google_lock:
         now = time.time()
         gap = 0.12 - (now - _google_last[0])  # ~8 QPS; adjust as needed
@@ -116,7 +116,8 @@ def _reset_http_cache_state():
             if hasattr(hc, attr):
                 s = getattr(hc, attr)
                 try:
-                    if s: s.close()
+                    if s:
+                        s.close()
                 except Exception:
                     pass
                 setattr(hc, attr, None)
@@ -134,6 +135,7 @@ def clear_config_cache():
     """Clear both old and new config caches before each test to ensure isolation."""
     try:
         from biosample_enricher.config import clear_config_cache, clear_settings_cache
+
         clear_config_cache()
         clear_settings_cache()
     except ImportError:

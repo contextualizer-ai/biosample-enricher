@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from biosample_enricher.config import get_provider_config
 from biosample_enricher.elevation.providers.base import BaseElevationProvider
 from biosample_enricher.http_cache import request
 from biosample_enricher.logging_config import get_logger
@@ -15,21 +16,51 @@ class OpenTopoDataProvider(BaseElevationProvider):
 
     def __init__(
         self,
-        endpoint: str = "https://api.opentopodata.org/v1",
-        dataset: str = "srtm30m",
+        endpoint: str | None = None,
+        dataset: str | None = None,
     ) -> None:
         """
         Initialize Open Topo Data provider.
 
         Args:
-            endpoint: API endpoint URL
-            dataset: Dataset to use (srtm30m, srtm90m, aster30m, eudem25m)
+            endpoint: API endpoint URL (loads from configuration if None)
+            dataset: Dataset to use (loads from configuration if None)
         """
-        super().__init__(
-            name="open_topo_data", endpoint=f"{endpoint}/{dataset}", api_version="v1"
+        # Load provider configuration
+        config = get_provider_config("elevation", "open_topo_data")
+        if not config:
+            raise ValueError(
+                "Open Topo Data elevation provider configuration not found"
+            )
+
+        if not config.enabled:
+            raise ValueError(
+                "Open Topo Data elevation provider is disabled in configuration"
+            )
+
+        # Use provided values or load from config
+        endpoint_url = endpoint or config.endpoint
+        self.dataset = dataset or str(getattr(config, "dataset", "srtm30m"))
+
+        # Build full endpoint with dataset
+        full_endpoint = (
+            f"{endpoint_url}/{self.dataset}"
+            if not endpoint_url.endswith(f"/{self.dataset}")
+            else endpoint_url
         )
-        self.dataset = dataset
-        logger.info(f"Open Topo Data provider initialized: {dataset} dataset")
+
+        super().__init__(
+            name="open_topo_data", endpoint=full_endpoint, api_version="v1"
+        )
+
+        # Store configuration for request parameters
+        self.timeout_s = config.timeout_s
+        self.rate_limit_qps = config.rate_limit_qps
+        self.max_batch_size = config.max_batch_size
+        self.vertical_datum = config.vertical_datum or "EGM96"
+        self.default_resolution_m = config.default_resolution_m
+
+        logger.info(f"Open Topo Data provider initialized: {self.dataset} dataset")
 
     def fetch(
         self,
@@ -38,7 +69,7 @@ class OpenTopoDataProvider(BaseElevationProvider):
         *,
         read_from_cache: bool = True,
         write_to_cache: bool = True,
-        timeout_s: float = 20.0,
+        timeout_s: float | None = None,
     ) -> FetchResult:
         """
         Fetch elevation data from Open Topo Data API.
@@ -48,12 +79,15 @@ class OpenTopoDataProvider(BaseElevationProvider):
             lon: Longitude in decimal degrees
             read_from_cache: Whether to read from cache
             write_to_cache: Whether to write to cache
-            timeout_s: Request timeout in seconds
+            timeout_s: Request timeout in seconds (uses provider config default if None)
 
         Returns:
             Fetch result with elevation data
         """
         self._validate_coordinates(lat, lon)
+
+        # Use configured timeout if not specified
+        actual_timeout = timeout_s if timeout_s is not None else self.timeout_s
 
         logger.debug(
             f"Fetching elevation from Open Topo Data ({self.dataset}): {lat:.6f}, {lon:.6f}"
@@ -70,7 +104,7 @@ class OpenTopoDataProvider(BaseElevationProvider):
                 read_from_cache=read_from_cache,
                 write_to_cache=write_to_cache,
                 params=params,
-                timeout=timeout_s,
+                timeout=actual_timeout,
             )
 
             response.raise_for_status()
@@ -156,7 +190,13 @@ class OpenTopoDataProvider(BaseElevationProvider):
             "ned10m": (10.0, "NAVD88"),  # US only
         }
 
-        return dataset_info.get(self.dataset, (30.0, "EGM96"))
+        default_resolution, default_datum = dataset_info.get(
+            self.dataset, (30.0, "EGM96")
+        )
+        # Use configured values if available, otherwise fall back to dataset defaults
+        resolution = self.default_resolution_m or default_resolution
+        datum = self.vertical_datum
+        return (resolution, datum)
 
 
 class SmartOpenTopoDataProvider(BaseElevationProvider):

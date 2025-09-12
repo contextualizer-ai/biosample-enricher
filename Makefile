@@ -1,3 +1,7 @@
+# Load environment variables from .env file if it exists
+-include .env
+export
+
 # Declare all targets that don't create files as .PHONY
 .PHONY: install install-dev \
 	test test-cov test-watch test-unit test-integration test-network test-slow test-fast test-cache test-cache-network test-sunrise-demo \
@@ -149,8 +153,8 @@ version: ## Show current version
 
 
 ## Biosample Adapter Infrastructure
-# MongoDB connection defaults (can be overridden) 
-MONGO_URI ?= mongodb://ncbi_reader:register_manatee_coach78@localhost:27778/?directConnection=true&authMechanism=DEFAULT&authSource=admin
+# Database defaults (loaded from .env or can be overridden)
+# Note: These fallback to .env values, but can be overridden via command line
 NMDC_DB ?= nmdc
 GOLD_DB ?= gold_metadata
 
@@ -164,7 +168,7 @@ data/outputs/schema:
 data/outputs/schema/nmdc_biosample_schema.json: | data/outputs/schema
 	@echo "Inferring NMDC biosample schema from MongoDB..."
 	uv run schema-inference \
-		--mongo-uri "$(MONGO_URI)" \
+		--mongo-uri "$(NMDC_MONGO_CONNECTION)" \
 		--db $(NMDC_DB) \
 		--coll biosample_set \
 		--sample-size 50000 \
@@ -173,7 +177,7 @@ data/outputs/schema/nmdc_biosample_schema.json: | data/outputs/schema
 data/outputs/schema/gold_biosample_schema.json: | data/outputs/schema
 	@echo "Inferring GOLD biosample schema from MongoDB..."
 	uv run schema-inference \
-		--mongo-uri "$(MONGO_URI)" \
+		--mongo-uri "$(GOLD_MONGO_CONNECTION)" \
 		--db $(GOLD_DB) \
 		--coll biosamples \
 		--sample-size 50000 \
@@ -183,7 +187,7 @@ data/outputs/schema/gold_biosample_schema.json: | data/outputs/schema
 data/outputs/schema/nmdc_biosample_stats.csv: | data/outputs/schema
 	@echo "Generating NMDC biosample field statistics..."
 	uv run schema-statistics \
-		--mongo-uri "$(MONGO_URI)" \
+		--mongo-uri "$(NMDC_MONGO_CONNECTION)" \
 		--db $(NMDC_DB) \
 		--coll biosample_set \
 		--sample-size 50000 \
@@ -193,7 +197,7 @@ data/outputs/schema/nmdc_biosample_stats.csv: | data/outputs/schema
 data/outputs/schema/gold_biosample_stats.csv: | data/outputs/schema
 	@echo "Generating GOLD biosample field statistics..."
 	uv run schema-statistics \
-		--mongo-uri "$(MONGO_URI)" \
+		--mongo-uri "$(GOLD_MONGO_CONNECTION)" \
 		--db $(GOLD_DB) \
 		--coll biosamples \
 		--sample-size 50000 \
@@ -250,7 +254,7 @@ data/outputs/adapters/unified_adapter_test.json: | data/outputs/adapters
 # Infrastructure Tests
 data/outputs/adapters/mongodb_adapter_test.json: | data/outputs/adapters
 	@echo "Generating $(notdir $@)..."
-	@echo "Note: Requires MongoDB connection at $(MONGO_URI)"
+	@echo "Note: Requires MongoDB connection at $(NMDC_MONGO_CONNECTION)"
 	@mkdir -p $(dir $@)
 	uv run mongodb-connection-demo --output-file $@
 
@@ -265,7 +269,7 @@ data/outputs/adapters/id_retrieval_test.json: | data/outputs/adapters
 
 data/outputs/adapters/random_sampling_test.json: | data/outputs/adapters
 	@echo "Generating $(notdir $@)..."
-	@echo "Note: Requires MongoDB connection at $(MONGO_URI)"
+	@echo "Note: Requires MongoDB connection at $(NMDC_MONGO_CONNECTION)"
 	@mkdir -p $(dir $@)
 	uv run random-sampling-demo --output-file $@
 
@@ -438,10 +442,9 @@ GOLD_SAMPLES ?= 5
 
 metrics-local: | data/outputs/metrics ## Run metrics evaluation (usage: make metrics-local [NMDC_SAMPLES=N] [GOLD_SAMPLES=N])
 	@echo "Running metrics evaluation with $(NMDC_SAMPLES) NMDC and $(GOLD_SAMPLES) GOLD samples..."
-	@echo "Using MongoDB: $(MONGO_URI)"
+	@echo "Using NMDC MongoDB: $(NMDC_MONGO_CONNECTION)"
+	@echo "Using GOLD MongoDB: $(GOLD_MONGO_CONNECTION)"
 	@echo "NMDC database: $(NMDC_DB), GOLD database: $(GOLD_DB)"
-	NMDC_MONGO_CONNECTION="mongodb://ncbi_reader:register_manatee_coach78@localhost:27778/?directConnection=true&authMechanism=DEFAULT&authSource=admin" \
-	GOLD_MONGO_CONNECTION="mongodb://ncbi_reader:register_manatee_coach78@localhost:27778/?directConnection=true&authMechanism=DEFAULT&authSource=admin" \
 	uv run biosample-enricher metrics evaluate \
 		--nmdc-samples $(NMDC_SAMPLES) \
 		--gold-samples $(GOLD_SAMPLES) \

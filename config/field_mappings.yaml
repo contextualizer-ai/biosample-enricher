@@ -1,5 +1,8 @@
 # Field mappings between NMDC, GOLD, and enrichment outputs
 # This file defines how fields from different sources map to common concepts
+# 
+# Priority lists define the order to check fields (first found wins)
+# Mapping rules define how to extract and transform field values
 
 # Location fields
 location:
@@ -280,3 +283,123 @@ data_types:
   - name: "Ecosystem Type"
     category: "vegetation"
     field: "ecosystem_type"
+
+# Field priority lists - order matters (first found wins)
+# Extracted from hardcoded values in adapters.py
+
+field_priorities:
+  # Location text extraction priorities
+  location_text:
+    nmdc:
+      - "geo_loc_name"
+      - "geographic_location"
+      - "location"
+      - "sample_collection_site"
+      - "description"
+    gold:
+      - "geoLocation"
+      - "geographicLocation"
+      - "sampleCollectionSite"
+      - "description"
+      - "habitat"
+
+  # Date field extraction priorities
+  date_fields:
+    nmdc:
+      - "collection_date"
+      - "collection_date_inc"
+      - "collection_timestamp"
+    gold:
+      - "dateCollected"
+      - "collectionDate"
+      - "sampleCollectionDate"
+
+  # ID field mappings for extraction
+  gold_id_fields:
+    # GOLD ID fields in NMDC documents
+    - "gold_biosample_id"
+    - "biosampleGoldId"
+    - "gold_id"
+    - "gold_biosample_identifiers"
+    
+  nmdc_id_fields:
+    # NMDC ID fields in GOLD documents
+    - "nmdc_biosample_id"
+    - "biosampleNmdcId"
+    - "nmdc_id"
+
+  # Known external ID field mappings  
+  external_id_mappings:
+      "insdc_biosample_identifiers": "external_database_identifiers"
+      "ncbi_biosample_identifiers": "external_database_identifiers"
+      "jgi_portal_identifiers": "external_database_identifiers"
+      "samp_name": "sample_identifiers"
+      "name": "sample_identifiers"
+
+  # Host-specific field detection
+  host_fields:
+    # Direct host fields that indicate host association
+    direct_host_fields:
+      - "host_name"
+      - "host_taxid"
+      - "host_common_name"
+      - "host_subject_id"
+      - "host_body_site"
+      - "host_body_habitat"
+      - "hostName"
+      - "hostScientificName"
+      - "hostCommonName"
+      - "hostTaxonomyId"
+
+  # Study association fields
+  study_fields:
+    nmdc:
+      - "associated_studies"
+      - "part_of"
+    gold:
+      - "studyGoldId"
+      - "projectGoldId"
+
+# Coordinate parsing configurations
+coordinate_parsing:
+  nmdc:
+    # Handles different lat_lon formats in NMDC
+    lat_lon_formats:
+      - type: "string_space"        # "42.3601 -71.0928"
+        pattern: "\\s+"
+      - type: "string_comma"        # "42.3601,-71.0928"
+        pattern: ","
+      - type: "dict"                # {"latitude": 42.3601, "longitude": -71.0928}
+        lat_key: "latitude"
+        lon_key: "longitude"
+      - type: "array"               # [42.3601, -71.0928]
+        lat_index: 0
+        lon_index: 1
+  
+  gold:
+    # GOLD typically uses separate latitude/longitude fields
+    separate_fields:
+      latitude: "latitude"
+      longitude: "longitude"
+
+# Date parsing configurations
+date_parsing:
+  formats:
+    - format: "iso_datetime"        # "2014-11-25T10:30:00Z"
+      pattern: "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+      output: "%Y-%m-%d"
+    - format: "date_only"           # "2014-11-25"
+      pattern: "\\d{4}-\\d{2}-\\d{2}"
+      output: "%Y-%m-%d"
+    - format: "year_month"          # "2014-11"
+      pattern: "\\d{4}-\\d{2}"
+      output: "%Y-%m-01"
+    - format: "year_only"           # "2014"
+      pattern: "\\d{4}"
+      output: "%Y-01-01"
+  
+  # NMDC structured date handling
+  nmdc_structured:
+    container_key: "has_raw_value"
+    type_key: "type"
+    expected_type: "nmdc:TimestampValue"

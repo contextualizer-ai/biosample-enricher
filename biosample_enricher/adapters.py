@@ -16,6 +16,7 @@ from typing import Any
 
 import pymongo
 
+from biosample_enricher.config import get_field_priority_list
 from biosample_enricher.host_detector import get_host_detector
 from biosample_enricher.models import BiosampleLocation
 
@@ -147,8 +148,16 @@ class NMDCBiosampleAdapter(BiosampleAdapter):
         return None, None
 
     def _parse_nmdc_date(self, data: dict[str, Any]) -> str | None:
-        """Parse NMDC collection_date field."""
-        collection_date = data.get("collection_date")
+        """Parse NMDC collection date fields."""
+        # Get priority order from configuration
+        date_fields = get_field_priority_list("nmdc", "date_fields")
+
+        collection_date = None
+        for field in date_fields:
+            collection_date = data.get(field)
+            if collection_date:
+                break
+
         if not collection_date:
             return None
 
@@ -197,14 +206,8 @@ class NMDCBiosampleAdapter(BiosampleAdapter):
 
     def _parse_nmdc_location_text(self, data: dict[str, Any]) -> str | None:
         """Parse NMDC textual location fields."""
-        # Priority order for location text
-        location_fields = [
-            "geo_loc_name",
-            "geographic_location",
-            "location",
-            "sample_collection_site",
-            "description",
-        ]
+        # Get priority order from configuration
+        location_fields = get_field_priority_list("nmdc", "location_text")
 
         for field in location_fields:
             value = data.get(field)
@@ -258,13 +261,8 @@ class NMDCBiosampleAdapter(BiosampleAdapter):
         nmdc_id = data.get("id")
         gold_id = None
 
-        # Look for GOLD ID in various possible fields
-        gold_fields = [
-            "gold_biosample_id",
-            "biosampleGoldId",
-            "gold_id",
-            "gold_biosample_identifiers",
-        ]
+        # Get priority order from configuration
+        gold_fields = get_field_priority_list("nmdc", "gold_id_fields")
         for field in gold_fields:
             value = data.get(field)
             if value:
@@ -476,8 +474,16 @@ class GOLDBiosampleAdapter(BiosampleAdapter):
         return detector.is_host_associated_gold(data)
 
     def _parse_gold_date(self, data: dict[str, Any]) -> str | None:
-        """Parse GOLD dateCollected field."""
-        date_collected = data.get("dateCollected")
+        """Parse GOLD collection date fields."""
+        # Get priority order from configuration
+        date_fields = get_field_priority_list("gold", "date_fields")
+
+        date_collected = None
+        for field in date_fields:
+            date_collected = data.get(field)
+            if date_collected:
+                break
+
         if not date_collected:
             return None
 
@@ -504,14 +510,8 @@ class GOLDBiosampleAdapter(BiosampleAdapter):
 
     def _parse_gold_location_text(self, data: dict[str, Any]) -> str | None:
         """Parse GOLD textual location fields."""
-        # Priority order for location text
-        location_fields = [
-            "geoLocation",
-            "geographicLocation",
-            "sampleCollectionSite",
-            "description",
-            "habitat",
-        ]
+        # Get priority order from configuration
+        location_fields = get_field_priority_list("gold", "location_text")
 
         for field in location_fields:
             value = data.get(field)
@@ -556,8 +556,8 @@ class GOLDBiosampleAdapter(BiosampleAdapter):
         gold_id = data.get("biosampleGoldId") or data.get("_id") or data.get("id")
         nmdc_id = None
 
-        # Look for NMDC ID in various possible fields
-        nmdc_fields = ["nmdc_biosample_id", "biosampleNmdcId", "nmdc_id"]
+        # Get priority order from configuration
+        nmdc_fields = get_field_priority_list("gold", "nmdc_id_fields")
         for field in nmdc_fields:
             value = data.get(field)
             if value:

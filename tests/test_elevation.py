@@ -166,7 +166,7 @@ class TestElevationProviders:
         assert result.ok is True
         assert result.elevation is not None
         assert result.vertical_datum == "EGM96"
-        assert result.resolution_m == 90.0
+        assert result.resolution_m == 30.0  # Updated to match configured value
         assert result.location is not None
 
     @pytest.mark.integration

@@ -21,8 +21,8 @@ def _key_with_auth(request, ignored_parameters=None, match_headers=None, **kwarg
     return create_key(
         request=request,
         ignored_parameters=[],  # Don't ignore any parameters, especially 'key'
-        match_headers=['X-Goog-Api-Key', 'Authorization'],
-        **kwargs
+        match_headers=["X-Goog-Api-Key", "Authorization"],
+        **kwargs,
     )
 
 
@@ -31,10 +31,10 @@ def _cache_ok(response):
     if response.status_code != 200:
         return False
     url = response.url or ""
-    if 'googleapis.com' in url or 'maps.googleapis.com' in url:
+    if "googleapis.com" in url or "maps.googleapis.com" in url:
         try:
             j = response.json()
-            if ('error' in j and 'message' in j['error']) or 'error_message' in j:
+            if ("error" in j and "message" in j["error"]) or "error_message" in j:
                 return False
         except Exception:
             pass
@@ -45,7 +45,7 @@ def _cache_ok(response):
 def isolated_session():
     """Memory backend ensures nothing is persisted to your shared cache."""
     s = requests_cache.CachedSession(
-        backend='memory',
+        backend="memory",
         key_fn=_key_with_auth,
         cache_control=True,
         allowable_codes=(200,),
@@ -62,7 +62,7 @@ class TestHttpCacheRegression:
         # 1) Deliberately bad key -> expect 4xx OR 200-with-error JSON, and no caching
         bad = isolated_session.get(
             "https://maps.googleapis.com/maps/api/elevation/json",
-            params={"locations": "0,0", "key": "BAD"}
+            params={"locations": "0,0", "key": "BAD"},
         )
         assert getattr(bad, "from_cache", False) is False
 
@@ -70,22 +70,24 @@ class TestHttpCacheRegression:
         real_key = os.environ["GOOGLE_MAIN_API_KEY"]
         good = isolated_session.get(
             "https://maps.googleapis.com/maps/api/elevation/json",
-            params={"locations": "0,0", "key": real_key}
+            params={"locations": "0,0", "key": real_key},
         )
-        assert getattr(good, "from_cache", False) is False, \
+        assert getattr(good, "from_cache", False) is False, (
             "Auth poisoning: a bad-key response was reused for a good key."
+        )
 
     def test_error_responses_not_cached(self, isolated_session):
         """Test that 4xx/5xx responses are not cached."""
         # Make two identical bad-key calls; second should NOT come from cache
         r1 = isolated_session.get(
             "https://maps.googleapis.com/maps/api/elevation/json",
-            params={"locations": "0,0", "key": "BAD"}
+            params={"locations": "0,0", "key": "BAD"},
         )
         r2 = isolated_session.get(
             "https://maps.googleapis.com/maps/api/elevation/json",
-            params={"locations": "0,0", "key": "BAD"}
+            params={"locations": "0,0", "key": "BAD"},
         )
         assert getattr(r1, "from_cache", False) is False
-        assert getattr(r2, "from_cache", False) is False, \
+        assert getattr(r2, "from_cache", False) is False, (
             "4xx/Google-error payloads should not be cached"
+        )

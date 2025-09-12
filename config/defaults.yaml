@@ -1,0 +1,213 @@
+# Application Defaults and Makefile Configurations
+# Default values for sample sizes, paths, and processing parameters
+
+# Directory structure and file paths
+paths:
+  # Output directories
+  outputs:
+    base: "data/outputs"
+    schema: "data/outputs/schema"
+    adapters: "data/outputs/adapters"
+    elevation: "data/outputs/elevation"
+    metrics: "data/outputs/metrics"
+    workspace: "data/workspace"
+  
+  # Input directories
+  inputs:
+    base: "data/input"
+    synthetic: "data/input/synthetic_biosamples.json"
+  
+  # Configuration paths
+  config:
+    base: "config"
+    field_mappings: "config/field_mappings.yaml"
+    host_detection: "config/host_detection.yaml"
+    providers: "config/providers.yaml"
+    databases: "config/databases.yaml"
+    validation: "config/validation.yaml"
+
+# Default sample sizes for various operations
+sample_sizes:
+  # Schema analysis
+  schema_inference: 50000
+  schema_statistics: 50000
+  
+  # Metrics evaluation
+  metrics:
+    nmdc_samples: 5
+    gold_samples: 5
+    nmdc_large: 100
+    gold_large: 100
+  
+  # Random sampling demos
+  random_sampling: 10
+  adapter_demos: 5
+  
+  # Batch processing
+  elevation_batch: 5
+  batch_timeout: 30
+
+# File naming patterns
+file_patterns:
+  # Schema analysis outputs
+  schema:
+    nmdc_schema: "nmdc_biosample_schema.json"
+    gold_schema: "gold_biosample_schema.json"
+    nmdc_stats: "nmdc_biosample_stats.csv"
+    gold_stats: "gold_biosample_stats.csv"
+    comparison: "schema_comparison.json"
+    analysis: "enrichment_analysis.json"
+  
+  # Adapter demo outputs  
+  adapters:
+    nmdc_test: "nmdc_adapter_test.json"
+    gold_test: "gold_adapter_test.json"
+    unified_test: "unified_adapter_test.json"
+    mongodb_test: "mongodb_adapter_test.json"
+    validation_test: "synthetic_validation_test.json"
+  
+  # Elevation demo outputs
+  elevation:
+    mount_rushmore: "mount_rushmore.json"
+    london_uk: "london_uk.json"
+    ocean_pacific: "ocean_pacific.json"
+    cache_test: "cache_test.json"
+    provider_comparison: "provider_comparison.json"
+    synthetic_jsonl: "synthetic_biosamples.jsonl"
+    synthetic_csv: "synthetic_biosamples.csv"
+  
+  # Metrics outputs
+  metrics:
+    summary: "metrics_summary.csv"
+    by_region: "metrics_by_region.csv"
+    samples: "metrics_samples.csv"
+    coverage_plot: "metrics_coverage.png"
+    regional_plot: "metrics_regional.png"
+    improvement_plot: "metrics_improvement.png"
+    host_plot: "metrics_host_association.png"
+
+# Processing parameters
+processing:
+  # Timeout values (seconds)
+  timeouts:
+    default: 30
+    elevation_lookup: 30
+    cache_test: 30
+    mongodb_connection: 5
+  
+  # Retry configurations
+  retries:
+    max_attempts: 3
+    delay_seconds: 5
+    backoff_multiplier: 2
+  
+  # Memory and performance limits
+  limits:
+    max_memory_mb: 2000
+    max_concurrent: 10
+    chunk_size: 1000
+
+# Database defaults (non-sensitive)
+database_defaults:
+  # Collection names and database structure
+  collections:
+    nmdc:
+      database: "nmdc"
+      biosamples: "biosample_set"
+      studies: "study_set"
+    gold:
+      database: "gold_metadata"
+      biosamples: "biosamples"
+      seq_projects: "seq_projects"
+    cache:
+      database: "http_cache"
+      requests: "http_requests"
+  
+  # Query defaults
+  query_defaults:
+    timeout_ms: 1000
+    batch_size: 1000
+    max_docs: 100000
+
+# Environment variable defaults
+environment:
+  # Default environment variable names
+  required_vars:
+    - "NMDC_MONGO_CONNECTION"
+    - "GOLD_MONGO_CONNECTION"
+  
+  optional_vars:
+    - "GOOGLE_MAIN_API_KEY"
+    - "CACHE_MONGO_CONNECTION"
+    - "LOG_LEVEL"
+    - "LOG_FILE"
+  
+  # Default values when env vars not set
+  fallbacks:
+    log_level: "INFO"
+    cache_enabled: true
+    debug_mode: false
+
+# Tool and CLI defaults
+cli_defaults:
+  # Verbose output settings
+  logging:
+    default_level: "INFO"
+    debug_level: "DEBUG"
+    quiet_level: "WARNING"
+  
+  # Output format preferences
+  output_formats:
+    default: "json"
+    metrics: "csv"
+    plots: "png"
+    logs: "text"
+  
+  # Progress reporting
+  progress:
+    show_progress: true
+    update_interval: 10  # Every 10 items
+    show_timing: true
+
+# Development and testing defaults
+development:
+  # Test data configuration
+  test_coordinates:
+    mount_rushmore: [43.8791, -103.4591]
+    london_uk: [51.5074, -0.1278]
+    san_francisco: [37.7749, -122.4194]
+    pacific_ocean: [20.0, -150.0]
+  
+  # Mock data settings
+  mock_data:
+    enabled: false
+    cache_responses: true
+    simulate_delays: false
+  
+  # Debugging options
+  debug:
+    save_raw_responses: false
+    verbose_logging: false
+    workspace_debugging: false
+
+# Data quality defaults
+quality:
+  # Minimum requirements for processing
+  minimum_requirements:
+    coordinate_precision: 2  # decimal places
+    date_precision: "year"   # year, month, or day
+    required_fields: ["sample_id", "database_source"]
+  
+  # Quality scoring weights
+  scoring_weights:
+    coordinate_precision: 0.3
+    date_precision: 0.2
+    field_completeness: 0.3
+    data_consistency: 0.2
+  
+  # Auto-cleaning preferences
+  cleaning:
+    remove_invalid_coordinates: true
+    normalize_dates: true
+    trim_whitespace: true
+    validate_types: true

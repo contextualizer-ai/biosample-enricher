@@ -1,8 +1,8 @@
 """Google Elevation API provider."""
 
-import os
 from typing import Any
 
+from biosample_enricher.config import get_api_key, get_provider_config
 from biosample_enricher.elevation.providers.base import BaseElevationProvider
 from biosample_enricher.http_cache import request
 from biosample_enricher.logging_config import get_logger
@@ -19,20 +19,41 @@ class GoogleElevationProvider(BaseElevationProvider):
         Initialize Google Elevation provider.
 
         Args:
-            api_key: Google API key (if None, reads from GOOGLE_MAIN_API_KEY env var)
+            api_key: Google API key (if None, loads from configuration)
         """
+        # Load provider configuration
+        config = get_provider_config("elevation", "google")
+        if not config:
+            raise ValueError("Google elevation provider configuration not found")
+
+        if not config.enabled:
+            raise ValueError("Google elevation provider is disabled in configuration")
+
         super().__init__(
             name="google_elevation",
-            endpoint="https://maps.googleapis.com/maps/api/elevation/json",
+            endpoint=config.endpoint,
             api_version="v1",
         )
 
-        self.api_key = api_key or os.getenv("GOOGLE_MAIN_API_KEY")
+        # Load API key from config or parameter
+        self.api_key: str | None
+        if api_key:
+            self.api_key = api_key
+        elif config.api_key_env:
+            self.api_key = get_api_key(config.api_key_env)
+        else:
+            self.api_key = None
+
         if not self.api_key:
             raise ValueError(
-                "Google API key required. Set GOOGLE_MAIN_API_KEY environment variable "
+                f"Google API key required. Set {config.api_key_env} environment variable "
                 "or pass api_key parameter."
             )
+
+        # Store configuration for request parameters
+        self.timeout_s = config.timeout_s
+        self.rate_limit_qps = config.rate_limit_qps
+        self.vertical_datum = config.vertical_datum or "EGM96"
 
         logger.info("Google Elevation provider initialized")
 
@@ -43,7 +64,7 @@ class GoogleElevationProvider(BaseElevationProvider):
         *,
         read_from_cache: bool = True,
         write_to_cache: bool = True,
-        timeout_s: float = 20.0,
+        timeout_s: float | None = None,
     ) -> FetchResult:
         """
         Fetch elevation data from Google Elevation API.
@@ -53,12 +74,15 @@ class GoogleElevationProvider(BaseElevationProvider):
             lon: Longitude in decimal degrees
             read_from_cache: Whether to read from cache
             write_to_cache: Whether to write to cache
-            timeout_s: Request timeout in seconds
+            timeout_s: Request timeout in seconds (uses provider config default if None)
 
         Returns:
             Fetch result with elevation data
         """
         self._validate_coordinates(lat, lon)
+
+        # Use configured timeout if not specified
+        actual_timeout = timeout_s if timeout_s is not None else self.timeout_s
 
         logger.debug(f"Fetching elevation from Google API: {lat:.6f}, {lon:.6f}")
 
@@ -73,7 +97,7 @@ class GoogleElevationProvider(BaseElevationProvider):
                 read_from_cache=read_from_cache,
                 write_to_cache=write_to_cache,
                 params=params,
-                timeout=timeout_s,
+                timeout=actual_timeout,
             )
 
             response.raise_for_status()
@@ -140,7 +164,7 @@ class GoogleElevationProvider(BaseElevationProvider):
                 elevation=float(elevation),
                 location=result_location,
                 resolution_m=float(resolution) if resolution is not None else None,
-                vertical_datum="EGM96",  # Google uses EGM96 geoid
+                vertical_datum=self.vertical_datum,
                 raw=data,
             )
 
