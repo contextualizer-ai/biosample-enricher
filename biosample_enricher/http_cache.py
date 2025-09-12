@@ -49,7 +49,6 @@ def _key_with_auth(request, **kwargs):
         request=request,
         ignored_parameters=[],  # don't ignore ?key=
         match_headers=["X-Goog-Api-Key", "Authorization"],
-        **kwargs,
     )
 
 

@@ -1,11 +1,11 @@
 source,data_type,samples,before,after,improvement,improvement_fmt
-NMDC,Elevation,3,66.7,100.0,33.3,+33.3%
-NMDC,Place Name,3,100.0,100.0,0.0,0.0%
-NMDC,Place Name - Country,3,100.0,100.0,0.0,0.0%
-NMDC,Place Name - State,3,100.0,100.0,0.0,0.0%
-NMDC,Place Name - Locality,3,66.7,100.0,33.3,+33.3%
-GOLD,Elevation,3,0.0,100.0,100.0,+100.0%
-GOLD,Place Name,3,100.0,100.0,0.0,0.0%
-GOLD,Place Name - Country,3,66.7,66.7,0.0,0.0%
-GOLD,Place Name - State,3,66.7,66.7,0.0,0.0%
-GOLD,Place Name - Locality,3,66.7,100.0,33.3,+33.3%
+NMDC,Elevation,5,100.0,100.0,0.0,0.0%
+NMDC,Place Name,5,100.0,100.0,0.0,0.0%
+NMDC,Place Name - Country,5,100.0,100.0,0.0,0.0%
+NMDC,Place Name - State,5,100.0,100.0,0.0,0.0%
+NMDC,Place Name - Locality,5,80.0,100.0,20.0,+20.0%
+GOLD,Elevation,5,0.0,100.0,100.0,+100.0%
+GOLD,Place Name,5,100.0,100.0,0.0,0.0%
+GOLD,Place Name - Country,5,100.0,100.0,0.0,0.0%
+GOLD,Place Name - State,5,100.0,100.0,0.0,0.0%
+GOLD,Place Name - Locality,5,40.0,100.0,60.0,+60.0%

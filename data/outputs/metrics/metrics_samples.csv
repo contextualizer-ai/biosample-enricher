@@ -1,7 +1,11 @@
 sample_id,source,region,is_us,is_ocean,elev_before,elev_after,elev_provider,place_before,place_after,place_providers
-nmdc:bsm-11-06g2dc22,nmdc,,False,False,,,google_elevation,Western Australia: Coral Bay,"Western Australia: Coral Bay, Coral Bay",google
-nmdc:bsm-11-g6q3m668,nmdc,CONUS,True,False,500.0,372.614593506,usgs_epqs,"USA: Michigan, Lake City","USA: Michigan, Lake City",google
-nmdc:bsm-11-gdzpm224,nmdc,CONUS,True,False,401.2,402.765228271,usgs_epqs,"USA: Kansas, Konza Prairie Biological Station","USA: Kansas, Konza Prairie Biological Station","osm, google"
-Gb0368445,gold,CONUS,True,False,,1244.311279297,usgs_epqs,"USA: Scottsbluff, Nebraska","USA: Scottsbluff, Nebraska","osm, google"
-Gb0125371,gold,,False,True,,-4818.900390625,google_elevation,"Hawaii, USA","Hawaii, USA","osm, google"
-Gb0314532,gold,CONUS,True,False,,306.270843506,usgs_epqs,USA: California,"USA: California, Nacomis Indian Rancheria",google
+nmdc:bsm-11-1wr8qc72,nmdc,CONUS,True,False,298.0,295.946746826,usgs_3dep,"USA: Michigan, Delton","USA: Michigan, Delton","osm, google"
+nmdc:bsm-11-rt5w2651,nmdc,CONUS,True,False,258.0,258.947753906,usgs_3dep,USA: Wisconsin,"USA: Wisconsin, Madison","osm, google"
+nmdc:bsm-11-shdzry18,nmdc,CONUS,True,False,48.5,49.772972107,usgs_3dep,"USA: Georgia, The Jones Center At Ichauway","USA: Georgia, The Jones Center At Ichauway","osm, google"
+nmdc:bsm-11-bsny6r93,nmdc,CONUS,True,False,500.0,372.614593506,usgs_3dep,"USA: Michigan, Lake City","USA: Michigan, Lake City",google
+nmdc:bsm-11-dyy07972,nmdc,CONUS,True,False,325.0,324.59274292,usgs_3dep,"USA: Iowa, Ames","USA: Iowa, Ames","osm, google"
+Gb0335245,gold,CONUS,True,False,,226.281585693,usgs_3dep,"USA: DuPage County, Illinois","USA: DuPage County, Illinois","osm, google"
+Gb0404180,gold,,False,False,,5.895562648773193,google_elevation,Guadeloupe: Sainte-Rose,"Guadeloupe: Sainte-Rose, Sainte-Rose",google
+Gb0250829,gold,,False,False,,23.166015625,google_elevation,Israel: Tel-Aviv,"Israel: Tel-Aviv, Tel Aviv","osm, google"
+Gb0354003,gold,,False,False,,-204.9797058105469,google_elevation,Canada: Quadra Island,"Canada: Quadra Island, Campbell River",google
+Gb0348703,gold,,False,False,,178.0,google_elevation,"Canada: Niagara region, Ontario","Canada: Niagara region, Ontario","osm, google"
