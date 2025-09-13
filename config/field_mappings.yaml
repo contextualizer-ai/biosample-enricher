@@ -17,7 +17,7 @@ location:
     enrichment:
       - path: "location.latitude"
         type: "nested"
-  
+
   longitude:
     nmdc:
       - path: "lat_lon[1]"
@@ -32,7 +32,7 @@ location:
     enrichment:
       - path: "location.longitude"
         type: "nested"
-  
+
   elevation:
     nmdc:
       - path: "elev"
@@ -49,7 +49,7 @@ location:
         type: "nested"
       - path: "elevation_m"
         type: "direct"
-  
+
   country:
     nmdc:
       - path: "geo_loc_name"
@@ -64,7 +64,7 @@ location:
         type: "nested"
       - path: "location.country"
         type: "nested"
-  
+
   state_province:
     nmdc:
       - path: "geo_loc_name"
@@ -98,7 +98,7 @@ climate:
         type: "nested"
       - path: "climate.temperature_c"
         type: "direct"
-  
+
   precipitation:
     nmdc:
       - path: "annual_precpt"
@@ -115,7 +115,7 @@ climate:
         type: "nested"
       - path: "climate.precipitation_mm"
         type: "direct"
-  
+
   humidity:
     nmdc:
       - path: "humidity"
@@ -151,7 +151,7 @@ soil:
         type: "nested"
       - path: "soil_type"
         type: "direct"
-  
+
   ph:
     nmdc:
       - path: "ph"
@@ -168,7 +168,7 @@ soil:
         type: "nested"
       - path: "soil_properties.ph"
         type: "nested"
-  
+
   organic_carbon:
     nmdc:
       - path: "tot_org_carb"
@@ -204,7 +204,7 @@ vegetation:
         type: "nested"
       - path: "ecosystem.land_cover"
         type: "nested"
-  
+
   ecosystem_type:
     nmdc:
       - path: "ecosystem_type"
@@ -238,7 +238,7 @@ temporal:
     enrichment:
       - path: "collection_date"
         type: "direct"
-  
+
   collection_time:
     nmdc:
       - path: "collection_time"

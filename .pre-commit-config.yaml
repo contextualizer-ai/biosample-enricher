@@ -37,17 +37,17 @@ repos:
         language: system
         types: [python]
         require_serial: false
-        
+
       - id: ruff-check
         name: ruff check
         entry: uv run ruff check --fix
         language: system
         types: [python]
         require_serial: false
-        
+
       - id: mypy
         name: mypy type checking
-        entry: uv run mypy
+        entry: uv run mypy biosample_enricher/
         language: system
         types: [python]
         pass_filenames: false

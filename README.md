@@ -108,18 +108,18 @@ from biosample_enricher import BiosampleEnricher
 with BiosampleEnricher(timeout=30.0) as enricher:
     # Enrich a single sample
     results = enricher.enrich_sample("SAMN123456")
-    
+
     for result in results:
         print(f"Source: {result.source}")
         print(f"Confidence: {result.confidence}")
         print(f"Metadata: {result.metadata}")
-    
+
     # Enrich multiple samples
     batch_results = enricher.enrich_multiple(
         ["SAMN123456", "SAMN789012"],
         sources=["ncbi", "ebi"]
     )
-    
+
     for sample_id, metadata_list in batch_results.items():
         print(f"Sample {sample_id}: {len(metadata_list)} sources")
 ```

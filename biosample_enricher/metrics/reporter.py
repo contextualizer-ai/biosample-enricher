@@ -357,6 +357,81 @@ class MetricsReporter:
                     }
                 )
 
+            # Land enrichment - Overall coverage
+            land_before_count = sum(
+                e.get("land", {}).get("before_count", 0) for e in source_evals
+            )
+            land_after_count = sum(
+                e.get("land", {}).get("after_count", 0) for e in source_evals
+            )
+            land_total_possible = len(source_evals) * 10  # 10 land/vegetation fields
+
+            if land_total_possible > 0:
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": "Land - Overall",
+                        "samples": total,
+                        "before": round(
+                            100 * land_before_count / land_total_possible, 1
+                        ),
+                        "after": round(100 * land_after_count / land_total_possible, 1),
+                        "improvement": round(
+                            100
+                            * (land_after_count - land_before_count)
+                            / land_total_possible,
+                            1,
+                        ),
+                    }
+                )
+
+            # Individual land cover and vegetation parameters
+            land_fields = [
+                "current_vegetation",
+                "land_cover_class",
+                "ndvi",
+                "evi",
+                "lai",
+                "land_use",
+                "habitat",
+                "biome",
+            ]
+
+            for land_param in land_fields:
+                param_before = sum(
+                    1
+                    for e in source_evals
+                    if e.get("land", {})
+                    .get("before_coverage", {})
+                    .get(land_param, False)
+                )
+                param_after = sum(
+                    1
+                    for e in source_evals
+                    if e.get("land", {})
+                    .get("after_coverage", {})
+                    .get(land_param, False)
+                )
+
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": f"Land - {land_param}",
+                        "samples": total,
+                        "before": round(100 * param_before / total, 1)
+                        if total > 0
+                        else 0,
+                        "after": round(100 * param_after / total, 1)
+                        if total > 0
+                        else 0,
+                        "improvement": round(
+                            100 * (param_after - param_before) / total, 1
+                        )
+                        if total > 0
+                        else 0,
+                    }
+                )
+
         df = pd.DataFrame(metrics)
 
         # Add formatted improvement column
@@ -535,6 +610,20 @@ class MetricsReporter:
                         eval_result.get("soil", {}).get("providers", [])
                     ),
                     "soil_quality": eval_result.get("soil", {}).get("data_quality"),
+                    # Land
+                    "land_before_count": eval_result.get("land", {}).get(
+                        "before_count", 0
+                    ),
+                    "land_after_count": eval_result.get("land", {}).get(
+                        "after_count", 0
+                    ),
+                    "land_improvement": eval_result.get("land", {}).get(
+                        "improvement", 0
+                    ),
+                    "land_providers": ", ".join(
+                        eval_result.get("land", {}).get("providers_used", [])
+                    ),
+                    "land_quality": eval_result.get("land", {}).get("data_quality"),
                 }
             )
 

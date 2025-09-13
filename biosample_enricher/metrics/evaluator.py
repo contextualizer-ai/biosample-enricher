@@ -7,6 +7,7 @@ from typing import Any
 
 from biosample_enricher.elevation.classifier import CoordinateClassifier
 from biosample_enricher.elevation.service import ElevationService
+from biosample_enricher.land.service import LandService
 from biosample_enricher.logging_config import get_logger
 from biosample_enricher.marine.service import MarineService
 from biosample_enricher.models import BiosampleLocation, ElevationRequest, ValueStatus
@@ -27,6 +28,7 @@ class CoverageEvaluator:
         self.weather_service = WeatherService()
         self.marine_service = MarineService()
         self.soil_service = SoilService()
+        self.land_service = LandService()
         self.classifier = CoordinateClassifier()
 
     def evaluate_sample(
@@ -58,6 +60,7 @@ class CoverageEvaluator:
             "weather": self._evaluate_weather(raw_doc, normalized_location, source),
             "marine": self._evaluate_marine(raw_doc, normalized_location, source),
             "soil": self._evaluate_soil(raw_doc, normalized_location, source),
+            "land": self._evaluate_land(raw_doc, normalized_location, source),
         }
 
         return result
@@ -994,6 +997,173 @@ class CoverageEvaluator:
 
     def _has_soil_field(self, biosample: dict[str, Any], field_name: str) -> bool:
         """Check if biosample has data for a specific soil field."""
+        if field_name not in biosample:
+            return False
+
+        value = biosample[field_name]
+
+        # Handle NMDC QuantityValue format
+        if isinstance(value, dict):
+            if "has_numeric_value" in value and value["has_numeric_value"] is not None:
+                return True
+            if "has_raw_value" in value and value["has_raw_value"] is not None:
+                return True
+            if "term" in value and value["term"] is not None:
+                return True
+
+        # Handle direct numeric values or non-empty strings
+        elif (
+            isinstance(value, int | float)
+            and value is not None
+            or isinstance(value, str)
+            and value.strip()
+        ):
+            return True
+
+        return False
+
+    def _evaluate_land(
+        self, raw_doc: dict[str, Any], location: BiosampleLocation, source: str
+    ) -> dict[str, Any]:
+        """Evaluate land cover and vegetation coverage before and after enrichment.
+
+        Args:
+            raw_doc: Original document
+            location: Normalized location
+            source: Data source
+
+        Returns:
+            Land coverage metrics
+        """
+        logger.info(f"\n🌍 LAND ANALYSIS for {location.sample_id}")
+        logger.info(f"Source: {source}")
+
+        # Define land cover and vegetation parameter fields for schema mapping
+        land_fields = {
+            "current_vegetation": [
+                "cur_vegetation",
+                "current_vegetation",
+                "vegetation",
+            ],
+            "land_cover_class": ["land_cover", "landCover", "land_use"],
+            "ndvi": ["ndvi", "NDVI", "normalized_difference_vegetation_index"],
+            "evi": ["evi", "EVI", "enhanced_vegetation_index"],
+            "lai": ["lai", "LAI", "leaf_area_index"],
+            "fpar": ["fpar", "FPAR", "fraction_photosynthetically_active_radiation"],
+            "land_use": ["land_use", "landUse", "land_usage"],
+            "habitat": ["habitat", "habitatDetails", "environmental_context"],
+            "biome": ["biome", "env_broad_scale", "broad_scale_environmental_context"],
+            "vegetation_type": ["vegetation_type", "vegetationType", "veg_type"],
+        }
+
+        # Analyze before coverage
+        before_coverage = {}
+        for land_param, field_names in land_fields.items():
+            has_field = False
+            for field_name in field_names:
+                if self._has_land_field(raw_doc, field_name):
+                    has_field = True
+                    break
+            before_coverage[land_param] = has_field
+
+        before_count = sum(before_coverage.values())
+        logger.info(f"📊 LAND BEFORE: {before_count}/{len(land_fields)} fields present")
+
+        # Try land enrichment if we have coordinates
+        after_coverage = before_coverage.copy()  # Start with existing data
+        enrichment_error = None
+        providers_used = []
+        data_quality = None
+        distance_m = None
+
+        if location.latitude is not None and location.longitude is not None:
+            try:
+                logger.info(
+                    f"🚀 CALLING LAND SERVICE for {location.latitude}, {location.longitude}"
+                )
+
+                # Get land enrichment
+                land_result = self.land_service.enrich_location(
+                    location.latitude, location.longitude
+                )
+
+                if (
+                    land_result.land_cover or land_result.vegetation
+                ) and land_result.overall_quality_score > 0.1:
+                    logger.info("✅ LAND ENRICHMENT SUCCESSFUL")
+                    providers_used = land_result.providers_successful
+                    data_quality = land_result.overall_quality_score
+
+                    # Check which land cover parameters were enriched
+                    if land_result.land_cover:
+                        after_coverage["land_cover_class"] = True
+                        after_coverage["habitat"] = True
+
+                        # Check for specific vegetation classification
+                        for obs in land_result.land_cover:
+                            if obs.class_label and any(
+                                veg_term in obs.class_label.lower()
+                                for veg_term in [
+                                    "grass",
+                                    "forest",
+                                    "shrub",
+                                    "crop",
+                                    "wetland",
+                                ]
+                            ):
+                                after_coverage["current_vegetation"] = True
+                                after_coverage["vegetation_type"] = True
+
+                    # Check which vegetation parameters were enriched
+                    if land_result.vegetation:
+                        for veg_obs in land_result.vegetation:
+                            if veg_obs.ndvi is not None:
+                                after_coverage["ndvi"] = True
+                            if veg_obs.evi is not None:
+                                after_coverage["evi"] = True
+                            if veg_obs.lai is not None:
+                                after_coverage["lai"] = True
+                            if veg_obs.fpar is not None:
+                                after_coverage["fpar"] = True
+
+                        # Calculate average distance for vegetation observations
+                        distances = [
+                            obs.distance_m
+                            for obs in land_result.vegetation
+                            if obs.distance_m
+                        ]
+                        if distances:
+                            distance_m = sum(distances) / len(distances)
+
+                else:
+                    logger.info("❌ LAND ENRICHMENT FAILED OR LOW QUALITY")
+                    if land_result.errors:
+                        enrichment_error = "; ".join(land_result.errors[:3])
+
+            except Exception as e:
+                logger.error(f"❌ LAND ENRICHMENT ERROR: {e}")
+                enrichment_error = str(e)
+
+        after_count = sum(after_coverage.values())
+        improvement = after_count - before_count
+        logger.info(
+            f"📊 LAND AFTER: {after_count}/{len(land_fields)} fields present (+{improvement})"
+        )
+
+        return {
+            "before_count": before_count,
+            "after_count": after_count,
+            "improvement": improvement,
+            "before_coverage": before_coverage,
+            "after_coverage": after_coverage,
+            "providers_used": providers_used,
+            "data_quality": data_quality,
+            "distance_m": distance_m,
+            "enrichment_error": enrichment_error,
+        }
+
+    def _has_land_field(self, biosample: dict[str, Any], field_name: str) -> bool:
+        """Check if a land-related field has meaningful data."""
         if field_name not in biosample:
             return False
 

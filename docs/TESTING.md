@@ -8,7 +8,7 @@ This document outlines the testing standards and practices for the Biosample Enr
 
 **What We Should Have Done**: Used the standard `requests-cache` library from the beginning, which provides:
 - Built-in MongoDB, SQLite, Redis, and other backends
-- Automatic cache expiration and management  
+- Automatic cache expiration and management
 - Standard HTTP caching semantics
 - Well-tested, production-ready code
 - Minimal configuration required
@@ -83,7 +83,7 @@ tests/
 @pytest.mark.network
 def test_iss_api_integration(cached_client):
     """Test real API integration with ISS service."""
-    response = cached_client.get("http://api.open-notify.org/iss-pass.json", 
+    response = cached_client.get("http://api.open-notify.org/iss-pass.json",
                                 params={"lat": 37.7749, "lon": -122.4194})
     assert response.status_code == 200
 ```
@@ -194,7 +194,7 @@ class TestNetworkIntegration:
         """Test complete integration with ISS Pass API."""
         url = "http://api.open-notify.org/iss-pass.json"
         params = {"lat": 37.7749, "lon": -122.4194}
-        
+
         response = cached_client.get(url, params=params, timeout=10)
         assert response.status_code == 200
         assert response.json()["message"] == "success"
@@ -225,7 +225,7 @@ tests/fixtures/valid/
 └── enrichment_response.json
 ```
 
-### Invalid Examples  
+### Invalid Examples
 Place invalid test data under `tests/fixtures/invalid/`:
 ```
 tests/fixtures/invalid/
@@ -290,12 +290,12 @@ GitHub Actions workflow typically includes:
 - name: Run tests
   run: |
     uv run pytest
-    
+
 - name: Run linting
   run: |
     uv run ruff check .
     uv run ruff format --check .
-    
+
 - name: Type checking
   run: |
     uv run mypy biosample_enricher/
@@ -313,7 +313,7 @@ def test_api_call(mock_request):
     mock_response.status_code = 200
     mock_response.json.return_value = {"test": "data"}
     mock_request.return_value = mock_response
-    
+
     # Test code that makes API calls
     result = make_api_call()
     assert result["test"] == "data"
@@ -327,7 +327,7 @@ Use test databases or mock database operations:
 def mock_mongo_collection():
     with patch('pymongo.collection.Collection') as mock_collection:
         yield mock_collection
-        
+
 def test_database_operation(mock_mongo_collection):
     # Test database interactions without real database
 ```
@@ -379,7 +379,7 @@ When migrating existing `unittest` code to pytest:
 class TestExample(unittest.TestCase):
     def setUp(self):
         self.data = create_test_data()
-    
+
     def test_something(self):
         self.assertEqual(process(self.data), expected_result)
 
