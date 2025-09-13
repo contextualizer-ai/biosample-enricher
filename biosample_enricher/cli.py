@@ -4,6 +4,7 @@ import click
 
 from biosample_enricher import __version__
 from biosample_enricher.cli_elevation import elevation_cli
+from biosample_enricher.cli_forward_geocoding import forward_geocoding
 from biosample_enricher.cli_land import land
 from biosample_enricher.cli_metrics import metrics
 
@@ -21,6 +22,8 @@ def main() -> None:
 
 # Add elevation CLI as a subcommand
 main.add_command(elevation_cli, name="elevation")
+# Add forward geocoding CLI as a subcommand
+main.add_command(forward_geocoding, name="forward-geocoding")
 # Add land CLI as a subcommand
 main.add_command(land, name="land")
 # Add metrics CLI as a subcommand
