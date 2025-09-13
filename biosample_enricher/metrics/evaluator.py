@@ -7,6 +7,7 @@ from typing import Any
 
 from biosample_enricher.elevation.classifier import CoordinateClassifier
 from biosample_enricher.elevation.service import ElevationService
+from biosample_enricher.forward_geocoding.service import ForwardGeocodingService
 from biosample_enricher.land.service import LandService
 from biosample_enricher.logging_config import get_logger
 from biosample_enricher.marine.service import MarineService
@@ -25,6 +26,7 @@ class CoverageEvaluator:
         """Initialize evaluator with enrichment services."""
         self.elevation_service = ElevationService()
         self.geocoding_service = ReverseGeocodingService()
+        self.forward_geocoding_service = ForwardGeocodingService()
         self.weather_service = WeatherService()
         self.marine_service = MarineService()
         self.soil_service = SoilService()
@@ -55,6 +57,9 @@ class CoverageEvaluator:
             "classification": self._classify_location(normalized_location),
             "elevation": self._evaluate_elevation(raw_doc, normalized_location, source),
             "place_name": self._evaluate_place_name(
+                raw_doc, normalized_location, source
+            ),
+            "forward_geocoding": self._evaluate_forward_geocoding(
                 raw_doc, normalized_location, source
             ),
             "weather": self._evaluate_weather(raw_doc, normalized_location, source),
@@ -502,6 +507,162 @@ class CoverageEvaluator:
                 parts.append(components["locality"])
 
             return ", ".join(parts) if parts else ""
+
+    def _evaluate_forward_geocoding(
+        self, raw_doc: dict[str, Any], location: BiosampleLocation, source: str
+    ) -> dict[str, Any]:
+        """Evaluate forward geocoding coverage (place names to coordinates).
+
+        Args:
+            raw_doc: Original document
+            location: Normalized location
+            source: Data source
+
+        Returns:
+            Forward geocoding coverage metrics
+        """
+        logger.info(f"\n🌍 FORWARD GEOCODING ANALYSIS for {location.sample_id}")
+        logger.info(f"Source: {source}")
+
+        # Extract place name from raw document
+        place_name = None
+        if source == "nmdc":
+            place_name_data = raw_doc.get("geo_loc_name")
+            if place_name_data:
+                if isinstance(place_name_data, str):
+                    place_name = place_name_data
+                elif isinstance(place_name_data, dict):
+                    place_name = (
+                        place_name_data.get("has_raw_value")
+                        or place_name_data.get("name")
+                        or str(place_name_data)
+                    )
+        elif source == "gold":
+            place_name = (
+                raw_doc.get("geographicLocation")
+                or raw_doc.get("geoLocation")
+                or raw_doc.get("sampleCollectionSite")
+            )
+
+        logger.info(f"📍 EXTRACTED PLACE NAME: {place_name}")
+
+        # Check if we already have coordinates
+        has_coordinates_before = (
+            location.latitude is not None and location.longitude is not None
+        )
+
+        # Try forward geocoding enrichment if we have a place name but no coordinates
+        has_coordinates_after = has_coordinates_before
+        enriched_coordinates = None
+        enrichment_error = None
+        providers_used = []
+        enrichment_data = {}
+
+        if place_name and not has_coordinates_before:
+            try:
+                logger.info(f"🚀 CALLING FORWARD GEOCODING SERVICE for '{place_name}'")
+
+                # Determine country hint from existing data
+                country_hint = None
+                if source == "gold":
+                    country_hint = raw_doc.get("isoCountry")
+
+                # Get coordinates from place name
+                enrichment_data = (
+                    self.forward_geocoding_service.get_coordinates_for_place(
+                        place_name, country_hint=country_hint
+                    )
+                )
+
+                if (
+                    enrichment_data
+                    and "latitude" in enrichment_data
+                    and "longitude" in enrichment_data
+                ):
+                    logger.info("✅ FORWARD GEOCODING ENRICHMENT SUCCESSFUL")
+                    has_coordinates_after = True
+                    enriched_coordinates = {
+                        "latitude": enrichment_data["latitude"],
+                        "longitude": enrichment_data["longitude"],
+                    }
+                    providers_used = enrichment_data.get("providers_successful", [])
+
+                    logger.info(
+                        f"📈 Enriched coordinates: {enriched_coordinates['latitude']:.6f}, {enriched_coordinates['longitude']:.6f}"
+                    )
+                    logger.info(f"📈 Providers used: {', '.join(providers_used)}")
+                else:
+                    logger.warning("❌ FORWARD GEOCODING ENRICHMENT FAILED")
+                    enrichment_error = (
+                        enrichment_data.get("errors", ["No coordinates returned"])[0]
+                        if enrichment_data
+                        else "No enrichment data returned"
+                    )
+
+            except Exception as e:
+                logger.error(f"❌ FORWARD GEOCODING ERROR: {e}")
+                enrichment_error = str(e)
+        elif not place_name:
+            logger.info("⏭️  SKIPPING: No place name available")
+            enrichment_error = "No place name provided"
+        else:
+            logger.info("⏭️  SKIPPING: Coordinates already available")
+            enrichment_error = "Coordinates already present"
+
+        # Calculate metrics
+        before_count = 2 if has_coordinates_before else 0
+        after_count = 2 if has_coordinates_after else 0
+        improvement = after_count - before_count
+
+        # Track additional enriched fields from forward geocoding
+        additional_fields = [
+            "country",
+            "country_code",
+            "state",
+            "city",
+            "formatted_address",
+        ]
+        additional_before = 0
+        additional_after = 0
+
+        # Count existing geographic fields
+        for field in additional_fields:
+            if self._has_geographic_field(raw_doc, field):
+                additional_before += 1
+
+        # Count enriched geographic fields
+        additional_after = additional_before
+        if enrichment_data:
+            for field in additional_fields:
+                if field in enrichment_data and field not in raw_doc:
+                    additional_after += 1
+
+        logger.info(
+            f"📊 FORWARD GEOCODING BEFORE: coordinates={has_coordinates_before}, additional_fields={additional_before}"
+        )
+        logger.info(
+            f"📊 FORWARD GEOCODING AFTER: coordinates={has_coordinates_after}, additional_fields={additional_after}"
+        )
+        logger.info(
+            f"📈 COORDINATE IMPROVEMENT: {'+' if improvement > 0 else ''}{improvement}"
+        )
+
+        return {
+            "before_has_coordinates": has_coordinates_before,
+            "after_has_coordinates": has_coordinates_after,
+            "coordinates_improved": improvement > 0,
+            "enriched_coordinates": enriched_coordinates,
+            "before_coordinate_count": before_count,
+            "after_coordinate_count": after_count,
+            "coordinate_improvement": improvement,
+            "additional_fields_before": additional_before,
+            "additional_fields_after": additional_after,
+            "additional_fields_improvement": additional_after - additional_before,
+            "place_name_input": place_name,
+            "providers_used": providers_used,
+            "enrichment_data": enrichment_data,
+            "enrichment_error": enrichment_error,
+        }
 
     def _evaluate_weather(
         self, raw_doc: dict[str, Any], location: BiosampleLocation, source: str
@@ -1218,3 +1379,25 @@ class CoverageEvaluator:
                 )
 
         return results
+
+    def _has_geographic_field(self, biosample: dict[str, Any], field_name: str) -> bool:
+        """Check if biosample has data for a specific geographic field."""
+        if field_name not in biosample:
+            return False
+
+        value = biosample[field_name]
+
+        # Handle NMDC TextValue format (for location names)
+        if isinstance(value, dict):
+            if "has_raw_value" in value and value["has_raw_value"]:
+                return True
+            if "name" in value and value["name"]:
+                return True
+
+        # Handle direct string values or lists
+        elif (isinstance(value, str) and value.strip()) or (
+            isinstance(value, list) and value
+        ):
+            return True
+
+        return False

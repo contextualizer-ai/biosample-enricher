@@ -1,77 +1,81 @@
 source,data_type,samples,before,after,improvement,improvement_fmt
-NMDC,Elevation,30,76.7,100.0,23.3,+23.3%
-NMDC,Place Name,30,100.0,100.0,0.0,0.0%
-NMDC,Place Name - Country,30,96.7,96.7,0.0,0.0%
-NMDC,Place Name - State,30,96.7,96.7,0.0,0.0%
-NMDC,Place Name - Locality,30,86.7,100.0,13.3,+13.3%
-NMDC,Weather,30,3.8,84.6,80.8,+80.8%
-NMDC,Weather - Temperature,30,16.7,96.7,80.0,+80.0%
-NMDC,Weather - Wind Speed,30,3.3,96.7,93.3,+93.3%
-NMDC,Weather - Wind Direction,30,3.3,96.7,93.3,+93.3%
-NMDC,Weather - Humidity,30,3.3,96.7,93.3,+93.3%
-NMDC,Weather - Solar Radiation,30,3.3,96.7,93.3,+93.3%
-NMDC,Weather - Precipitation,30,0.0,96.7,96.7,+96.7%
-NMDC,Weather - Pressure,30,0.0,96.7,96.7,+96.7%
-NMDC,Weather - Chlorophyll,30,0.0,0.0,0.0,0.0%
-NMDC,Marine,30,14.6,27.9,13.3,+13.3%
-NMDC,Marine - Sea Surface Temperature,30,13.3,13.3,0.0,0.0%
-NMDC,Marine - Bathymetry,30,86.7,96.7,10.0,+10.0%
-NMDC,Marine - Chlorophyll A,30,0.0,96.7,96.7,+96.7%
-NMDC,Marine - Salinity,30,0.0,0.0,0.0,0.0%
-NMDC,Marine - Dissolved Oxygen,30,6.7,6.7,0.0,0.0%
-NMDC,Marine - Ph,30,10.0,10.0,0.0,0.0%
-NMDC,Marine - Wave Height,30,0.0,0.0,0.0,0.0%
-NMDC,Soil - Overall,30,2.2,63.3,61.1,+61.1%
-NMDC,Soil - Soil Type,30,0.0,0.0,0.0,0.0%
-NMDC,Soil - Soil Classification,30,0.0,0.0,0.0,0.0%
-NMDC,Soil - Ph,30,10.0,100.0,90.0,+90.0%
-NMDC,Soil - Texture,30,0.0,50.0,50.0,+50.0%
-NMDC,Soil - Organic Carbon,30,3.3,100.0,96.7,+96.7%
-NMDC,Soil - Bulk Density,30,0.0,100.0,100.0,+100.0%
-NMDC,Land - Overall,30,16.0,56.0,40.0,+40.0%
-NMDC,Land - current_vegetation,30,33.3,33.3,0.0,0.0%
-NMDC,Land - land_cover_class,30,0.0,0.0,0.0,0.0%
-NMDC,Land - ndvi,30,0.0,100.0,100.0,+100.0%
-NMDC,Land - evi,30,0.0,100.0,100.0,+100.0%
-NMDC,Land - lai,30,0.0,100.0,100.0,+100.0%
-NMDC,Land - land_use,30,0.0,0.0,0.0,0.0%
-NMDC,Land - habitat,30,26.7,26.7,0.0,0.0%
-NMDC,Land - biome,30,100.0,100.0,0.0,0.0%
-GOLD,Elevation,30,0.0,100.0,100.0,+100.0%
-GOLD,Place Name,30,100.0,100.0,0.0,0.0%
-GOLD,Place Name - Country,30,76.7,96.7,20.0,+20.0%
-GOLD,Place Name - State,30,73.3,96.7,23.3,+23.3%
-GOLD,Place Name - Locality,30,53.3,93.3,40.0,+40.0%
-GOLD,Weather,30,0.4,75.8,75.4,+75.4%
-GOLD,Weather - Temperature,30,3.3,86.7,83.3,+83.3%
-GOLD,Weather - Wind Speed,30,0.0,86.7,86.7,+86.7%
-GOLD,Weather - Wind Direction,30,0.0,86.7,86.7,+86.7%
-GOLD,Weather - Humidity,30,0.0,86.7,86.7,+86.7%
-GOLD,Weather - Solar Radiation,30,0.0,86.7,86.7,+86.7%
-GOLD,Weather - Precipitation,30,0.0,86.7,86.7,+86.7%
-GOLD,Weather - Pressure,30,0.0,86.7,86.7,+86.7%
-GOLD,Weather - Chlorophyll,30,0.0,0.0,0.0,0.0%
-GOLD,Marine,30,5.4,22.9,17.5,+17.5%
-GOLD,Marine - Sea Surface Temperature,30,3.3,3.3,0.0,0.0%
-GOLD,Marine - Bathymetry,30,33.3,86.7,53.3,+53.3%
-GOLD,Marine - Chlorophyll A,30,0.0,86.7,86.7,+86.7%
-GOLD,Marine - Salinity,30,3.3,3.3,0.0,0.0%
-GOLD,Marine - Dissolved Oxygen,30,3.3,3.3,0.0,0.0%
-GOLD,Marine - Ph,30,0.0,0.0,0.0,0.0%
-GOLD,Marine - Wave Height,30,0.0,0.0,0.0,0.0%
-GOLD,Soil - Overall,30,0.0,58.9,58.9,+58.9%
-GOLD,Soil - Soil Type,30,0.0,0.0,0.0,0.0%
-GOLD,Soil - Soil Classification,30,0.0,0.0,0.0,0.0%
-GOLD,Soil - Ph,30,0.0,100.0,100.0,+100.0%
-GOLD,Soil - Texture,30,0.0,6.7,6.7,+6.7%
-GOLD,Soil - Organic Carbon,30,0.0,100.0,100.0,+100.0%
-GOLD,Soil - Bulk Density,30,0.0,100.0,100.0,+100.0%
-GOLD,Land - Overall,30,10.0,50.0,40.0,+40.0%
-GOLD,Land - current_vegetation,30,0.0,0.0,0.0,0.0%
-GOLD,Land - land_cover_class,30,0.0,0.0,0.0,0.0%
-GOLD,Land - ndvi,30,0.0,100.0,100.0,+100.0%
-GOLD,Land - evi,30,0.0,100.0,100.0,+100.0%
-GOLD,Land - lai,30,0.0,100.0,100.0,+100.0%
-GOLD,Land - land_use,30,0.0,0.0,0.0,0.0%
-GOLD,Land - habitat,30,100.0,100.0,0.0,0.0%
-GOLD,Land - biome,30,0.0,0.0,0.0,0.0%
+NMDC,Elevation,3,0.0,100.0,100.0,+100.0%
+NMDC,Place Name,3,100.0,100.0,0.0,0.0%
+NMDC,Place Name - Country,3,100.0,100.0,0.0,0.0%
+NMDC,Place Name - State,3,100.0,100.0,0.0,0.0%
+NMDC,Place Name - Locality,3,66.7,100.0,33.3,+33.3%
+NMDC,Weather,3,0.0,58.3,58.3,+58.3%
+NMDC,Weather - Temperature,3,0.0,66.7,66.7,+66.7%
+NMDC,Weather - Wind Speed,3,0.0,66.7,66.7,+66.7%
+NMDC,Weather - Wind Direction,3,0.0,66.7,66.7,+66.7%
+NMDC,Weather - Humidity,3,0.0,66.7,66.7,+66.7%
+NMDC,Weather - Solar Radiation,3,0.0,66.7,66.7,+66.7%
+NMDC,Weather - Precipitation,3,0.0,66.7,66.7,+66.7%
+NMDC,Weather - Pressure,3,0.0,66.7,66.7,+66.7%
+NMDC,Weather - Chlorophyll,3,0.0,0.0,0.0,0.0%
+NMDC,Marine,3,4.2,16.7,12.5,+12.5%
+NMDC,Marine - Sea Surface Temperature,3,0.0,0.0,0.0,0.0%
+NMDC,Marine - Bathymetry,3,33.3,66.7,33.3,+33.3%
+NMDC,Marine - Chlorophyll A,3,0.0,66.7,66.7,+66.7%
+NMDC,Marine - Salinity,3,0.0,0.0,0.0,0.0%
+NMDC,Marine - Dissolved Oxygen,3,0.0,0.0,0.0,0.0%
+NMDC,Marine - Ph,3,0.0,0.0,0.0,0.0%
+NMDC,Marine - Wave Height,3,0.0,0.0,0.0,0.0%
+NMDC,Forward Geocoding - Coordinates,3,100.0,100.0,0.0,0.0%
+NMDC,Forward Geocoding - Additional Fields,3,0.0,0.0,0.0,0.0%
+NMDC,Soil - Overall,3,0.0,58.3,58.3,+58.3%
+NMDC,Soil - Soil Type,3,0.0,0.0,0.0,0.0%
+NMDC,Soil - Soil Classification,3,0.0,0.0,0.0,0.0%
+NMDC,Soil - Ph,3,0.0,100.0,100.0,+100.0%
+NMDC,Soil - Texture,3,0.0,0.0,0.0,0.0%
+NMDC,Soil - Organic Carbon,3,0.0,100.0,100.0,+100.0%
+NMDC,Soil - Bulk Density,3,0.0,100.0,100.0,+100.0%
+NMDC,Land - Overall,3,20.0,60.0,40.0,+40.0%
+NMDC,Land - current_vegetation,3,0.0,0.0,0.0,0.0%
+NMDC,Land - land_cover_class,3,0.0,0.0,0.0,0.0%
+NMDC,Land - ndvi,3,0.0,100.0,100.0,+100.0%
+NMDC,Land - evi,3,0.0,100.0,100.0,+100.0%
+NMDC,Land - lai,3,0.0,100.0,100.0,+100.0%
+NMDC,Land - land_use,3,0.0,0.0,0.0,0.0%
+NMDC,Land - habitat,3,100.0,100.0,0.0,0.0%
+NMDC,Land - biome,3,100.0,100.0,0.0,0.0%
+GOLD,Elevation,3,0.0,100.0,100.0,+100.0%
+GOLD,Place Name,3,100.0,100.0,0.0,0.0%
+GOLD,Place Name - Country,3,100.0,100.0,0.0,0.0%
+GOLD,Place Name - State,3,100.0,100.0,0.0,0.0%
+GOLD,Place Name - Locality,3,33.3,100.0,66.7,+66.7%
+GOLD,Weather,3,0.0,58.3,58.3,+58.3%
+GOLD,Weather - Temperature,3,0.0,66.7,66.7,+66.7%
+GOLD,Weather - Wind Speed,3,0.0,66.7,66.7,+66.7%
+GOLD,Weather - Wind Direction,3,0.0,66.7,66.7,+66.7%
+GOLD,Weather - Humidity,3,0.0,66.7,66.7,+66.7%
+GOLD,Weather - Solar Radiation,3,0.0,66.7,66.7,+66.7%
+GOLD,Weather - Precipitation,3,0.0,66.7,66.7,+66.7%
+GOLD,Weather - Pressure,3,0.0,66.7,66.7,+66.7%
+GOLD,Weather - Chlorophyll,3,0.0,0.0,0.0,0.0%
+GOLD,Marine,3,4.2,16.7,12.5,+12.5%
+GOLD,Marine - Sea Surface Temperature,3,0.0,0.0,0.0,0.0%
+GOLD,Marine - Bathymetry,3,33.3,66.7,33.3,+33.3%
+GOLD,Marine - Chlorophyll A,3,0.0,66.7,66.7,+66.7%
+GOLD,Marine - Salinity,3,0.0,0.0,0.0,0.0%
+GOLD,Marine - Dissolved Oxygen,3,0.0,0.0,0.0,0.0%
+GOLD,Marine - Ph,3,0.0,0.0,0.0,0.0%
+GOLD,Marine - Wave Height,3,0.0,0.0,0.0,0.0%
+GOLD,Forward Geocoding - Coordinates,3,100.0,100.0,0.0,0.0%
+GOLD,Forward Geocoding - Additional Fields,3,0.0,0.0,0.0,0.0%
+GOLD,Soil - Overall,3,0.0,58.3,58.3,+58.3%
+GOLD,Soil - Soil Type,3,0.0,0.0,0.0,0.0%
+GOLD,Soil - Soil Classification,3,0.0,0.0,0.0,0.0%
+GOLD,Soil - Ph,3,0.0,100.0,100.0,+100.0%
+GOLD,Soil - Texture,3,0.0,0.0,0.0,0.0%
+GOLD,Soil - Organic Carbon,3,0.0,100.0,100.0,+100.0%
+GOLD,Soil - Bulk Density,3,0.0,100.0,100.0,+100.0%
+GOLD,Land - Overall,3,10.0,50.0,40.0,+40.0%
+GOLD,Land - current_vegetation,3,0.0,0.0,0.0,0.0%
+GOLD,Land - land_cover_class,3,0.0,0.0,0.0,0.0%
+GOLD,Land - ndvi,3,0.0,100.0,100.0,+100.0%
+GOLD,Land - evi,3,0.0,100.0,100.0,+100.0%
+GOLD,Land - lai,3,0.0,100.0,100.0,+100.0%
+GOLD,Land - land_use,3,0.0,0.0,0.0,0.0%
+GOLD,Land - habitat,3,100.0,100.0,0.0,0.0%
+GOLD,Land - biome,3,0.0,0.0,0.0,0.0%

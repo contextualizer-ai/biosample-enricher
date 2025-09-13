@@ -286,6 +286,67 @@ class MetricsReporter:
                     }
                 )
 
+            # Forward geocoding enrichment - Coordinate enrichment (place names to coordinates)
+            coordinates_before = sum(
+                1
+                for e in source_evals
+                if e.get("forward_geocoding", {}).get("before_has_coordinates", False)
+            )
+            coordinates_after = sum(
+                1
+                for e in source_evals
+                if e.get("forward_geocoding", {}).get("after_has_coordinates", False)
+            )
+            coordinates_improved = sum(
+                1
+                for e in source_evals
+                if e.get("forward_geocoding", {}).get("coordinates_improved", False)
+            )
+
+            metrics.append(
+                {
+                    "source": source_name,
+                    "data_type": "Forward Geocoding - Coordinates",
+                    "samples": total,
+                    "before": round(100 * coordinates_before / total, 1)
+                    if total > 0
+                    else 0,
+                    "after": round(100 * coordinates_after / total, 1)
+                    if total > 0
+                    else 0,
+                    "improvement": round(100 * coordinates_improved / total, 1)
+                    if total > 0
+                    else 0,
+                }
+            )
+
+            # Forward geocoding - Additional enriched fields
+            additional_before_total = sum(
+                e.get("forward_geocoding", {}).get("additional_fields_before", 0)
+                for e in source_evals
+            )
+            additional_after_total = sum(
+                e.get("forward_geocoding", {}).get("additional_fields_after", 0)
+                for e in source_evals
+            )
+            additional_improvement_total = sum(
+                e.get("forward_geocoding", {}).get("additional_fields_improvement", 0)
+                for e in source_evals
+            )
+
+            # Average per sample
+            if total > 0:
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": "Forward Geocoding - Additional Fields",
+                        "samples": total,
+                        "before": round(additional_before_total / total, 1),
+                        "after": round(additional_after_total / total, 1),
+                        "improvement": round(additional_improvement_total / total, 1),
+                    }
+                )
+
             # Soil enrichment - Overall coverage
             soil_before_count = sum(
                 e.get("soil", {}).get("before_count", 0) for e in source_evals
