@@ -93,7 +93,7 @@ def evaluate(
 
     This command:
     1. Fetches random samples from NMDC and GOLD databases
-    2. Runs enrichment (elevation and reverse geocoding)
+    2. Runs enrichment (elevation, place names, weather, marine, and soil)
     3. Compares coverage before and after enrichment
     4. Generates tabular reports and visualizations
     """
