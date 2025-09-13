@@ -11,6 +11,7 @@ from biosample_enricher.logging_config import get_logger
 from biosample_enricher.marine.service import MarineService
 from biosample_enricher.models import BiosampleLocation, ElevationRequest, ValueStatus
 from biosample_enricher.reverse_geocoding.service import ReverseGeocodingService
+from biosample_enricher.soil.service import SoilService
 from biosample_enricher.weather.service import WeatherService
 
 logger = get_logger(__name__)
@@ -25,6 +26,7 @@ class CoverageEvaluator:
         self.geocoding_service = ReverseGeocodingService()
         self.weather_service = WeatherService()
         self.marine_service = MarineService()
+        self.soil_service = SoilService()
         self.classifier = CoordinateClassifier()
 
     def evaluate_sample(
@@ -55,6 +57,7 @@ class CoverageEvaluator:
             ),
             "weather": self._evaluate_weather(raw_doc, normalized_location, source),
             "marine": self._evaluate_marine(raw_doc, normalized_location, source),
+            "soil": self._evaluate_soil(raw_doc, normalized_location, source),
         }
 
         return result
@@ -841,6 +844,168 @@ class CoverageEvaluator:
             if "has_numeric_value" in value and value["has_numeric_value"] is not None:
                 return True
             if "has_raw_value" in value and value["has_raw_value"] is not None:
+                return True
+
+        # Handle direct numeric values or non-empty strings
+        elif (
+            isinstance(value, int | float)
+            and value is not None
+            or isinstance(value, str)
+            and value.strip()
+        ):
+            return True
+
+        return False
+
+    def _evaluate_soil(
+        self, raw_doc: dict[str, Any], location: BiosampleLocation, source: str
+    ) -> dict[str, Any]:
+        """Evaluate soil coverage before and after enrichment.
+
+        Args:
+            raw_doc: Original document
+            location: Normalized location
+            source: Data source
+
+        Returns:
+            Soil coverage metrics
+        """
+        logger.info(f"\n🌱 SOIL ANALYSIS for {location.sample_id}")
+        logger.info(f"Source: {source}")
+
+        # Define soil parameter fields for schema mapping
+        soil_fields = {
+            "soil_type": ["soil_type", "soilType"],
+            "soil_classification": ["soil_classification", "soilClassification"],
+            "ph": ["ph", "pH", "soil_ph"],
+            "texture": ["soil_texture_meth", "texture", "soilTexture"],
+            "horizon": ["soil_horizon", "horizon", "soilHorizon"],
+            "organic_carbon": ["org_carb", "soil_organic_carbon", "organicCarbon"],
+            "total_nitrogen": ["tot_nitro", "total_nitrogen", "totalNitrogen"],
+            "bulk_density": ["bulk_density", "soil_density", "bulkDensity"],
+            "sand_percent": ["sand", "sand_percent", "sandPercent"],
+            "silt_percent": ["silt", "silt_percent", "siltPercent"],
+            "clay_percent": ["clay", "clay_percent", "clayPercent"],
+            "cation_exchange": ["cec", "cation_exchange_capacity", "cationExchange"],
+        }
+
+        # Analyze before coverage
+        before_coverage = {}
+        for soil_param, field_names in soil_fields.items():
+            has_field = False
+            for field_name in field_names:
+                if self._has_soil_field(raw_doc, field_name):
+                    has_field = True
+                    break
+            before_coverage[soil_param] = has_field
+
+        before_count = sum(before_coverage.values())
+        logger.info(f"📊 SOIL BEFORE: {before_count}/{len(soil_fields)} fields present")
+
+        # Try soil enrichment if we have coordinates
+        after_coverage = before_coverage.copy()  # Start with existing data
+        enrichment_error = None
+        providers_used = []
+        data_quality = None
+        distance_m = None
+
+        if location.latitude is not None and location.longitude is not None:
+            try:
+                logger.info(
+                    f"🚀 CALLING SOIL SERVICE for {location.latitude}, {location.longitude}"
+                )
+
+                # Get soil enrichment
+                soil_result = self.soil_service.enrich_location(
+                    location.latitude, location.longitude
+                )
+
+                if soil_result.observations and soil_result.quality_score > 0.1:
+                    logger.info("✅ SOIL ENRICHMENT SUCCESSFUL")
+                    providers_used.append(soil_result.provider)
+                    data_quality = soil_result.quality_score
+                    distance_m = soil_result.distance_m
+
+                    # Check which soil parameters were enriched
+                    obs = soil_result.observations[0]  # Use first observation
+
+                    # Map soil observations to coverage fields
+                    if obs.classification_usda or obs.classification_wrb:
+                        after_coverage["soil_type"] = True
+                        after_coverage["soil_classification"] = True
+
+                    if obs.ph_h2o is not None:
+                        after_coverage["ph"] = True
+
+                    if obs.texture_class:
+                        after_coverage["texture"] = True
+
+                    if obs.organic_carbon is not None:
+                        after_coverage["organic_carbon"] = True
+
+                    if obs.total_nitrogen is not None:
+                        after_coverage["total_nitrogen"] = True
+
+                    if obs.bulk_density is not None:
+                        after_coverage["bulk_density"] = True
+
+                    if obs.sand_percent is not None:
+                        after_coverage["sand_percent"] = True
+
+                    if obs.silt_percent is not None:
+                        after_coverage["silt_percent"] = True
+
+                    if obs.clay_percent is not None:
+                        after_coverage["clay_percent"] = True
+
+                    if obs.cation_exchange_capacity is not None:
+                        after_coverage["cation_exchange"] = True
+
+                    logger.info(f"📈 Soil provider used: {soil_result.provider}")
+                    logger.info(f"📈 Soil data quality: {data_quality:.2f}")
+                    if distance_m:
+                        logger.info(f"📏 Soil measurement distance: {distance_m:.1f}m")
+                else:
+                    logger.warning("❌ SOIL ENRICHMENT FAILED - No observations")
+                    enrichment_error = "No soil observations returned"
+
+            except Exception as e:
+                logger.error(f"💥 SOIL SERVICE ERROR: {e}")
+                enrichment_error = str(e)
+
+        after_count = sum(after_coverage.values())
+        improvement = after_count > before_count
+
+        logger.info(f"📊 SOIL AFTER: {after_count}/{len(soil_fields)} fields present")
+        logger.info(f"📈 SOIL IMPROVED: {improvement}")
+
+        return {
+            "before": before_coverage,
+            "after": after_coverage,
+            "before_count": before_count,
+            "after_count": after_count,
+            "total_possible": len(soil_fields),
+            "improved": improvement,
+            "providers": providers_used,
+            "error": enrichment_error,
+            "data_quality": data_quality,
+            "distance_m": distance_m,
+        }
+
+    def _has_soil_field(self, biosample: dict[str, Any], field_name: str) -> bool:
+        """Check if biosample has data for a specific soil field."""
+        if field_name not in biosample:
+            return False
+
+        value = biosample[field_name]
+
+        # Handle NMDC QuantityValue format
+        if isinstance(value, dict):
+            if "has_numeric_value" in value and value["has_numeric_value"] is not None:
+                return True
+            if "has_raw_value" in value and value["has_raw_value"] is not None:
+                return True
+            if "term" in value and value["term"] is not None:
                 return True
 
         # Handle direct numeric values or non-empty strings

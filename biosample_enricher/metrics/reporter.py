@@ -286,6 +286,77 @@ class MetricsReporter:
                     }
                 )
 
+            # Soil enrichment - Overall coverage
+            soil_before_count = sum(
+                e.get("soil", {}).get("before_count", 0) for e in source_evals
+            )
+            soil_after_count = sum(
+                e.get("soil", {}).get("after_count", 0) for e in source_evals
+            )
+            soil_total_possible = sum(
+                e.get("soil", {}).get("total_possible", 7) for e in source_evals
+            )
+
+            if soil_total_possible > 0:
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": "Soil - Overall",
+                        "samples": total,
+                        "before": round(
+                            100 * soil_before_count / soil_total_possible, 1
+                        ),
+                        "after": round(100 * soil_after_count / soil_total_possible, 1),
+                        "improvement": round(
+                            100
+                            * (soil_after_count - soil_before_count)
+                            / soil_total_possible,
+                            1,
+                        ),
+                    }
+                )
+
+            # Individual soil parameters
+            soil_fields = [
+                "soil_type",
+                "soil_classification",
+                "ph",
+                "texture",
+                "organic_carbon",
+                "bulk_density",
+            ]
+
+            for soil_param in soil_fields:
+                param_before = sum(
+                    1
+                    for e in source_evals
+                    if e.get("soil", {}).get("before", {}).get(soil_param, False)
+                )
+                param_after = sum(
+                    1
+                    for e in source_evals
+                    if e.get("soil", {}).get("after", {}).get(soil_param, False)
+                )
+
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": f"Soil - {soil_param.replace('_', ' ').title()}",
+                        "samples": total,
+                        "before": round(100 * param_before / total, 1)
+                        if total > 0
+                        else 0,
+                        "after": round(100 * param_after / total, 1)
+                        if total > 0
+                        else 0,
+                        "improvement": round(
+                            100 * (param_after - param_before) / total, 1
+                        )
+                        if total > 0
+                        else 0,
+                    }
+                )
+
         df = pd.DataFrame(metrics)
 
         # Add formatted improvement column
@@ -450,6 +521,20 @@ class MetricsReporter:
                     "weather_quality": eval_result.get("weather", {}).get(
                         "data_quality"
                     ),
+                    # Soil
+                    "soil_before_count": eval_result.get("soil", {}).get(
+                        "before_count", 0
+                    ),
+                    "soil_after_count": eval_result.get("soil", {}).get(
+                        "after_count", 0
+                    ),
+                    "soil_improvement": eval_result.get("soil", {}).get(
+                        "improved", False
+                    ),
+                    "soil_providers": ", ".join(
+                        eval_result.get("soil", {}).get("providers", [])
+                    ),
+                    "soil_quality": eval_result.get("soil", {}).get("data_quality"),
                 }
             )
 
