@@ -161,7 +161,7 @@ version: ## Show current version
 
 
 ## Biosample Adapter Infrastructure
-# MongoDB connection defaults (can be overridden) 
+# MongoDB connection defaults (can be overridden)
 MONGO_URI ?= mongodb://ncbi_reader:register_manatee_coach78@localhost:27778/?directConnection=true&authMechanism=DEFAULT&authSource=admin
 NMDC_DB ?= nmdc
 GOLD_DB ?= gold_metadata

@@ -176,7 +176,7 @@ The logging framework is integrated into key modules:
 ## Best Practices
 
 1. **Use module-level loggers**: Always use `get_logger(__name__)` in each module
-2. **Appropriate log levels**: 
+2. **Appropriate log levels**:
    - Use `DEBUG` for detailed tracing
    - Use `INFO` for important business logic events
    - Use `WARNING` for recoverable issues

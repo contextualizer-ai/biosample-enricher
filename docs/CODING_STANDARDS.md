@@ -92,11 +92,11 @@ from .utils import calculate_distance
 # ✅ Good: Clear, descriptive names
 class ElevationService:
     """Service for fetching elevation data from multiple providers."""
-    
+
     def __init__(self, google_api_key: str | None = None) -> None:
         self.google_api_key = google_api_key
         self._providers: dict[str, ElevationProvider] = {}
-    
+
     async def get_elevation_for_coordinates(
         self, latitude: float, longitude: float
     ) -> list[Observation]:
@@ -108,7 +108,7 @@ class ElSvc:
     def __init__(self, key=None):
         self.key = key
         self.provs = {}
-    
+
     async def get_elev(self, lat, lon):
         pass
 ```
@@ -134,16 +134,16 @@ async def fetch_elevation_from_usgs(
 ) -> FetchResult:
     """
     Fetch elevation data from USGS EPQS service.
-    
+
     Args:
         latitude: Latitude in decimal degrees (-90 to 90)
         longitude: Longitude in decimal degrees (-180 to 180)
         timeout_s: Request timeout in seconds
         read_from_cache: Whether to use cached results
-    
+
     Returns:
         FetchResult with elevation data or error information
-        
+
     Raises:
         ValueError: If coordinates are invalid
         httpx.TimeoutException: If request times out
@@ -152,7 +152,7 @@ async def fetch_elevation_from_usgs(
         raise ValueError(f"Invalid latitude: {latitude}")
     if not (-180 <= longitude <= 180):
         raise ValueError(f"Invalid longitude: {longitude}")
-    
+
     # Implementation here
     pass
 
@@ -199,7 +199,7 @@ logger = get_logger(__name__)
 async def fetch_elevation(lat: float, lon: float) -> FetchResult:
     """Fetch elevation with proper logging."""
     logger.debug(f"Fetching elevation for {lat:.6f}, {lon:.6f}")
-    
+
     try:
         result = await provider.fetch(lat, lon)
         if result.ok:
@@ -234,13 +234,13 @@ from collections.abc import Awaitable
 
 class ElevationProvider(Protocol):
     """Protocol for elevation data providers."""
-    
+
     name: str
     endpoint: str
-    
+
     async def fetch(
-        self, 
-        lat: float, 
+        self,
+        lat: float,
         lon: float,
         *,
         timeout_s: float = 30.0,
@@ -250,15 +250,15 @@ class ElevationProvider(Protocol):
 
 class USGSProvider:
     """USGS elevation provider implementation."""
-    
+
     def __init__(self, endpoint: str = "https://epqs.nationalmap.gov/v1/json") -> None:
         self.name: str = "usgs_epqs"
         self.endpoint: str = endpoint
         self._session: httpx.AsyncClient | None = None
 
     async def fetch(
-        self, 
-        lat: float, 
+        self,
+        lat: float,
         lon: float,
         *,
         timeout_s: float = 30.0,
@@ -271,7 +271,7 @@ class USGSProvider:
     def __init__(self, endpoint="https://epqs.nationalmap.gov/v1/json"):
         self.name = "usgs_epqs"
         self.endpoint = endpoint
-    
+
     async def fetch(self, lat, lon, timeout_s=30.0):
         pass
 ```
@@ -309,19 +309,19 @@ from pydantic import BaseModel, Field, field_validator
 
 class ElevationRequest(BaseModel):
     """Request for elevation data at specific coordinates."""
-    
+
     latitude: float = Field(
-        ge=-90, 
-        le=90, 
+        ge=-90,
+        le=90,
         description="Latitude in decimal degrees"
     )
     longitude: float = Field(
-        ge=-180, 
-        le=180, 
+        ge=-180,
+        le=180,
         description="Longitude in decimal degrees"
     )
     preferred_providers: list[str] | None = Field(
-        default=None, 
+        default=None,
         description="Preferred providers in order of preference"
     )
     timeout_seconds: float = Field(
@@ -330,14 +330,14 @@ class ElevationRequest(BaseModel):
         le=300,
         description="Request timeout in seconds"
     )
-    
+
     @field_validator('preferred_providers')
     @classmethod
     def validate_providers(cls, v: list[str] | None) -> list[str] | None:
         """Validate provider names."""
         if v is None:
             return v
-        
+
         valid_providers = {"usgs", "google", "osm", "open_topo_data"}
         invalid = set(v) - valid_providers
         if invalid:
@@ -365,20 +365,20 @@ from biosample_enricher.models import ElevationRequest, FetchResult
 
 class TestUSGSProvider:
     """Test USGS elevation provider."""
-    
+
     def setup_method(self) -> None:
         """Set up test fixtures."""
         self.provider = USGSProvider()
-    
+
     @pytest.mark.asyncio
     async def test_fetch_valid_coordinates_success(self) -> None:
         """Test successful elevation fetch with valid coordinates."""
         # Arrange
         lat, lon = 37.7749, -122.4194  # San Francisco
-        
+
         # Act
         result = await self.provider.fetch(lat, lon, timeout_s=30.0)
-        
+
         # Assert
         assert result.ok is True
         assert result.elevation is not None
@@ -387,17 +387,17 @@ class TestUSGSProvider:
         assert result.location is not None
         assert abs(result.location.lat - lat) < 0.01
         assert abs(result.location.lon - lon) < 0.01
-    
+
     @pytest.mark.asyncio
     async def test_fetch_invalid_coordinates_raises_error(self) -> None:
         """Test that invalid coordinates raise appropriate errors."""
         # Test invalid latitude
         with pytest.raises(ValueError, match="Invalid latitude"):
             await self.provider.fetch(91.0, 0.0)  # > 90 degrees
-            
+
         with pytest.raises(ValueError, match="Invalid latitude"):
             await self.provider.fetch(-91.0, 0.0)  # < -90 degrees
-        
+
         # Test invalid longitude
         with pytest.raises(ValueError, match="Invalid longitude"):
             await self.provider.fetch(0.0, 181.0)  # > 180 degrees
@@ -407,7 +407,7 @@ class TestUSGSProvider:
         """Test that ocean locations return appropriate error."""
         # Pacific Ocean
         result = await self.provider.fetch(30.0, -140.0, timeout_s=30.0)
-        
+
         assert result.ok is False
         assert "no data" in result.error.lower() or "no elevation" in result.error.lower()
 
@@ -471,7 +471,7 @@ class ValidationError(BiosampleEnricherError):
 
 class ProviderError(BiosampleEnricherError):
     """Raised when external provider fails."""
-    
+
     def __init__(self, provider: str, message: str, status_code: int | None = None):
         self.provider = provider
         self.status_code = status_code
@@ -479,18 +479,18 @@ class ProviderError(BiosampleEnricherError):
 
 class CoordinateValidationError(ValidationError):
     """Raised when coordinates are invalid."""
-    
+
     def __init__(self, latitude: float | None = None, longitude: float | None = None):
         self.latitude = latitude
         self.longitude = longitude
-        
+
         if latitude is not None and not (-90 <= latitude <= 90):
             message = f"Invalid latitude: {latitude} (must be -90 to 90)"
         elif longitude is not None and not (-180 <= longitude <= 180):
             message = f"Invalid longitude: {longitude} (must be -180 to 180)"
         else:
             message = "Invalid coordinates"
-        
+
         super().__init__(message)
 ```
 
@@ -504,23 +504,23 @@ async def fetch_elevation_with_fallback(
     """Fetch elevation with automatic fallback between providers."""
     observations = []
     errors = []
-    
+
     for provider in self.get_providers_for_location(request.latitude, request.longitude):
         try:
             result = await provider.fetch(
-                request.latitude, 
+                request.latitude,
                 request.longitude,
                 timeout_s=request.timeout_seconds,
             )
-            
+
             observation = self._create_observation(request, provider, result)
             observations.append(observation)
-            
+
             if result.ok:
                 logger.debug(f"Successfully fetched from {provider.name}")
             else:
                 logger.warning(f"Provider {provider.name} returned error: {result.error}")
-                
+
         except Exception as e:
             error_context = {
                 "provider": provider.name,
@@ -530,15 +530,15 @@ async def fetch_elevation_with_fallback(
             }
             errors.append(error_context)
             logger.error(f"Provider {provider.name} failed: {e}", extra=error_context)
-            
+
             # Create error observation for tracking
             error_obs = self._create_error_observation(request, provider, str(e))
             observations.append(error_obs)
-    
+
     if not any(obs.value_status == ValueStatus.OK for obs in observations):
         logger.error(f"All providers failed for {request.latitude}, {request.longitude}")
         # Still return observations with error details rather than raising
-    
+
     return observations
 ```
 
@@ -561,11 +561,11 @@ async def fetch_elevation_data(
 ) -> list[Observation]:
     """
     Fetch elevation data from multiple providers with caching support.
-    
+
     This function queries multiple elevation data providers in parallel and returns
     observations from each provider. Providers are automatically selected based on
     coordinate location (US vs international) unless explicitly specified.
-    
+
     Args:
         latitude: Latitude in decimal degrees. Must be between -90 and 90.
         longitude: Longitude in decimal degrees. Must be between -180 and 180.
@@ -576,17 +576,17 @@ async def fetch_elevation_data(
             positive and <= 300 seconds.
         read_from_cache: Whether to read results from cache if available.
         write_to_cache: Whether to write results to cache for future use.
-    
+
     Returns:
         List of Observation objects, one per provider. Each observation contains
         the elevation value (if successful), provider metadata, error information
         (if failed), and caching details.
-    
+
     Raises:
         ValueError: If coordinates are outside valid ranges or if invalid
             provider names are specified.
         TimeoutError: If all providers exceed the timeout limit.
-        
+
     Example:
         >>> service = ElevationService.from_env()
         >>> observations = await service.fetch_elevation_data(
@@ -598,7 +598,7 @@ async def fetch_elevation_data(
         >>> if successful_obs:
         ...     elevation = successful_obs[0].value_numeric
         ...     print(f"Elevation: {elevation}m")
-    
+
     Note:
         This function implements smart provider routing:
         - US coordinates: Prefers USGS for high accuracy
@@ -646,7 +646,7 @@ git commit -m "feat(elevation): add multi-provider elevation service
 
 Implements comprehensive elevation data fetching system with support for:
 - USGS EPQS for high-accuracy US data
-- Google Elevation API for global coverage  
+- Google Elevation API for global coverage
 - Open Topo Data for free global SRTM/ASTER data
 - OSM Elevation for community-driven data
 
@@ -852,7 +852,7 @@ maintainers = [
 ]
 keywords = [
     "biosample",
-    "enrichment", 
+    "enrichment",
     "elevation",
     "geolocation",
     "metadata",
@@ -878,12 +878,12 @@ dependencies = [
     "requests>=2.31.0",
     "requests-cache>=1.0.0",
     "rich>=13.0.0",
-    
+
     # Schema analysis dependencies
     "genson>=1.2.2",
     "pymongo>=4.5.0",
     "pandas>=2.0.0",
-    
+
     # Environment and configuration
     "python-dotenv>=1.1.1",
 ]
@@ -895,12 +895,12 @@ dev = [
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.11.0",
-    
+
     # Code quality
     "mypy>=1.5.0",
     "ruff>=0.1.0",
     "deptry>=0.12.0",
-    
+
     # Documentation
     "mkdocs>=1.5.0",
     "mkdocs-material>=9.2.0",
@@ -1042,7 +1042,7 @@ directory = "htmlcov"
 ignore = ["DEP002"]  # Allow unused dependencies (for optional features)
 exclude = [
     ".venv",
-    "venv", 
+    "venv",
     "tests",
     "migrations",
 ]
@@ -1076,32 +1076,32 @@ jobs:
     name: Code Quality
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Install uv
         uses: astral-sh/setup-uv@v2
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
-          
+
       - name: Set up Python
         run: uv python install ${{ env.PYTHON_VERSION }}
-        
+
       - name: Install dependencies
         run: uv sync
-        
+
       - name: Run linting
         run: uv run ruff check biosample_enricher/ tests/
-        
+
       - name: Check formatting
         run: uv run ruff format --check biosample_enricher/ tests/
-        
+
       - name: Run type checking
         run: uv run mypy biosample_enricher/
-        
+
       - name: Check dependencies
         run: uv run deptry .
 
@@ -1114,7 +1114,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.11", "3.12"]
-        
+
     services:
       mongodb:
         image: mongo:7.0
@@ -1125,35 +1125,35 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Install uv
         uses: astral-sh/setup-uv@v2
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
-          
+
       - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
-        
+
       - name: Install dependencies
         run: uv sync
-        
+
       - name: Run unit tests
         run: uv run pytest tests/ -v -m "not integration" --cov=biosample_enricher
         env:
           MONGO_URI: mongodb://localhost:27017
-          
+
       - name: Run integration tests
         run: uv run pytest tests/ -v -m integration --cov=biosample_enricher --cov-append
         env:
           MONGO_URI: mongodb://localhost:27017
           GOOGLE_MAIN_API_KEY: ${{ secrets.GOOGLE_MAIN_API_KEY }}
         continue-on-error: true  # Don't fail CI if external APIs are down
-        
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
@@ -1166,24 +1166,24 @@ jobs:
     name: Security Scan
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Install uv
         uses: astral-sh/setup-uv@v2
-        
+
       - name: Set up Python
         run: uv python install ${{ env.PYTHON_VERSION }}
-        
+
       - name: Install dependencies
         run: uv sync
-        
+
       - name: Run safety check
         run: uv run safety check
         continue-on-error: true
-        
+
       - name: Run bandit security scan
         run: uv run bandit -r biosample_enricher/
         continue-on-error: true
@@ -1193,20 +1193,20 @@ jobs:
     runs-on: ubuntu-latest
     needs: [quality, test]
     timeout-minutes: 10
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Install uv
         uses: astral-sh/setup-uv@v2
-        
+
       - name: Set up Python
         run: uv python install ${{ env.PYTHON_VERSION }}
-        
+
       - name: Build package
         run: uv build
-        
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -1217,23 +1217,23 @@ jobs:
     name: Documentation
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Install uv
         uses: astral-sh/setup-uv@v2
-        
+
       - name: Set up Python
         run: uv python install ${{ env.PYTHON_VERSION }}
-        
+
       - name: Install dependencies
         run: uv sync
-        
+
       - name: Build documentation
         run: uv run mkdocs build --strict
-        
+
       - name: Upload documentation
         uses: actions/upload-artifact@v4
         with:
@@ -1247,22 +1247,22 @@ jobs:
     needs: [quality, test, build]
     if: startsWith(github.ref, 'refs/tags/')
     timeout-minutes: 15
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
-          
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-          
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -1317,13 +1317,13 @@ jobs:
     needs: changes
     if: needs.changes.outputs.python == 'true'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout with token
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
@@ -1346,10 +1346,10 @@ dependencies = [
     "httpx>=0.25.0,<1.0.0",        # Proven version range
     "click>=8.1.0",                # Minimum version (stable API)
     "rich>=13.0.0",                # Feature requirement
-    
+
     # Pin transitive dependencies that break compatibility
     "anyio>=3.7.0,<5.0.0",         # httpx compatibility
-    
+
     # Scientific dependencies with proven versions
     "pandas>=2.0.0,<3.0.0",
     "numpy>=1.24.0",               # pandas compatibility
@@ -1361,11 +1361,11 @@ dev = [
     "pytest>=7.4.0,<9.0.0",
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.1.0",
-    
+
     # Code quality - allow latest
     "mypy>=1.5.0",
     "ruff>=0.1.0",
-    
+
     # Documentation
     "mkdocs>=1.5.0",
     "mkdocs-material>=9.2.0",
@@ -1390,31 +1390,31 @@ from pydantic import BaseSettings, Field, validator
 
 class Settings(BaseSettings):
     """Application settings with environment variable support."""
-    
+
     # Core application settings
     app_name: str = "biosample-enricher"
     app_version: str = "0.1.0"
     debug: bool = Field(default=False, env="DEBUG")
-    
+
     # Database settings
     mongo_uri: str = Field(default="mongodb://localhost:27017", env="MONGO_URI")
     mongo_database: str = Field(default="biosample_enricher", env="MONGO_DATABASE")
-    
+
     # API keys (optional)
     google_api_key: str | None = Field(default=None, env="GOOGLE_MAIN_API_KEY")
-    
+
     # Caching settings
     cache_backend: str = Field(default="mongodb", env="CACHE_BACKEND")
     cache_ttl_seconds: int = Field(default=86400, env="CACHE_TTL_SECONDS")
-    
+
     # Request settings
     default_timeout_seconds: float = Field(default=30.0, env="DEFAULT_TIMEOUT_SECONDS")
     max_concurrent_requests: int = Field(default=10, env="MAX_CONCURRENT_REQUESTS")
-    
+
     # Logging settings
     log_level: str = Field(default="INFO", env="LOG_LEVEL")
     log_format: str = Field(default="structured", env="LOG_FORMAT")
-    
+
     @validator('log_level')
     def validate_log_level(cls, v: str) -> str:
         """Validate log level."""
@@ -1422,7 +1422,7 @@ class Settings(BaseSettings):
         if v.upper() not in valid_levels:
             raise ValueError(f"Invalid log level: {v}")
         return v.upper()
-    
+
     @validator('cache_backend')
     def validate_cache_backend(cls, v: str) -> str:
         """Validate cache backend."""
@@ -1430,7 +1430,7 @@ class Settings(BaseSettings):
         if v.lower() not in valid_backends:
             raise ValueError(f"Invalid cache backend: {v}")
         return v.lower()
-    
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
@@ -1452,13 +1452,13 @@ from functools import lru_cache
 
 class CredentialManager:
     """Secure credential management with fallback strategies."""
-    
+
     @staticmethod
     @lru_cache(maxsize=None)
     def get_api_key(service: str) -> Optional[str]:
         """
         Get API key for service with secure fallback.
-        
+
         Priority order:
         1. Environment variable (production)
         2. .env file (development)
@@ -1468,7 +1468,7 @@ class CredentialManager:
         # Environment variable (production deployment)
         env_var = f"{service.upper()}_API_KEY"
         api_key = os.getenv(env_var)
-        
+
         if api_key:
             # Validate key format without logging the actual key
             if len(api_key) >= 10:  # Minimum reasonable length
@@ -1476,22 +1476,22 @@ class CredentialManager:
                 return api_key
             else:
                 logger.warning(f"Invalid {service} API key format in {env_var}")
-        
+
         # Fallback: try alternative environment variable names
         alt_names = {
             "google": ["GOOGLE_MAIN_API_KEY", "GOOGLE_MAPS_API_KEY"],
             "openai": ["OPENAI_API_KEY", "OPENAI_TOKEN"],
         }
-        
+
         for alt_name in alt_names.get(service, []):
             api_key = os.getenv(alt_name)
             if api_key and len(api_key) >= 10:
                 logger.debug(f"Found {service} API key from {alt_name}")
                 return api_key
-        
+
         logger.info(f"No {service} API key found - service will be disabled")
         return None
-    
+
     @staticmethod
     def validate_api_key_format(service: str, api_key: str) -> bool:
         """Validate API key format without external calls."""
@@ -1499,11 +1499,11 @@ class CredentialManager:
             "google": lambda k: k.startswith("AIza") and len(k) == 39,
             "openai": lambda k: k.startswith("sk-") and len(k) >= 40,
         }
-        
+
         validator = validators.get(service)
         if validator:
             return validator(api_key)
-        
+
         # Generic validation
         return len(api_key) >= 10 and not api_key.isspace()
 
@@ -1525,65 +1525,65 @@ from typing import Any
 
 class CoordinateInput(BaseModel):
     """Secure coordinate input validation."""
-    
+
     latitude: float = Field(
-        ge=-90.0, 
-        le=90.0, 
+        ge=-90.0,
+        le=90.0,
         description="Latitude in decimal degrees"
     )
     longitude: float = Field(
-        ge=-180.0, 
-        le=180.0, 
+        ge=-180.0,
+        le=180.0,
         description="Longitude in decimal degrees"
     )
-    
+
     @validator('latitude', 'longitude', pre=True)
     def validate_numeric_input(cls, v: Any) -> float:
         """Validate and sanitize numeric coordinates."""
         if isinstance(v, str):
             # Remove whitespace
             v = v.strip()
-            
+
             # Check for injection attempts
             if re.search(r'[<>"\';\\]', v):
                 raise ValueError("Invalid characters in coordinate")
-            
+
             # Convert to float
             try:
                 v = float(v)
             except ValueError:
                 raise ValueError(f"Cannot convert '{v}' to float")
-        
+
         if not isinstance(v, (int, float)):
             raise ValueError("Coordinate must be numeric")
-        
+
         # Check for NaN and infinity
         if not (-180 <= v <= 180):  # Covers both lat and lon ranges
             raise ValueError("Coordinate out of valid range")
-        
+
         return float(v)
 
 class SecureFileInput(BaseModel):
     """Secure file input validation."""
-    
+
     filename: str = Field(max_length=255)
     content_type: str = Field(regex=r'^[a-zA-Z0-9][a-zA-Z0-9\-\/]+$')
-    
+
     @validator('filename')
     def validate_filename(cls, v: str) -> str:
         """Validate filename for security."""
         # Remove path traversal attempts
         if '..' in v or '/' in v or '\\' in v:
             raise ValueError("Invalid filename: path traversal detected")
-        
+
         # Check for dangerous extensions
         dangerous_exts = {'.exe', '.bat', '.sh', '.php', '.jsp'}
         if any(v.lower().endswith(ext) for ext in dangerous_exts):
             raise ValueError("Dangerous file extension not allowed")
-        
+
         # Sanitize filename
         v = re.sub(r'[^\w\-_\.]', '_', v)
-        
+
         return v
 ```
 
@@ -1600,11 +1600,11 @@ from contextlib import asynccontextmanager
 
 class ElevationService:
     """High-performance elevation service with connection pooling."""
-    
+
     def __init__(self) -> None:
         self._client: httpx.AsyncClient | None = None
         self._semaphore = asyncio.Semaphore(10)  # Limit concurrent requests
-    
+
     @asynccontextmanager
     async def _get_client(self):
         """Context manager for HTTP client with connection pooling."""
@@ -1617,15 +1617,15 @@ class ElevationService:
                 ),
                 http2=True,  # Enable HTTP/2 for better performance
             )
-        
+
         try:
             yield self._client
         finally:
             # Client cleanup handled in __aexit__
             pass
-    
+
     async def fetch_elevations_batch(
-        self, 
+        self,
         coordinates: List[tuple[float, float]],
     ) -> List[ElevationResult]:
         """Fetch elevations for multiple coordinates efficiently."""
@@ -1633,40 +1633,40 @@ class ElevationService:
             # Process in batches to avoid overwhelming servers
             batch_size = 50
             results = []
-            
+
             for i in range(0, len(coordinates), batch_size):
                 batch = coordinates[i:i + batch_size]
                 batch_tasks = [
                     self._fetch_single_with_semaphore(client, lat, lon)
                     for lat, lon in batch
                 ]
-                
+
                 # Wait for batch completion before starting next batch
                 batch_results = await asyncio.gather(
-                    *batch_tasks, 
+                    *batch_tasks,
                     return_exceptions=True
                 )
                 results.extend(batch_results)
-                
+
                 # Brief delay between batches to be respectful to APIs
                 if i + batch_size < len(coordinates):
                     await asyncio.sleep(0.1)
-            
+
             return results
-    
+
     async def _fetch_single_with_semaphore(
-        self, 
-        client: httpx.AsyncClient, 
-        lat: float, 
+        self,
+        client: httpx.AsyncClient,
+        lat: float,
         lon: float
     ) -> ElevationResult:
         """Fetch single elevation with rate limiting."""
         async with self._semaphore:
             return await self._fetch_single(client, lat, lon)
-    
+
     async def __aenter__(self):
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self._client:
             await self._client.aclose()
@@ -1694,19 +1694,19 @@ import asyncio
 
 class SmartCache:
     """Memory-efficient cache with automatic cleanup."""
-    
+
     def __init__(self, max_size: int = 1000, ttl_seconds: int = 3600):
         self.max_size = max_size
         self.ttl_seconds = ttl_seconds
         self._cache: Dict[str, tuple[Any, float]] = {}
         self._access_times: Dict[str, float] = {}
         self._cleanup_task: Optional[asyncio.Task] = None
-        
+
     async def __aenter__(self):
         # Start background cleanup task
         self._cleanup_task = asyncio.create_task(self._periodic_cleanup())
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self._cleanup_task:
             self._cleanup_task.cancel()
@@ -1714,14 +1714,14 @@ class SmartCache:
                 await self._cleanup_task
             except asyncio.CancelledError:
                 pass
-    
+
     async def get(self, key: str) -> Optional[Any]:
         """Get item from cache with TTL check."""
         current_time = time.time()
-        
+
         if key in self._cache:
             value, timestamp = self._cache[key]
-            
+
             # Check TTL
             if current_time - timestamp < self.ttl_seconds:
                 self._access_times[key] = current_time
@@ -1730,45 +1730,45 @@ class SmartCache:
                 # Expired - remove
                 del self._cache[key]
                 self._access_times.pop(key, None)
-        
+
         return None
-    
+
     async def set(self, key: str, value: Any) -> None:
         """Set item in cache with size management."""
         current_time = time.time()
-        
+
         # Evict if at capacity
         if len(self._cache) >= self.max_size and key not in self._cache:
             await self._evict_lru()
-        
+
         self._cache[key] = (value, current_time)
         self._access_times[key] = current_time
-    
+
     async def _evict_lru(self) -> None:
         """Evict least recently used item."""
         if not self._access_times:
             return
-        
+
         lru_key = min(self._access_times.keys(), key=self._access_times.get)
         del self._cache[lru_key]
         del self._access_times[lru_key]
-    
+
     async def _periodic_cleanup(self) -> None:
         """Background task to clean expired items."""
         while True:
             try:
                 await asyncio.sleep(300)  # Cleanup every 5 minutes
                 current_time = time.time()
-                
+
                 expired_keys = [
                     key for key, (_, timestamp) in self._cache.items()
                     if current_time - timestamp >= self.ttl_seconds
                 ]
-                
+
                 for key in expired_keys:
                     del self._cache[key]
                     self._access_times.pop(key, None)
-                    
+
             except asyncio.CancelledError:
                 break
 

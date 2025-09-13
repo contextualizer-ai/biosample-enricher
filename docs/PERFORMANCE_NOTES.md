@@ -5,7 +5,7 @@
 This codebase uses **synchronous, sequential processing** for simplicity and maintainability. While this approach is slower than async/concurrent processing for large datasets, it provides several benefits:
 
 1. **Simpler code** - Easy to read, debug, and maintain
-2. **Predictable execution** - Linear flow without concurrency concerns  
+2. **Predictable execution** - Linear flow without concurrency concerns
 3. **Natural rate limiting** - Sequential calls inherently avoid overwhelming APIs
 
 ## Rate Limiting Strategy
@@ -17,10 +17,10 @@ When enriching samples with data from multiple APIs, we use an **interleaved rou
 for sample in samples:
     result_a = fetch_from_api_a(sample)  # Call API A
     time.sleep(0.1)  # Courtesy delay
-    
-    result_b = fetch_from_api_b(sample)  # Call API B  
+
+    result_b = fetch_from_api_b(sample)  # Call API B
     time.sleep(0.1)
-    
+
     result_c = fetch_from_api_c(sample)  # Call API C
     time.sleep(0.1)
 ```
@@ -53,7 +53,7 @@ See `cache_management.py` for implementation details.
 
 ### Sequential Processing Times (Approximate)
 - **Small datasets (<50 samples)**: 10-30 seconds
-- **Medium datasets (100-500 samples)**: 1-5 minutes  
+- **Medium datasets (100-500 samples)**: 1-5 minutes
 - **Large datasets (1000+ samples)**: 10-20+ minutes
 
 ### Future Optimization Options

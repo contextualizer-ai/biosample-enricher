@@ -4,7 +4,7 @@
 # List of precious files that should not be accidentally deleted
 PRECIOUS_FILES=(
     "data/outputs/schema/enrichment_analysis.json"
-    "data/outputs/schema/enrichment_analysis_raw.json" 
+    "data/outputs/schema/enrichment_analysis_raw.json"
     "data/outputs/schema/schema_comparison.json"
     "data/outputs/schema/schema_comparison_raw.json"
 )
@@ -42,14 +42,14 @@ if [ ${#deleted_precious_files[@]} -gt 0 ]; then
     echo "3. Override this protection (if deletion is intentional):"
     echo "   git commit --no-verify"
     echo ""
-    
-    # For now, just warn but don't block (change to exit 1 to block)
-    echo "⚠️  Proceeding with deletion (protection is in warning mode)"
-    echo "   Change exit code in scripts/protect-precious-files.sh to block deletions"
+
+    # BLOCK the deletion to protect precious files
+    echo "🚫 BLOCKING commit to protect precious LLM-generated files!"
+    echo "   These files are expensive to regenerate and contain valuable analysis."
     echo ""
-    
-    # Uncomment the next line to actually block the commit:
-    # exit 1
+
+    # Block the commit
+    exit 1
 fi
 
 # Always succeed for now (change to blocking behavior above if desired)

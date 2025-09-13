@@ -23,7 +23,7 @@ host_keywords:
   - urine
   - sputum
   - mucus
-  
+
   # Animal-associated
   - mouse
   - rat
@@ -31,7 +31,7 @@ host_keywords:
   - veterinary
   - rumen
   - cecum
-  
+
   # Plant-associated
   - rhizosphere
   - phyllosphere
@@ -43,7 +43,7 @@ host_keywords:
   - seed
   - flower
   - fruit
-  
+
   # General host-associated
   - host
   - symbiont
@@ -51,7 +51,7 @@ host_keywords:
   - pathogen
   - commensal
   - parasite
-  
+
   # Controlled environments
   - greenhouse
   - laboratory
@@ -64,7 +64,7 @@ nmdc_host_fields:
   - env_broad_scale
   - env_local_scale
   - env_medium
-  
+
   # Descriptive fields
   - ecosystem_type
   - ecosystem_category
@@ -73,7 +73,7 @@ nmdc_host_fields:
   - material
   - biome
   - feature
-  
+
   # Direct host fields
   - host_name
   - host_taxid
@@ -88,7 +88,7 @@ gold_host_fields:
   # Ecosystem path
   - ecosystemPath
   - ecosystem_path
-  
+
   # Descriptive fields
   - sampleType
   - sample_type
@@ -96,7 +96,7 @@ gold_host_fields:
   - biome
   - habitat
   - isolationSource
-  
+
   # Direct host fields
   - hostName
   - host_name
@@ -112,7 +112,7 @@ gold_host_ecosystem_paths:
   - "Host-associated"
   - "host-associated"
   - "Host associated"
-  
+
 # Ecosystem paths that are definitely environmental (for exclusion)
 environmental_ecosystem_paths:
   - "Environmental > Aquatic > Marine"
@@ -129,12 +129,12 @@ host_envo_terms:
   - "UBERON:0001836"  # saliva
   - "UBERON:0002107"  # liver
   - "ENVO:01001026"   # human gut environment
-  
+
   # Plant-associated
   - "ENVO:00002034"   # rhizosphere
   - "ENVO:00002035"   # phyllosphere
   - "ENVO:01001055"   # plant root environment
-  
+
   # General host-associated
   - "ENVO:00002003"   # host-associated habitat
   - "ENVO:01000985"   # host microbiome

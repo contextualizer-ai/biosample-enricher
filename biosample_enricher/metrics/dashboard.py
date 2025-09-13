@@ -33,7 +33,7 @@ def generate_html_dashboard(
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }}
-        .metric-card {{ 
+        .metric-card {{
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 20px;
@@ -41,7 +41,7 @@ def generate_html_dashboard(
             margin: 10px 0;
         }}
         .metric-value {{ font-size: 2.5em; font-weight: bold; }}
-        .chart-container {{ 
+        .chart-container {{
             background: white;
             border-radius: 10px;
             padding: 20px;
@@ -58,21 +58,21 @@ def generate_html_dashboard(
 <body>
     <div class="container">
         <h1 class="text-center">🔬 Biosample Enrichment Performance Dashboard</h1>
-        
+
         <div class="row" id="summary-cards">
             <!-- Summary cards will be inserted here -->
         </div>
-        
+
         <div class="chart-container">
             <h3>Coverage by Source and Data Type</h3>
             <div id="coverage-chart"></div>
         </div>
-        
+
         <div class="chart-container">
             <h3>Enrichment Improvement</h3>
             <div id="improvement-chart"></div>
         </div>
-        
+
         <div class="chart-container">
             <h3>Detailed Metrics Table</h3>
             <table class="table table-striped" id="metrics-table">
@@ -92,25 +92,25 @@ def generate_html_dashboard(
             </table>
         </div>
     </div>
-    
+
     <script>
         // Data from Python
         const summaryData = {summary_json};
         const regionalData = {regional_json};
-        
+
         // Generate summary cards
         function generateSummaryCards() {{
             const container = document.getElementById('summary-cards');
-            
+
             // Calculate statistics by source
             const sources = [...new Set(summaryData.map(d => d.source))];
-            
+
             sources.forEach(source => {{
                 const sourceData = summaryData.filter(d => d.source === source);
                 const avgBefore = sourceData.reduce((sum, d) => sum + d.before, 0) / sourceData.length;
                 const avgAfter = sourceData.reduce((sum, d) => sum + d.after, 0) / sourceData.length;
                 const avgImprovement = avgAfter - avgBefore;
-                
+
                 const card = `
                     <div class="col-md-6">
                         <div class="metric-card">
@@ -135,16 +135,16 @@ def generate_html_dashboard(
                 container.innerHTML += card;
             }});
         }}
-        
+
         // Generate coverage chart
         function generateCoverageChart() {{
             const dataTypes = [...new Set(summaryData.map(d => d.data_type))];
             const sources = [...new Set(summaryData.map(d => d.source))];
-            
+
             const traces = [];
             sources.forEach(source => {{
                 const sourceData = summaryData.filter(d => d.source === source);
-                
+
                 // Before bars
                 traces.push({{
                     x: dataTypes,
@@ -156,7 +156,7 @@ def generate_html_dashboard(
                     type: 'bar',
                     marker: {{ opacity: 0.5 }}
                 }});
-                
+
                 // After bars
                 traces.push({{
                     x: dataTypes,
@@ -168,22 +168,22 @@ def generate_html_dashboard(
                     type: 'bar'
                 }});
             }});
-            
+
             const layout = {{
                 barmode: 'group',
                 yaxis: {{ title: 'Coverage (%)' }},
                 xaxis: {{ title: 'Data Type' }},
                 height: 400
             }};
-            
+
             Plotly.newPlot('coverage-chart', traces, layout);
         }}
-        
+
         // Generate improvement chart
         function generateImprovementChart() {{
             const traces = [];
             const sources = [...new Set(summaryData.map(d => d.source))];
-            
+
             sources.forEach(source => {{
                 const sourceData = summaryData.filter(d => d.source === source);
                 traces.push({{
@@ -193,25 +193,25 @@ def generate_html_dashboard(
                     type: 'bar'
                 }});
             }});
-            
+
             const layout = {{
                 barmode: 'group',
                 yaxis: {{ title: 'Improvement (%)' }},
                 xaxis: {{ title: 'Data Type' }},
                 height: 400
             }};
-            
+
             Plotly.newPlot('improvement-chart', traces, layout);
         }}
-        
+
         // Generate table
         function generateTable() {{
             const tbody = document.getElementById('table-body');
-            
+
             summaryData.forEach(row => {{
-                const coverageClass = row.after >= 80 ? 'high-coverage' : 
+                const coverageClass = row.after >= 80 ? 'high-coverage' :
                                     row.after >= 50 ? 'medium-coverage' : 'low-coverage';
-                
+
                 const tr = `
                     <tr class="${{coverageClass}}">
                         <td>${{row.source}}</td>
@@ -225,7 +225,7 @@ def generate_html_dashboard(
                 tbody.innerHTML += tr;
             }});
         }}
-        
+
         // Initialize dashboard
         generateSummaryCards();
         generateCoverageChart();

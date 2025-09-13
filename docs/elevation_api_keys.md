@@ -74,7 +74,7 @@ This is intentional and ensures CI can run without requiring paid API keys.
 - **OSM Elevation**: Community service, rate-limited
 
 ### Paid Options
-- **Google Elevation API**: 
+- **Google Elevation API**:
   - First 40,000 requests/month free
   - $5 per 1,000 requests after free tier
   - See [Google's pricing page](https://developers.google.com/maps/documentation/elevation/usage-and-billing)

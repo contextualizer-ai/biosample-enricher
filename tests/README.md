@@ -92,7 +92,7 @@ make test-unit
 uv run pytest -m "unit"
 
 # Integration tests: Multiple components, mocked externals
-uv run pytest -m "integration" 
+uv run pytest -m "integration"
 
 # Network tests: Real API calls (skipped in CI)
 uv run pytest -m "network"
