@@ -36,7 +36,7 @@ def parse_args() -> argparse.Namespace:
         help="Max example values to keep per field",
     )
     ap.add_argument("--out-csv", required=True)
-    ap.add_argument("--out-md", required=True)
+    ap.add_argument("--out-summary", required=True, help="JSON summary file path")
     return ap.parse_args()
 
 
@@ -151,13 +151,36 @@ def main() -> None:
 
     df = pd.DataFrame(rows).sort_values(["field_path"]).reset_index(drop=True)
     df.to_csv(args.out_csv, index=False)
-    with open(args.out_md, "w") as f:
-        f.write(f"# Field statistics for {args.db}.{args.coll}\n\n")
-        f.write(f"- Sampled docs: **{n_docs}**\n")
-        f.write(f"- Query: `{json.dumps(query)}`\n\n")
-        f.write(df.to_markdown(index=False))
+
+    # Calculate meaningful metrics
+    top_level_fields = len(
+        [
+            row
+            for row in rows
+            if "." not in row["field_path"] and "[" not in row["field_path"]
+        ]
+    )
+    total_field_paths = len(rows)
+
+    # Generate summary JSON
+    summary = {
+        "collection": f"{args.db}.{args.coll}",
+        "sample_count": n_docs,
+        "stats_file": args.out_csv,
+        "top_level_fields": top_level_fields,
+        "total_field_paths": total_field_paths,
+        "timestamp": pd.Timestamp.now().isoformat(),
+    }
+
+    # Only include query if it's not empty
+    if query != {}:
+        summary["query"] = query
+
+    with open(args.out_summary, "w") as f:
+        json.dump(summary, f, indent=2)
+
     print(f"Wrote stats CSV → {args.out_csv}")
-    print(f"Wrote stats MD  → {args.out_md}")
+    print(f"Wrote summary JSON → {args.out_summary}")
 
 
 if __name__ == "__main__":

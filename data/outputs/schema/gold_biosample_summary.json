@@ -1,0 +1,7 @@
+{
+  "collection": "gold_metadata.biosamples", 
+  "sample_count": 5387,
+  "stats_file": "data/outputs/schema/gold_biosample_stats.csv",
+  "field_count": 121,
+  "timestamp": "2024-09-14T11:15:00"
+}

@@ -98,13 +98,9 @@ class GooglePlacesProvider:
         Initialize Google Places provider.
 
         Args:
-            api_key: Google Places API key (if None, reads from GOOGLE_PLACES_API_KEY env var)
+            api_key: Google API key (if None, reads from GOOGLE_MAIN_API_KEY env var)
         """
-        self.api_key = (
-            api_key
-            or os.getenv("GOOGLE_PLACES_API_KEY")
-            or os.getenv("GOOGLE_MAIN_API_KEY")
-        )
+        self.api_key = api_key or os.getenv("GOOGLE_MAIN_API_KEY")
         self.base_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
         self.details_url = "https://maps.googleapis.com/maps/api/place/details/json"
 
@@ -117,7 +113,7 @@ class GooglePlacesProvider:
     def is_available(self) -> bool:
         """Check if Google Places API is available."""
         if not self.api_key:
-            logger.warning("Google Places API key not provided")
+            logger.warning("Google API key not provided")
             return False
 
         try:

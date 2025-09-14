@@ -4,7 +4,6 @@ import hashlib
 import json
 import os
 from datetime import UTC, datetime
-from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -33,7 +32,9 @@ from biosample_enricher.models import (
 )
 
 # Load .env file if it exists
-env_path = Path(__file__).parent.parent.parent / ".env"
+from biosample_enricher.paths import get_project_root
+
+env_path = get_project_root() / ".env"
 if env_path.exists():
     load_dotenv(env_path)
 

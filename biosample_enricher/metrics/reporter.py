@@ -9,6 +9,7 @@ from typing import Any
 import pandas as pd
 
 from biosample_enricher.logging_config import get_logger
+from biosample_enricher.paths import get_data_dir
 
 logger = get_logger(__name__)
 
@@ -22,7 +23,7 @@ class MetricsReporter:
         Args:
             output_dir: Directory for output files
         """
-        self.output_dir = output_dir or Path("data/metrics")
+        self.output_dir = output_dir or (get_data_dir() / "metrics")
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def generate_summary_table(

@@ -214,8 +214,9 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# Debug workspace directories (contain large debug JSON files)
-data/workspace*/
+# Debug enrichment lifecycle directories (contain large debug JSON files)
+data/enrichment-lifecycle/
+data/workspace*/  # Legacy pattern for backward compatibility
 
 # HTTP Cache files
 http_cache.sqlite*

@@ -271,8 +271,13 @@ def main() -> None:
     # Display summary
     display_results_table(all_results)
 
-    # Save results to JSON
-    output_file = "geocoding_demo_results.json"
+    # Save results to JSON in proper output directory
+    from biosample_enricher.paths import get_data_dir
+
+    output_dir = get_data_dir() / "outputs/demos"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / "geocoding_demo_results.json"
+
     with open(output_file, "w") as f:
         json.dump(all_results, f, indent=2, default=str)
     console.print(f"\n[green]Results saved to {output_file}[/green]")

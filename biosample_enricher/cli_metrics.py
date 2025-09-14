@@ -74,7 +74,7 @@ def metrics() -> None:
 @click.option(
     "--workspace-dir",
     type=click.Path(path_type=Path),
-    default="data/workspace",
+    default="data/enrichment-lifecycle",
     help="Directory for detailed debug files (raw docs, API responses, etc.) - ignored by git",
 )
 def evaluate(
@@ -97,8 +97,12 @@ def evaluate(
     3. Compares coverage before and after enrichment
     4. Generates tabular reports and visualizations
     """
-    # Setup logging
-    setup_logging(level="DEBUG" if verbose else "INFO")
+    # Setup logging with timestamped filename for metrics runs
+    from datetime import datetime
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_filename = f"logs/metrics_evaluation_{timestamp}.log"
+    setup_logging(level="DEBUG" if verbose else "INFO", log_file=log_filename)
 
     logger.info("Starting metrics evaluation")
     logger.info(f"NMDC samples: {nmdc_samples}, GOLD samples: {gold_samples}")

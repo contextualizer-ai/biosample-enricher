@@ -50,7 +50,7 @@ def setup_logging(
     # File handler with detailed format
     if enable_file_logging:
         if log_file is None:
-            log_file = "biosample_enricher.log"
+            log_file = "logs/biosample_enricher.log"
 
         # Ensure log directory exists
         log_path = Path(log_file)
@@ -97,7 +97,7 @@ def configure_from_env() -> logging.Logger:
         Configured logger
     """
     log_level = os.getenv("LOG_LEVEL", "INFO")
-    log_file = os.getenv("LOG_FILE", "biosample_enricher.log")
+    log_file = os.getenv("LOG_FILE", "logs/biosample_enricher.log")
     enable_file_logging = not os.getenv("DISABLE_FILE_LOGGING")
 
     return setup_logging(

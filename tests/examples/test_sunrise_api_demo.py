@@ -6,10 +6,10 @@ This is a simple demonstration of how to use the HTTP cache with a real API.
 Run this manually to test the cache functionality with the Sunrise-Sunset API.
 
 Usage:
-    uv run python tests/examples/test_iss_api_demo.py
+    uv run python tests/examples/test_sunrise_api_demo.py
 
     # Or with pytest:
-    uv run pytest tests/examples/test_iss_api_demo.py -m network -s
+    uv run pytest tests/examples/test_sunrise_api_demo.py -m network -s
 """
 
 import time
