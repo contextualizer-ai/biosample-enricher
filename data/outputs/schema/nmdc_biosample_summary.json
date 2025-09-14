@@ -1,0 +1,7 @@
+{
+  "collection": "nmdc.biosample_set",
+  "sample_count": 13006,
+  "stats_file": "data/outputs/schema/nmdc_biosample_stats.csv",
+  "field_count": 1671,
+  "timestamp": "2024-09-14T11:15:00"
+}

@@ -12,6 +12,7 @@ import pandas as pd
 import seaborn as sns
 
 from biosample_enricher.logging_config import get_logger
+from biosample_enricher.paths import get_data_dir
 
 logger = get_logger(__name__)
 
@@ -30,7 +31,7 @@ class MetricsVisualizer:
         Args:
             output_dir: Directory for saving plots
         """
-        self.output_dir = output_dir or Path("data/metrics")
+        self.output_dir = output_dir or (get_data_dir() / "metrics")
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def plot_source_datatype_coverage(

@@ -25,9 +25,9 @@ class GoogleForwardGeocodingProvider(ForwardGeocodingProvider):
 
     def __init__(self, api_key: str | None = None):
         """Initialize Google provider."""
-        self.api_key = api_key or os.getenv("GOOGLE_MAPS_API_KEY")
+        self.api_key = api_key or os.getenv("GOOGLE_MAIN_API_KEY")
         if not self.api_key:
-            raise ValueError("Google Maps API key is required")
+            raise ValueError("Google API key is required")
 
         self.base_url = "https://maps.googleapis.com/maps/api/geocode/json"
         self._session = get_session()

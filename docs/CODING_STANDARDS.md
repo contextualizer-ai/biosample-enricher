@@ -1479,7 +1479,7 @@ class CredentialManager:
 
         # Fallback: try alternative environment variable names
         alt_names = {
-            "google": ["GOOGLE_MAIN_API_KEY", "GOOGLE_MAPS_API_KEY"],
+            "google": ["GOOGLE_MAIN_API_KEY"],
             "openai": ["OPENAI_API_KEY", "OPENAI_TOKEN"],
         }
 

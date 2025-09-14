@@ -11,6 +11,7 @@ from typing import Any
 import yaml
 
 from biosample_enricher.logging_config import get_logger
+from biosample_enricher.paths import get_config_dir
 
 logger = get_logger(__name__)
 
@@ -25,9 +26,7 @@ class HostDetector:
             config_file: Path to host detection configuration YAML
         """
         if config_file is None:
-            config_file = (
-                Path(__file__).parent.parent / "config" / "host_detection.yaml"
-            )
+            config_file = get_config_dir() / "host_detection.yaml"
 
         with open(config_file) as f:
             self.config = yaml.safe_load(f)

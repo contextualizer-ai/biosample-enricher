@@ -1,7 +1,7 @@
 # Declare all targets that don't create files as .PHONY
 .PHONY: install install-dev \
 	test test-cov test-watch test-unit test-integration test-network test-slow test-fast test-cache test-cache-network test-sunrise-demo \
-	lint lint-fix format format-check type-check dep-check check check-ci auto-fix-ci \
+	lint lint-fix format format-check type-check dep-check quality check check-ci auto-fix-ci \
 	build clean clean-all \
 	pre-commit-install pre-commit-run \
 	dev-setup dev-check \
@@ -96,7 +96,10 @@ dep-check: ## Check for unused dependencies with deptry
 	uv run deptry .
 
 ## Combined checks
-check: lint type-check dep-check test ## Run all checks (lint, type-check, dep-check, test)
+quality: format lint type-check dep-check ## Run code quality checks only (format, lint, type-check, dep-check) - no tests
+	@echo "Code quality checks completed!"
+
+check: format lint type-check dep-check test ## Run all checks (format, lint, type-check, dep-check, test)
 	@echo "All checks completed!"
 
 check-ci: format lint type-check dep-check test ## Run all CI checks (format, lint, type-check, dep-check, test)
@@ -200,7 +203,7 @@ data/outputs/schema/nmdc_biosample_stats.csv: | data/outputs/schema
 		--coll biosample_set \
 		--sample-size 50000 \
 		--out-csv $@ \
-		--out-md data/outputs/schema/nmdc_biosample_stats.md
+		--out-summary data/outputs/schema/nmdc_biosample_summary.json
 
 data/outputs/schema/gold_biosample_stats.csv: | data/outputs/schema
 	@echo "Generating GOLD biosample field statistics..."
@@ -210,7 +213,7 @@ data/outputs/schema/gold_biosample_stats.csv: | data/outputs/schema
 		--coll biosamples \
 		--sample-size 50000 \
 		--out-csv $@ \
-		--out-md data/outputs/schema/gold_biosample_stats.md
+		--out-summary data/outputs/schema/gold_biosample_summary.json
 
 # Claude CLI schema comparison
 data/outputs/schema/schema_comparison_raw.json: data/outputs/schema/nmdc_biosample_schema.json data/outputs/schema/gold_biosample_schema.json prompts/schema-comparison-prompt.txt | data/outputs/schema
@@ -231,7 +234,7 @@ data/outputs/schema/enrichment_analysis.json: data/outputs/schema/enrichment_ana
 	jq -r '.result | fromjson' $< > $@
 
 # Meta-targets for complete workflows
-analyze-schemas: data/outputs/schema/nmdc_biosample_schema.json data/outputs/schema/gold_biosample_schema.json data/outputs/schema/nmdc_biosample_stats.csv data/outputs/schema/gold_biosample_stats.csv data/outputs/schema/schema_comparison.json data/outputs/schema/enrichment_analysis.json ## Complete schema analysis workflow
+analyze-schemas: data/outputs/schema/nmdc_biosample_schema.json data/outputs/schema/gold_biosample_schema.json data/outputs/schema/nmdc_biosample_stats.csv data/outputs/schema/nmdc_biosample_summary.json data/outputs/schema/gold_biosample_stats.csv data/outputs/schema/gold_biosample_summary.json data/outputs/schema/schema_comparison.json data/outputs/schema/enrichment_analysis.json ## Complete schema analysis workflow
 	@echo "Complete schema analysis workflow finished"
 
 # Clean schema analysis outputs
@@ -285,6 +288,15 @@ data/outputs/adapters/random_sampling_test.json: | data/outputs/adapters
 data/outputs/adapters/synthetic_validation_test.json: data/input/synthetic_biosamples.json | data/outputs/adapters
 	@echo "Generating $(notdir $@)..."
 	uv run synthetic-validation-demo --input-file $< --output-file $@
+
+# Geocoding demonstration
+data/outputs/demos/geocoding_demo_results.json: | data/outputs/demos
+	@echo "Running geocoding demo..."
+	uv run geocoding-demo
+
+data/outputs/demos:
+	@echo "Creating demos output directory..."
+	@mkdir -p $@
 
 
 # Standalone validation target

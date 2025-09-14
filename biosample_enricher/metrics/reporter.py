@@ -9,6 +9,7 @@ from typing import Any
 import pandas as pd
 
 from biosample_enricher.logging_config import get_logger
+from biosample_enricher.paths import get_data_dir
 
 logger = get_logger(__name__)
 
@@ -22,7 +23,7 @@ class MetricsReporter:
         Args:
             output_dir: Directory for output files
         """
-        self.output_dir = output_dir or Path("data/metrics")
+        self.output_dir = output_dir or (get_data_dir() / "metrics")
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def generate_summary_table(
@@ -490,6 +491,108 @@ class MetricsReporter:
                         )
                         if total > 0
                         else 0,
+                    }
+                )
+
+            # OSM Features enrichment - Overall coverage
+            osm_before_count = sum(
+                e.get("osm_features", {}).get("before_count", 0) for e in source_evals
+            )
+            osm_after_count = sum(
+                e.get("osm_features", {}).get("after_count", 0) for e in source_evals
+            )
+            osm_total_possible = sum(
+                e.get("osm_features", {}).get("total_possible", 6) for e in source_evals
+            )
+
+            if osm_total_possible > 0:
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": "OSM Features - Overall",
+                        "samples": total,
+                        "before": round(100 * osm_before_count / osm_total_possible, 1),
+                        "after": round(100 * osm_after_count / osm_total_possible, 1),
+                        "improvement": round(
+                            100
+                            * (osm_after_count - osm_before_count)
+                            / osm_total_possible,
+                            1,
+                        ),
+                    }
+                )
+
+            # Individual OSM feature categories
+            osm_feature_types = [
+                "natural_features",
+                "water_features",
+                "transport_features",
+                "buildings",
+                "amenities",
+                "land_use",
+            ]
+
+            for feature_type in osm_feature_types:
+                type_before = sum(
+                    1
+                    for e in source_evals
+                    if e.get("osm_features", {})
+                    .get("before", {})
+                    .get(feature_type, False)
+                )
+                type_after = sum(
+                    1
+                    for e in source_evals
+                    if e.get("osm_features", {})
+                    .get("after", {})
+                    .get(feature_type, False)
+                )
+
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": f"OSM Features - {feature_type.replace('_', ' ').title()}",
+                        "samples": total,
+                        "before": round(100 * type_before / total, 1)
+                        if total > 0
+                        else 0,
+                        "after": round(100 * type_after / total, 1) if total > 0 else 0,
+                        "improvement": round(
+                            100 * (type_after - type_before) / total, 1
+                        )
+                        if total > 0
+                        else 0,
+                    }
+                )
+
+            # OSM Features - Named features enrichment
+            osm_features_found = sum(
+                e.get("osm_features", {}).get("features_found", 0) for e in source_evals
+            )
+            osm_elements_found = sum(
+                e.get("osm_features", {}).get("total_elements", 0) for e in source_evals
+            )
+
+            if total > 0:
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": "OSM Features - Named Features",
+                        "samples": total,
+                        "before": 0.0,  # Assume no named features in original data
+                        "after": round(osm_features_found / total, 1),
+                        "improvement": round(osm_features_found / total, 1),
+                    }
+                )
+
+                metrics.append(
+                    {
+                        "source": source_name,
+                        "data_type": "OSM Features - Total Elements",
+                        "samples": total,
+                        "before": 0.0,  # Assume no OSM elements in original data
+                        "after": round(osm_elements_found / total, 1),
+                        "improvement": round(osm_elements_found / total, 1),
                     }
                 )
 

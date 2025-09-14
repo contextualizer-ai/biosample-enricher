@@ -11,6 +11,7 @@ from typing import Any
 import yaml
 
 from biosample_enricher.logging_config import get_logger
+from biosample_enricher.paths import get_config_dir
 
 logger = get_logger(__name__)
 
@@ -25,9 +26,7 @@ class FieldAligner:
             mappings_file: Path to YAML file with field mappings
         """
         if mappings_file is None:
-            mappings_file = (
-                Path(__file__).parent.parent.parent / "config" / "field_mappings.yaml"
-            )
+            mappings_file = get_config_dir() / "field_mappings.yaml"
 
         with open(mappings_file) as f:
             self.mappings = yaml.safe_load(f)
