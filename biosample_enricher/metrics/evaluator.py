@@ -12,6 +12,7 @@ from biosample_enricher.land.service import LandService
 from biosample_enricher.logging_config import get_logger
 from biosample_enricher.marine.service import MarineService
 from biosample_enricher.models import BiosampleLocation, ElevationRequest, ValueStatus
+from biosample_enricher.osm_features.service import OSMFeaturesService
 from biosample_enricher.reverse_geocoding.service import ReverseGeocodingService
 from biosample_enricher.soil.service import SoilService
 from biosample_enricher.weather.service import WeatherService
@@ -31,6 +32,7 @@ class CoverageEvaluator:
         self.marine_service = MarineService()
         self.soil_service = SoilService()
         self.land_service = LandService()
+        self.osm_features_service = OSMFeaturesService()
         self.classifier = CoordinateClassifier()
 
     def evaluate_sample(
@@ -66,6 +68,9 @@ class CoverageEvaluator:
             "marine": self._evaluate_marine(raw_doc, normalized_location, source),
             "soil": self._evaluate_soil(raw_doc, normalized_location, source),
             "land": self._evaluate_land(raw_doc, normalized_location, source),
+            "osm_features": self._evaluate_osm_features(
+                raw_doc, normalized_location, source
+            ),
         }
 
         return result
@@ -1401,3 +1406,159 @@ class CoverageEvaluator:
             return True
 
         return False
+
+    def _evaluate_osm_features(
+        self, raw_doc: dict[str, Any], location: BiosampleLocation, source: str
+    ) -> dict[str, Any]:
+        """Evaluate OSM geographic features coverage before and after enrichment.
+
+        Args:
+            raw_doc: Original document
+            location: Normalized location
+            source: Data source
+
+        Returns:
+            OSM features coverage metrics
+        """
+        logger.info(f"\\n🗺️  OSM FEATURES ANALYSIS for {location.sample_id}")
+        logger.info(f"Source: {source}")
+
+        # Check for existing geographic feature data in raw document
+        feature_fields = {
+            "natural_features": ["natural", "natural_feature", "environmental_context"],
+            "water_features": ["waterway", "water_body", "water_feature"],
+            "transport_features": ["highway", "railway", "transport", "road"],
+            "buildings": ["building", "structure", "building_type"],
+            "amenities": ["amenity", "facility", "amenities"],
+            "land_use": ["land_use", "landuse", "land_cover"],
+        }
+
+        # Analyze before coverage
+        before_coverage = {}
+        for feature_type, field_names in feature_fields.items():
+            has_field = False
+            for field_name in field_names:
+                if self._has_geographic_field(raw_doc, field_name):
+                    has_field = True
+                    break
+            before_coverage[feature_type] = has_field
+
+        before_count = sum(before_coverage.values())
+        logger.info(
+            f"📊 OSM FEATURES BEFORE: {before_count}/{len(feature_fields)} feature types present"
+        )
+
+        # Try OSM features enrichment if we have coordinates
+        after_coverage = before_coverage.copy()  # Start with existing data
+        enrichment_error = None
+        features_found = 0
+        categories_found = 0
+        total_elements = 0
+        nearest_features = {}
+
+        if location.latitude is not None and location.longitude is not None:
+            try:
+                logger.info(
+                    f"🚀 CALLING OSM FEATURES SERVICE for {location.latitude}, {location.longitude}"
+                )
+
+                # Get OSM features enrichment
+                osm_result = self.osm_features_service.get_features_for_location(
+                    latitude=location.latitude,
+                    longitude=location.longitude,
+                    radius_m=1000,  # Default 1km radius
+                    timeout_s=60,  # Shorter timeout for metrics
+                )
+
+                if osm_result and osm_result.success:
+                    logger.info("✅ OSM FEATURES ENRICHMENT SUCCESSFUL")
+                    features_found = osm_result.named_features_count
+                    categories_found = osm_result.unnamed_categories_count
+                    total_elements = osm_result.total_elements
+
+                    # Update coverage based on found features
+                    if osm_result.named_features:
+                        # Categorize found features
+                        for feature in osm_result.named_features:
+                            category = feature.category.value
+                            if category == "natural":
+                                after_coverage["natural_features"] = True
+                            elif category == "waterway":
+                                after_coverage["water_features"] = True
+                            elif category in ["highway", "railway"]:
+                                after_coverage["transport_features"] = True
+                            elif category == "building":
+                                after_coverage["buildings"] = True
+                            elif category == "amenity":
+                                after_coverage["amenities"] = True
+                            elif category == "landuse":
+                                after_coverage["land_use"] = True
+
+                        # Track nearest features by category (simplified approach)
+                        nearest_natural = next(
+                            (
+                                f
+                                for f in osm_result.named_features
+                                if f.category.value == "natural"
+                            ),
+                            None,
+                        )
+                        if nearest_natural:
+                            nearest_features["natural"] = {
+                                "name": nearest_natural.name,
+                                "distance_km": nearest_natural.distance_km,
+                                "type": nearest_natural.subcategory,
+                            }
+
+                    # Check unnamed feature categories
+                    if osm_result.unnamed_counts:
+                        for unnamed_group in osm_result.unnamed_counts:
+                            key = unnamed_group.key
+                            if key == "natural" and unnamed_group.total_count > 0:
+                                after_coverage["natural_features"] = True
+                            elif key == "waterway" and unnamed_group.total_count > 0:
+                                after_coverage["water_features"] = True
+                            elif (
+                                key in ["highway", "railway"]
+                                and unnamed_group.total_count > 0
+                            ):
+                                after_coverage["transport_features"] = True
+                            elif key == "building" and unnamed_group.total_count > 0:
+                                after_coverage["buildings"] = True
+                            elif key == "amenity" and unnamed_group.total_count > 0:
+                                after_coverage["amenities"] = True
+                            elif key == "landuse" and unnamed_group.total_count > 0:
+                                after_coverage["land_use"] = True
+
+                    logger.info(f"📈 OSM features found: {features_found} named")
+                    logger.info(f"📈 OSM categories found: {categories_found}")
+
+                else:
+                    logger.warning("❌ OSM FEATURES ENRICHMENT FAILED")
+                    enrichment_error = "No OSM features returned or query failed"
+
+            except Exception as e:
+                logger.error(f"💥 OSM FEATURES SERVICE ERROR: {e}")
+                enrichment_error = str(e)
+
+        after_count = sum(after_coverage.values())
+        improvement = after_count > before_count
+
+        logger.info(
+            f"📊 OSM FEATURES AFTER: {after_count}/{len(feature_fields)} feature types present"
+        )
+        logger.info(f"📈 OSM FEATURES IMPROVED: {improvement}")
+
+        return {
+            "before": before_coverage,
+            "after": after_coverage,
+            "before_count": before_count,
+            "after_count": after_count,
+            "total_possible": len(feature_fields),
+            "improved": improvement,
+            "features_found": features_found,
+            "categories_found": categories_found,
+            "total_elements": total_elements,
+            "nearest_features": nearest_features,
+            "error": enrichment_error,
+        }
