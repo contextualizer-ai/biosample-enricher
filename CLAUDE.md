@@ -43,6 +43,11 @@ NEVER mix prompts with documentation. Prompts are operational files.
 - Use CLI aliases in Makefile targets, NEVER module/file names
 - Every meaningful script should have a CLI alias unless it's throwaway code
 
+### CLI Standards
+- ALWAYS use `@click.option` instead of `@click.argument` for all parameters
+- Provide meaningful help text for all options
+- Use consistent naming patterns (--lat/--lon, --input-file, --output-file)
+
 ```toml
 # pyproject.toml [project.scripts]
 biosample-enricher = "biosample_enricher.cli:main"
@@ -192,6 +197,8 @@ except httpx.HTTPStatusError as e:
 - **Primary HTTP**: Use `requests` + `requests-cache` through `biosample_enricher.http_cache`
 - **Centralized caching**: ALL internet requests MUST go through `http_cache.py`
 - **Coordinate canonicalization**: Automatic rounding to 4 decimal places for cache efficiency
+- **DateTime canonicalization**: ISO datetime strings automatically truncated to dates
+- **Cache control**: Use `read_from_cache` and `write_to_cache` boolean parameters
 - **No direct HTTP clients**: Never import `httpx`, `aiohttp`, `urllib.request` for making requests
 - **URL manipulation**: `urllib.parse` is acceptable for URL encoding, parsing, validation
 - **Third-party library HTTP**: Be aware some libraries (like `meteostat`) may bypass our cache
@@ -235,7 +242,8 @@ except httpx.HTTPStatusError as e:
 - Clear target descriptions with `## comments`
 - Use CLI aliases not module names
 - Proper dependency chains
-- Color output for user experience
+- **REQUIRED**: All non-file targets must be declared as `.PHONY`
+- **REQUIRED**: All `.PHONY` targets must actually be non-file targets
 
 ## Data Management
 
