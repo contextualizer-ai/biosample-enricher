@@ -5,9 +5,10 @@ This directory contains comprehensive tests for the MongoDB-based HTTP caching s
 ## Test Structure
 
 ### Test Files
-- `test_http_cache.py` - Comprehensive HTTP cache testing with ISS API integration
-- `test_cli.py` - Command-line interface tests (existing)
-- `test_core.py` - Core functionality tests (existing)
+- `test_sunrise_api_demo.py` - Comprehensive HTTP cache testing with Sunrise-Sunset API integration
+- `test_http_cache.py` - Core HTTP cache functionality tests
+- `test_cli_main.py` - Command-line interface tests
+- Other test files for specific components
 
 ### Test Categories
 
@@ -25,7 +26,7 @@ Tests exercising multiple components with mocked dependencies:
 
 #### Network Tests (`@pytest.mark.network`)
 Real external API integration (skipped in CI):
-- `TestNetworkIntegration` - Live ISS Pass API testing
+- `test_sunrise_api_cache_demo` - Live Sunrise-Sunset API testing
 - Real coordinate canonicalization with API responses
 - Performance comparison between cache hits and misses
 
@@ -37,11 +38,11 @@ Performance and timing tests:
 
 ## Test Data
 
-### ISS Pass API Integration
-Tests use the Open Notify ISS Pass API as a real-world example:
+### Sunrise-Sunset API Integration
+Tests use the Sunrise-Sunset API as a real-world example:
 ```
-URL: http://api.open-notify.org/iss-pass.json
-Params: {"lat": 37.7749, "lon": -122.4194}  # San Francisco coordinates
+URL: https://api.sunrise-sunset.org/json
+Params: {"lat": 37.7749, "lng": -122.4194, "date": "2025-09-10"}  # San Francisco coordinates
 ```
 
 This API provides:
@@ -49,13 +50,14 @@ This API provides:
 - Geographic coordinate parameters for canonicalization testing
 - JSON responses suitable for caching validation
 - No authentication requirements
+- Relevant to biosample enrichment (geographic/environmental context)
 
 ### Test Fixtures
 - `cache_config` - Standard cache configuration
 - `clean_cache_db` - Ensures clean test database
 - `cache_instance` - MongoHTTPCache instance for testing
 - `cached_client` - CachedHTTPClient instance for testing
-- `sample_response` - Mock ISS API response data
+- `sample_response` - Mock Sunrise-Sunset API response data
 
 ## Running Tests
 
@@ -78,8 +80,8 @@ uv run pytest -m "slow"
 make test-slow
 
 # Cache tests specifically
-uv run pytest tests/test_http_cache.py
-make test-cache
+uv run pytest tests/test_sunrise_api_demo.py
+make test-sunrise-demo
 
 # Unit tests only
 uv run pytest -m "unit"
@@ -173,9 +175,9 @@ Running fast tests...
 =========================== test session starts ============================
 collected 49 items / 5 deselected
 
-tests/test_http_cache.py::TestRequestCanonicalizer::test_coordinate_rounding PASSED
-tests/test_http_cache.py::TestRequestCanonicalizer::test_coordinate_variations PASSED
-tests/test_http_cache.py::TestRequestCanonicalizer::test_datetime_truncation PASSED
+tests/test_sunrise_api_demo.py::test_sunrise_api_cache_demo PASSED
+tests/test_http_cache.py::test_coordinate_canonicalization PASSED
+tests/test_http_cache.py::test_datetime_canonicalization PASSED
 ...
 ================ 43 passed, 6 failed, 5 deselected in 37.75s ================
 ```

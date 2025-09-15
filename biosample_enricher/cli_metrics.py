@@ -72,10 +72,11 @@ def metrics() -> None:
     help="Show detailed sample data at each processing stage",
 )
 @click.option(
-    "--workspace-dir",
+    "--enrichment-lifecycle-dir",
     type=click.Path(path_type=Path),
     default="data/enrichment-lifecycle",
-    help="Directory for detailed debug files (raw docs, API responses, etc.) - ignored by git",
+    envvar="ENRICHMENT_LIFECYCLE_DIR",
+    help="Directory for enrichment lifecycle debug files (raw docs, API responses, etc.) - ignored by git",
 )
 def evaluate(
     nmdc_samples: int,
@@ -87,7 +88,7 @@ def evaluate(
     create_plots: bool,
     verbose: bool,
     debug_samples: bool,
-    workspace_dir: Path,
+    enrichment_lifecycle_dir: Path,
 ) -> None:
     """Evaluate enrichment coverage metrics for random samples.
 
@@ -111,11 +112,11 @@ def evaluate(
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Create workspace directory if debug is enabled
+    # Create enrichment lifecycle directory if debug is enabled
     if debug_samples:
-        workspace_dir = Path(workspace_dir)
-        workspace_dir.mkdir(parents=True, exist_ok=True)
-        logger.info(f"Debug workspace: {workspace_dir}")
+        enrichment_lifecycle_dir = Path(enrichment_lifecycle_dir)
+        enrichment_lifecycle_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Debug enrichment lifecycle: {enrichment_lifecycle_dir}")
 
     # Initialize components
     fetcher = BiosampleMetricsFetcher(
@@ -142,7 +143,7 @@ def evaluate(
                     import json
 
                     # Write detailed debug files to workspace
-                    nmdc_workspace = workspace_dir / "nmdc"
+                    nmdc_workspace = enrichment_lifecycle_dir / "nmdc"
                     nmdc_workspace.mkdir(exist_ok=True)
 
                     for i, (raw_doc, location) in enumerate(
@@ -220,7 +221,7 @@ def evaluate(
                 # Debug sample data if requested
                 if debug_samples:
                     # Write detailed debug files to workspace
-                    gold_workspace = workspace_dir / "gold"
+                    gold_workspace = enrichment_lifecycle_dir / "gold"
                     gold_workspace.mkdir(exist_ok=True)
 
                     for i, (raw_doc, location) in enumerate(

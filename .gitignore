@@ -216,7 +216,8 @@ __marimo__/
 
 # Debug enrichment lifecycle directories (contain large debug JSON files)
 data/enrichment-lifecycle/
-data/workspace*/  # Legacy pattern for backward compatibility
+# Legacy workspace pattern - should not be created anymore
+data/workspace/
 
 # HTTP Cache files
 http_cache.sqlite*

@@ -178,6 +178,12 @@ except httpx.HTTPStatusError as e:
 - NEVER use mocks or patches - test against real implementations
 - Use real services with graceful degradation when unavailable
 
+### Test Categorization
+- `@pytest.mark.unit` - Fast, isolated, no external dependencies
+- `@pytest.mark.integration` - Multiple components, mocked externals
+- `@pytest.mark.network` - Real API calls (skipped in CI)
+- `@pytest.mark.slow` - Performance/timing tests
+
 ## Performance and Architecture
 
 ### Async Patterns
@@ -244,6 +250,23 @@ except httpx.HTTPStatusError as e:
 - Proper dependency chains
 - **REQUIRED**: All non-file targets must be declared as `.PHONY`
 - **REQUIRED**: All `.PHONY` targets must actually be non-file targets
+
+## Configuration Management
+
+### Configuration Files
+- Store all configuration in YAML files under `config/` directory
+- Runtime loading of configurations - no hardcoded values in source code
+- No code changes required when updating configurations
+- Separate concerns: field mappings, host detection, provider settings
+
+```python
+# ✅ Good: Runtime configuration loading
+from biosample_enricher.host_detector import get_host_detector
+detector = get_host_detector()  # Loads from config/host_detection.yaml
+
+# ❌ Bad: Hardcoded configuration
+HOST_KEYWORDS = ["gut", "rhizosphere", "clinical"]  # Should be in YAML
+```
 
 ## Data Management
 
