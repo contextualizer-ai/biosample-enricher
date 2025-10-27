@@ -201,8 +201,9 @@ If a critical bug is found after release:
 ```bash
 # Yank the broken version (makes it unavailable for new installs)
 pip install twine
-twine upload --repository pypi --skip-existing dist/*
-# Then use PyPI web UI to yank the version
+python -m twine yank biosample-enricher <version> --repository pypi
+# Or use the PyPI web UI to yank the version:
+# https://pypi.org/project/biosample-enricher/<version>/
 
 # Immediately release a patch version
 git tag v0.1.1
