@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-import pymongo
+import pymongo  # type: ignore[import-not-found]  # Optional dependency
 
 from biosample_enricher.host_detector import get_host_detector
 from biosample_enricher.models import BiosampleLocation

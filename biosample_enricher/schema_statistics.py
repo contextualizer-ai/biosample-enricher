@@ -13,7 +13,7 @@ import math
 from typing import Any
 
 import pandas as pd
-from pymongo import MongoClient
+from pymongo import MongoClient  # type: ignore[import-not-found]  # Optional dependency
 
 
 def parse_args() -> argparse.Namespace:

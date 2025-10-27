@@ -1,5 +1,10 @@
 """Tests for schema inference and statistics tools."""
 
+import pytest
+
+# Skip if pymongo not available (needed by schema_statistics)
+pytest.importorskip("pymongo")
+
 from biosample_enricher.schema_statistics import typeof, walk
 
 

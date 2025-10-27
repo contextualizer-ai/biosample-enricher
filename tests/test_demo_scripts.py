@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 
 class TestElevationDemos:
     """Test elevation demo scripts."""
@@ -67,6 +69,11 @@ class TestPydanticValidationDemo:
 class TestRandomSamplingDemo:
     """Test random sampling demo."""
 
+    pytestmark = pytest.mark.skipif(
+        not __import__("importlib").util.find_spec("pymongo"),
+        reason="pymongo not available",
+    )
+
     def test_random_sampling_functions(self):
         """Test that random sampling demo functions are importable."""
         from biosample_enricher import random_sampling_demo as demo
@@ -93,6 +100,11 @@ class TestSyntheticValidationDemo:
 
 class TestAdapterDemos:
     """Test adapter demo scripts."""
+
+    pytestmark = pytest.mark.skipif(
+        not __import__("importlib").util.find_spec("pymongo"),
+        reason="pymongo not available",
+    )
 
     def test_nmdc_adapter_demo(self):
         """Test NMDC adapter demo."""
@@ -123,6 +135,11 @@ class TestAdapterDemos:
 class TestMongoDBConnectionDemo:
     """Test MongoDB connection demo."""
 
+    pytestmark = pytest.mark.skipif(
+        not __import__("importlib").util.find_spec("pymongo"),
+        reason="pymongo not available",
+    )
+
     def test_connection_demo(self):
         """Test that MongoDB connection demo is importable."""
         from biosample_enricher import mongodb_connection_demo as demo
@@ -135,6 +152,11 @@ class TestMongoDBConnectionDemo:
 
 class TestIDRetrievalDemo:
     """Test ID retrieval demo."""
+
+    pytestmark = pytest.mark.skipif(
+        not __import__("importlib").util.find_spec("pymongo"),
+        reason="pymongo not available",
+    )
 
     def test_id_retrieval_functions(self):
         """Test that ID retrieval demo is importable."""

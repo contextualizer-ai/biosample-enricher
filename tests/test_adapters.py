@@ -1,5 +1,10 @@
 """Tests for biosample data adapters."""
 
+import pytest
+
+# Skip all tests in this module if pymongo is not available
+pytest.importorskip("pymongo")
+
 from biosample_enricher.adapters import (
     GOLDBiosampleAdapter,
     NMDCBiosampleAdapter,
