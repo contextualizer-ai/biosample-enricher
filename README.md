@@ -114,8 +114,8 @@ marine_result = marine_service.get_comprehensive_marine_data(
     longitude=-121.9,
     target_date=date(2024, 1, 15)
 )
-if marine_result.sst:
-    print(f"Sea surface temp: {marine_result.sst.value}°C")
+if marine_result.sea_surface_temperature:
+    print(f"Sea surface temp: {marine_result.sea_surface_temperature.value}°C")
 if marine_result.bathymetry:
     print(f"Water depth: {marine_result.bathymetry.value}m")
 
