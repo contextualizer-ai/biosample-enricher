@@ -6,8 +6,6 @@ changelog:
     labels:
       # Exclude internal changes from release notes
       - ignore-for-release
-      - dependencies
-      - github-actions
 
   categories:
     - title: 🚨 Breaking Changes
