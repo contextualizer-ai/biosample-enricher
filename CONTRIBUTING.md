@@ -585,7 +585,7 @@ PRs are automatically categorized based on labels:
 - 🔧 **Maintenance**: `maintenance`, `chore`, `refactor`
 - 📦 **Dependencies**: `dependencies`, `deps`
 
-PRs with `ignore-for-release` or `github-actions` labels are excluded.
+PRs with `ignore-for-release`, `dependencies`, or `github-actions` labels are excluded.
 
 ### Semantic Versioning
 
