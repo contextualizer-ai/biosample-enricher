@@ -1,6 +1,6 @@
 # Biosample Enricher
 
-Infer AI-friendly metadata about biosamples from multiple sources.
+Infer AI-friendly environmental and geographic metadata about biosamples from multiple sources.
 
 [![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -9,18 +9,17 @@ Infer AI-friendly metadata about biosamples from multiple sources.
 
 ## Overview
 
-Biosample Enricher is a Python package and CLI tool designed to gather and enrich metadata about biological samples from multiple data sources. It provides a unified interface for querying various biological databases and returns structured, AI-friendly metadata that can be used for downstream analysis, machine learning, or data integration tasks.
+Biosample Enricher provides 8 specialized services for enriching biosample metadata with environmental and geographic information from authoritative data sources. Each service focuses on a specific domain (elevation, weather, soil, marine, land cover, geocoding, geographic features) and returns structured, type-safe data ready for analysis or AI applications.
 
 ## Features
 
-- **Multi-source data integration**: Query multiple biological databases simultaneously
-- **Click-based CLI**: User-friendly command-line interface with options (not arguments)
-- **Structured output**: Returns pydantic models with type validation
-- **Multiple output formats**: Support for table, JSON, and CSV output formats
-- **Batch processing**: Process multiple samples from input files
-- **Extensible architecture**: Easy to add new data sources
-- **Type safety**: Full type hints with mypy validation
-- **Rich console output**: Beautiful console output with progress indicators
+- **8 Specialized Services**: Elevation, soil, weather, marine, land cover, forward/reverse geocoding, geographic features
+- **Service-Based Architecture**: Independent services with focused responsibilities
+- **Type Safety**: Full type hints with Pydantic validation and mypy checking
+- **Smart Caching**: HTTP caching with coordinate canonicalization for efficiency
+- **Multiple Providers**: Automatic fallback between data providers (USGS, Google, OSM, etc.)
+- **Click-Based CLIs**: User-friendly command-line tools for each service
+- **Flexible Installation**: Core services only, or add optional mongodb/metrics/schema extras
 
 ## Installation
 
@@ -29,284 +28,429 @@ Biosample Enricher is a Python package and CLI tool designed to gather and enric
 - Python 3.11 or higher
 - [UV package manager](https://github.com/astral-sh/uv) (recommended)
 
-### Using UV (Recommended)
+### Core Installation (Recommended)
+
+Install with all 8 enrichment services but without evaluation/demo tools:
 
 ```bash
-# Install from source
+# From source (recommended for development)
 git clone https://github.com/contextualizer-ai/biosample-enricher.git
 cd biosample-enricher
 uv sync
 ```
 
-### Using pip
+### Optional Extras
+
+Add optional features as needed:
 
 ```bash
-# Install from source
-git clone https://github.com/contextualizer-ai/biosample-enricher.git
-cd biosample-enricher
-pip install -e .
+# MongoDB support (for fetching from NMDC/GOLD databases)
+uv sync --extra mongodb
+
+# Metrics and visualization tools
+uv sync --extra metrics
+
+# Schema analysis tools
+uv sync --extra schema
+
+# Everything
+uv sync --extra all
 ```
 
 ## Quick Start
 
-### CLI Usage
+### Python API
 
-#### Basic enrichment of a single sample
-
-```bash
-# Using UV
-uv run biosample-enricher enrich --sample-id SAMN123456
-
-# Or if installed globally
-biosample-enricher enrich --sample-id SAMN123456
-```
-
-#### Specify data sources
-
-```bash
-biosample-enricher enrich --sample-id SAMN123456 --sources ncbi --sources ebi
-```
-
-#### Different output formats
-
-```bash
-# Table format (default)
-biosample-enricher enrich --sample-id SAMN123456 --output-format table
-
-# JSON format
-biosample-enricher enrich --sample-id SAMN123456 --output-format json
-
-# CSV format
-biosample-enricher enrich --sample-id SAMN123456 --output-format csv
-```
-
-#### Batch processing
-
-```bash
-# Create a file with sample IDs (one per line)
-echo -e "SAMN123456\\nSAMN789012\\nSAMN345678" > samples.txt
-
-# Process all samples
-biosample-enricher batch --input-file samples.txt --output-format json
-
-# Save results to file
-biosample-enricher batch --input-file samples.txt --output-file results.json
-```
-
-#### Validate sample IDs
-
-```bash
-biosample-enricher validate --sample-id SAMN123456
-```
-
-### Python API Usage
+The package exports 8 services from the top level:
 
 ```python
-from biosample_enricher import BiosampleEnricher
+from biosample_enricher import (
+    ElevationService,
+    ElevationRequest,
+    SoilService,
+    WeatherService,
+    MarineService,
+    LandService,
+    ReverseGeocodingService,
+    ForwardGeocodingService,
+    OSMFeaturesService,
+)
+from datetime import date
 
-# Create enricher instance
-with BiosampleEnricher(timeout=30.0) as enricher:
-    # Enrich a single sample
-    results = enricher.enrich_sample("SAMN123456")
+# Get elevation for a location
+elevation_service = ElevationService()
+request = ElevationRequest(latitude=40.7128, longitude=-74.0060)
+observations = elevation_service.get_elevation(request)
 
-    for result in results:
-        print(f"Source: {result.source}")
-        print(f"Confidence: {result.confidence}")
-        print(f"Metadata: {result.metadata}")
+for obs in observations:
+    if obs.value_numeric is not None:
+        print(f"{obs.provider.name}: {obs.value_numeric}m")
+# Output:
+# usgs_3dep: 13.15m
+# google_elevation: 13.26m
+# open_topo_data: 25.0m
+# osm_elevation: 51.0m
 
-    # Enrich multiple samples
-    batch_results = enricher.enrich_multiple(
-        ["SAMN123456", "SAMN789012"],
-        sources=["ncbi", "ebi"]
-    )
+# Get weather data for a location and date
+weather_service = WeatherService()
+weather_result = weather_service.get_daily_weather(
+    lat=37.7749,
+    lon=-122.4194,
+    target_date=date(2024, 1, 15)
+)
+print(f"Temperature: {weather_result.temperature.value}°C")
+print(f"Precipitation: {weather_result.precipitation.value}mm")
 
-    for sample_id, metadata_list in batch_results.items():
-        print(f"Sample {sample_id}: {len(metadata_list)} sources")
+# Get soil properties
+soil_service = SoilService()
+soil_result = soil_service.enrich_location(
+    latitude=40.7128,
+    longitude=-74.0060,
+    depth_cm="0-5cm"
+)
+print(f"Provider: {soil_result.provider}")
+print(f"Quality score: {soil_result.quality_score}")
+
+# Get marine data (SST, bathymetry, chlorophyll)
+marine_service = MarineService()
+marine_result = marine_service.get_comprehensive_marine_data(
+    latitude=36.6,
+    longitude=-121.9,
+    target_date=date(2024, 1, 15)
+)
+if marine_result.sea_surface_temperature:
+    print(f"Sea surface temp: {marine_result.sea_surface_temperature.value}°C")
+if marine_result.bathymetry:
+    print(f"Water depth: {marine_result.bathymetry.value}m")
+
+# Reverse geocoding (coordinates -> place names)
+geocoding_service = ReverseGeocodingService()
+result = geocoding_service.reverse_geocode(lat=40.7128, lon=-74.0060)
+if result:
+    print(f"Location: {result.get_formatted_address()}")
+
+# Get nearby geographic features
+osm_service = OSMFeaturesService()
+features = osm_service.get_features_for_location(
+    latitude=37.7749,
+    longitude=-122.4194,
+    radius_m=1000
+)
+if features and features.named_features:
+    for feature in features.named_features[:5]:
+        print(f"{feature.name} ({feature.category}): {feature.distance_km:.2f}km")
 ```
+
+### CLI Usage
+
+Each service has its own CLI command:
+
+```bash
+# Elevation lookup
+uv run elevation-lookup lookup --lat 40.7128 --lon -74.0060
+
+# Soil data
+uv run soil-enricher lookup --lat 40.7128 --lon -74.0060 --depth 10
+
+# Weather data
+uv run weather-enricher lookup --lat 37.7749 --lon -122.4194 --date 2024-01-15
+
+# Marine data
+uv run marine-enricher lookup --lat 36.6 --lon -121.9 --date 2024-01-15
+
+# Land cover
+uv run land-enricher lookup --lat 40.7128 --lon -74.0060
+
+# Batch processing from CSV
+uv run elevation-lookup batch --input samples.csv --lat-col latitude --lon-col longitude
+
+# Version info
+uv run biosample-version
+```
+
+## Services
+
+### 1. Elevation Service
+
+Get elevation data from multiple providers (USGS, Google, Open Topo Data).
+
+**Providers**: USGS (US only, free), Google (global, requires API key), Open Topo Data (global, free)
+
+**Python**:
+```python
+from biosample_enricher import ElevationService, ElevationRequest
+
+service = ElevationService()
+request = ElevationRequest(latitude=40.7128, longitude=-74.0060)
+observations = service.get_elevation(request)
+```
+
+**CLI**:
+```bash
+uv run elevation-lookup lookup --lat 40.7128 --lon -74.0060
+```
+
+### 2. Soil Service
+
+Get soil properties (texture, pH, organic carbon, etc.).
+
+**Providers**: SoilGrids (global coverage), USDA NRCS (US only)
+
+**Python**:
+```python
+from biosample_enricher import SoilService
+
+service = SoilService()
+soil_result = service.enrich_location(
+    latitude=40.7128,
+    longitude=-74.0060,
+    depth_cm="0-5cm"
+)
+```
+
+**CLI**:
+```bash
+uv run soil-enricher lookup --lat 40.7128 --lon -74.0060 --depth 10
+```
+
+### 3. Weather Service
+
+Get historical weather data (temperature, precipitation, humidity, etc.).
+
+**Providers**: Open-Meteo (free, global), Meteostat (free, global)
+
+**Python**:
+```python
+from biosample_enricher import WeatherService
+from datetime import date
+
+service = WeatherService()
+weather_result = service.get_daily_weather(
+    lat=37.7749,
+    lon=-122.4194,
+    target_date=date(2024, 1, 15)
+)
+```
+
+**CLI**:
+```bash
+uv run weather-enricher lookup --lat 37.7749 --lon -122.4194 --date 2024-01-15
+```
+
+### 4. Marine Service
+
+Get marine data (sea surface temperature, bathymetry, chlorophyll).
+
+**Providers**: NOAA OISST (SST), GEBCO (bathymetry), ESA CCI (chlorophyll)
+
+**Python**:
+```python
+from biosample_enricher import MarineService
+from datetime import date
+
+service = MarineService()
+marine_result = service.get_comprehensive_marine_data(
+    latitude=36.6,
+    longitude=-121.9,
+    target_date=date(2024, 1, 15)
+)
+```
+
+**CLI**:
+```bash
+uv run marine-enricher lookup --lat 36.6 --lon -121.9 --date 2024-01-15
+```
+
+### 5. Land Service
+
+Get land cover classification.
+
+**Providers**: ESA WorldCover, MODIS, NLCD (US only)
+
+**Python**:
+```python
+from biosample_enricher import LandService
+
+service = LandService()
+land_result = service.enrich_location(
+    latitude=40.7128,
+    longitude=-74.0060
+)
+```
+
+**CLI**:
+```bash
+uv run land-enricher lookup --lat 40.7128 --lon -74.0060
+```
+
+### 6. Reverse Geocoding Service
+
+Convert coordinates to human-readable addresses.
+
+**Providers**: OSM Nominatim (free), Google Geocoding (requires API key)
+
+**Python**:
+```python
+from biosample_enricher import ReverseGeocodingService
+
+service = ReverseGeocodingService()
+result = service.reverse_geocode(lat=40.7128, lon=-74.0060)
+if result:
+    print(result.get_formatted_address())
+```
+
+### 7. Forward Geocoding Service
+
+Convert addresses/place names to coordinates.
+
+**Providers**: OSM Nominatim (free), Google Geocoding (requires API key)
+
+**Python**:
+```python
+from biosample_enricher import ForwardGeocodingService
+
+service = ForwardGeocodingService()
+result = service.geocode("New York City")
+if result and result.locations:
+    for location in result.locations[:3]:
+        print(f"{location.formatted_address}: {location.latitude}, {location.longitude}")
+```
+
+### 8. OSM Features Service
+
+Get nearby geographic features (parks, water bodies, landmarks).
+
+**Providers**: OpenStreetMap Overpass API (free), Google Places (requires API key)
+
+**Python**:
+```python
+from biosample_enricher import OSMFeaturesService
+
+service = OSMFeaturesService()
+features = service.get_features_for_location(
+    latitude=37.7749,
+    longitude=-122.4194,
+    radius_m=1000
+)
+if features and features.named_features:
+    for feature in features.named_features[:5]:
+        print(f"{feature.name} ({feature.category})")
+```
+
+## API Keys
+
+Only required for Google services (optional - OSM alternatives available for everything):
+
+```bash
+# Single API key for all Google services
+export GOOGLE_MAIN_API_KEY="your-key-here"
+```
+
+All other services are free and require no authentication.
 
 ## Development
 
-### Development Setup
+### Setup
 
 ```bash
-# Clone the repository
+# Clone repository
 git clone https://github.com/contextualizer-ai/biosample-enricher.git
 cd biosample-enricher
 
-# Complete development setup (installs deps, pre-commit hooks, etc.)
+# Complete development setup
 make dev-setup
 ```
-
-### Available Make Commands
-
-```bash
-# Development setup and cleanup
-make dev-setup          # Complete development setup (install-dev + pre-commit hooks)
-make clean              # Clean build artifacts and cache
-make clean-all          # Clean everything (artifacts, cache, and all generated outputs)
-
-# Code quality checks
-make format             # Format code with ruff
-make lint               # Run linting with ruff
-make lint-fix           # Run linting with auto-fix
-make type-check         # Run type checking with mypy
-make dep-check          # Check for unused dependencies with deptry
-
-# Combined quality checks
-make quality            # Run all code quality checks (format, lint, type-check, dep-check)
-make check              # Run all checks including tests (format, lint, type-check, dep-check, test)
-make check-ci           # Run all CI checks (same as check)
-make dev-check          # Quick development check (format, lint, type-check, test)
-
-# Testing
-make test               # Run tests with timing
-make test-cov           # Run tests with coverage
-make test-unit          # Run unit tests only (fast, no external dependencies)
-make test-integration   # Run integration tests
-make test-network       # Run network tests (requires internet)
-make test-fast          # Run fast tests (excludes slow and network tests)
-
-# Package management
-make install            # Install in production mode
-make install-dev        # Install with development dependencies
-make build              # Build the package
-
-# Pre-commit hooks
-make pre-commit-install # Install pre-commit hooks
-make pre-commit-run     # Run pre-commit on all files
-```
-
-### Recommended Workflow
-
-```bash
-# Initial setup (first time only)
-make clean-all          # Clean any existing artifacts
-make dev-setup          # Install dependencies and setup hooks
-
-# Daily development cycle
-make dev-check          # Quick check before committing (format, lint, type-check, test)
-
-# Full validation (before pushing/CI)
-make check-ci           # Run all CI checks
-
-# Clean rebuild (troubleshooting)
-make clean-all          # Remove everything
-rm -rf .venv            # Remove virtual environment if needed
-make dev-setup          # Fresh setup
-make check-ci           # Verify everything works
-```
-
-### Code Quality
-
-This project maintains high code quality standards:
-
-- **Linting**: [Ruff](https://github.com/astral-sh/ruff) for fast Python linting
-- **Formatting**: Ruff formatter for consistent code style
-- **Type Checking**: [MyPy](https://mypy-lang.org/) for static type checking
-- **Testing**: [Pytest](https://pytest.org/) with coverage reporting
-- **Pre-commit hooks**: Automated code quality checks
 
 ### Testing
 
 ```bash
-# Run all tests
-make test
+# Run fast tests (excludes network/slow tests)
+make test-fast
 
-# Run tests with coverage
+# Run all tests with coverage
 make test-cov
 
-# Run tests in watch mode (requires pytest-watch)
-make test-watch
+# Run specific test categories
+make test-unit          # Unit tests only
+make test-integration   # Integration tests
 ```
 
-### Project Structure
+### Code Quality
+
+```bash
+# Format, lint, type-check, test
+make dev-check
+
+# Full CI validation
+make check-ci
+
+# Individual checks
+make format       # Format with ruff
+make lint         # Lint with ruff
+make type-check   # Type check with mypy
+make dep-check    # Check dependencies with deptry
+```
+
+## Project Structure
 
 ```
 biosample-enricher/
-├── biosample_enricher/          # Main package
-│   ├── __init__.py             # Package initialization
-│   ├── core.py                 # Core enrichment logic
-│   └── cli.py                  # Command-line interface
-├── tests/                      # Test suite
-│   ├── __init__.py
-│   ├── test_core.py           # Core functionality tests
-│   └── test_cli.py            # CLI tests
-├── pyproject.toml             # Project configuration
-├── Makefile                   # Development automation
-├── README.md                  # This file
-└── LICENSE                    # MIT license
+├── biosample_enricher/
+│   ├── __init__.py           # Public API exports
+│   ├── elevation/            # Elevation service
+│   ├── soil/                 # Soil service
+│   ├── weather/              # Weather service
+│   ├── marine/               # Marine service
+│   ├── land/                 # Land cover service
+│   ├── reverse_geocoding/    # Reverse geocoding
+│   ├── forward_geocoding/    # Forward geocoding
+│   ├── osm_features/         # Geographic features
+│   ├── models.py             # Core data models
+│   ├── http_cache.py         # HTTP caching
+│   └── cli*.py               # CLI commands
+├── tests/                    # Test suite
+├── pyproject.toml           # Project configuration
+└── Makefile                 # Development automation
 ```
 
-## Configuration
+## Dependencies
 
-### Data Sources
+### Core Dependencies
+- **Always installed**: pandas, rasterio, meteostat (required for weather aggregation and global soil coverage)
+- CLI and data validation: click, pydantic, requests, rich, pyyaml
 
-Currently supported data sources:
-- **NCBI**: National Center for Biotechnology Information
-- **EBI**: European Bioinformatics Institute
-- **BioSample DB**: Generic biosample database
+### Optional Dependencies
+- **mongodb**: `pymongo` for fetching from NMDC/GOLD databases (evaluation/demo only)
+- **metrics**: `matplotlib`, `seaborn` for visualization
+- **schema**: `genson` for schema analysis
 
-### Output Schema
-
-The enricher returns `BiosampleMetadata` objects with the following structure:
-
-```python
-class BiosampleMetadata(BaseModel):
-    sample_id: str                    # Unique identifier for the biosample
-    source: str                       # Data source name
-    metadata: Dict[str, Any]          # Enriched metadata dictionary
-    confidence: float                 # Confidence score (0.0-1.0)
-```
+Install with: `uv sync --extra mongodb` or `uv sync --extra all`
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Run the development checks (`make dev-check`)
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
+4. Run checks (`make dev-check`)
+5. Commit (`git commit -m 'Add amazing feature'`)
+6. Push (`git push origin feature/amazing-feature`)
 7. Open a Pull Request
 
-### Development Guidelines
-
-- Follow PEP 8 style guidelines (enforced by Ruff)
-- Add type hints for all functions and methods
-- Write comprehensive tests for new features
-- Update documentation as needed
-- Ensure all CI checks pass
+See [CLAUDE.md](CLAUDE.md) for detailed development guidelines.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
 
-## Roadmap
+## Acknowledgments
 
-### Upcoming Features
-
-- [ ] Additional data source integrations
-- [ ] Caching mechanism for improved performance
-- [ ] Parallel processing for batch operations
-- [ ] Configuration file support
-- [ ] Docker containerization
-- [ ] Web API interface
-- [ ] Integration with popular bioinformatics workflows
-
-### Known Limitations
-
-- Currently uses mock data for demonstration purposes
-- Parallel processing not yet implemented
-- Limited to basic metadata fields
+- Built with [UV](https://github.com/astral-sh/uv) for fast package management
+- CLI powered by [Click](https://click.palletsprojects.com/)
+- Data validation with [Pydantic](https://pydantic.dev/)
+- Console output with [Rich](https://github.com/Textualize/rich)
+- Caching with [requests-cache](https://github.com/requests-cache/requests-cache)
 
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/contextualizer-ai/biosample-enricher/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/contextualizer-ai/biosample-enricher/discussions)
 - **Email**: info@contextualizer.ai
-
-## Acknowledgments
-
-- Built with [UV](https://github.com/astral-sh/uv) for fast Python package management
-- CLI powered by [Click](https://click.palletsprojects.com/)
-- Console output enhanced with [Rich](https://github.com/Textualize/rich)
-- Data validation with [Pydantic](https://pydantic.dev/)
