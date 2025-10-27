@@ -237,3 +237,6 @@ logs/*
 
 # Automatic backups of precious files
 .backups/
+
+# Auto-generated version file by hatch-vcs
+biosample_enricher/_version.py

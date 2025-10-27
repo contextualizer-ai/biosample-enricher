@@ -624,13 +624,15 @@ class TestSoilIntegration:
                 or "Cryepts" in obs.classification_usda
             )
 
+    @pytest.mark.network
     @pytest.mark.integration
     @pytest.mark.flaky
     def test_soil_service_integration(self):
         """Test full soil service integration.
 
-        Note: Marked as flaky due to external API dependencies (USDA, SoilGrids)
-        which may timeout or be unavailable.
+        Note: Marked as network test to skip in CI due to external API dependencies
+        (USDA, SoilGrids) which may timeout or be unavailable.
+        Also marked flaky for local runs.
         """
         service = SoilService()
 

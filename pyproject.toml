@@ -84,6 +84,7 @@ Issues = "https://github.com/contextualizer-ai/biosample-enricher/issues"
 [tool.ruff]
 target-version = "py311"
 line-length = 88
+extend-exclude = ["biosample_enricher/_version.py"]
 
 [tool.ruff.lint]
 select = [
@@ -135,6 +136,11 @@ disallow_untyped_defs = false
 # Third-party library without type stubs
 module = "genson"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Auto-generated version file by hatch-vcs
+module = "biosample_enricher._version"
+ignore_errors = true
 
 
 [tool.pytest.ini_options]
