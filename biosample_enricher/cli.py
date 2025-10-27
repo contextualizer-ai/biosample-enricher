@@ -6,7 +6,6 @@ from biosample_enricher import __version__
 from biosample_enricher.cli_elevation import elevation_cli
 from biosample_enricher.cli_forward_geocoding import forward_geocoding
 from biosample_enricher.cli_land import land
-from biosample_enricher.cli_metrics import metrics
 from biosample_enricher.cli_osm_features import osm_features
 
 
@@ -21,16 +20,16 @@ def main() -> None:
     """Biosample Enricher: Infer AI-friendly metadata about biosamples."""
 
 
-# Add elevation CLI as a subcommand
+# Add core CLI subcommands (no optional dependencies required)
 main.add_command(elevation_cli, name="elevation")
-# Add forward geocoding CLI as a subcommand
 main.add_command(forward_geocoding, name="forward-geocoding")
-# Add land CLI as a subcommand
 main.add_command(land, name="land")
-# Add metrics CLI as a subcommand
-main.add_command(metrics, name="metrics")
-# Add OSM features CLI as a subcommand
 main.add_command(osm_features, name="osm-features")
+
+# Note: Metrics evaluation is available via dedicated CLI entry points:
+#   - metrics-dashboard (requires optional dependencies: pip install biosample-enricher[metrics])
+#   - metrics-markdown (requires optional dependencies: pip install biosample-enricher[metrics])
+# This separation avoids importing matplotlib/seaborn for basic package usage.
 
 
 if __name__ == "__main__":
