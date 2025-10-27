@@ -58,9 +58,12 @@ schema = [
     "genson>=1.2.2",
 ]
 
-# All optional dependencies (references other groups)
+# All optional dependencies
 all = [
-    "biosample-enricher[mongodb,metrics,schema]",
+    "pymongo>=4.5.0",
+    "matplotlib>=3.10.6",
+    "seaborn>=0.13.2",
+    "genson>=1.2.2",
 ]
 
 
