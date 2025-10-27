@@ -24,7 +24,7 @@ def get_package_data_dir() -> Path:
         Path to biosample_enricher/data/ directory
 
     Note:
-        This works both in development and when installed via uv.
+        This works both in development and when installed via pip/uv or other package managers.
         Use this for accessing config files and other package data.
         Requires Python 3.9+ (importlib.resources.files).
     """
