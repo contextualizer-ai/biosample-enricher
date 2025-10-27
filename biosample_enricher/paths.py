@@ -46,10 +46,14 @@ def get_config_dir() -> Path:
     """
     try:
         # Try package data directory (works for installed packages)
-        return get_package_data_dir()
-    except (FileNotFoundError, ModuleNotFoundError):
+        data_dir = get_package_data_dir()
+    except ModuleNotFoundError:
         # Fallback to development mode
         return get_project_root() / "config"
+    if not data_dir.exists():
+        # Fallback to development mode if data directory is missing
+        return get_project_root() / "config"
+    return data_dir
 
 
 def get_data_dir() -> Path:
