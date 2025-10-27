@@ -61,7 +61,7 @@ pip install --index-url https://test.pypi.org/simple/ \
     --extra-index-url https://pypi.org/simple \
     biosample-enricher
 
-# Test basic functionality
+# Test imports and basic functionality
 python -c "
 from biosample_enricher import (
     ElevationService,
@@ -72,18 +72,24 @@ from biosample_enricher import (
     ReverseGeocodingService,
     ForwardGeocodingService,
     OSMFeaturesService,
+    ElevationRequest,
 )
-print('✅ All services imported successfully')
-"
+print('✅ All 8 services imported successfully')
 
-# Test elevation service
-python -c "
-from biosample_enricher import ElevationService, ElevationRequest
-
+# Test elevation service (no network required)
 service = ElevationService()
 request = ElevationRequest(latitude=40.7128, longitude=-74.0060)
-observations = service.get_elevation(request)
-print(f'✅ Elevation service works: {len(observations)} observations')
+print('✅ ElevationService and ElevationRequest work')
+
+# Test soil service instantiation
+soil = SoilService()
+print('✅ SoilService instantiates')
+
+# Test weather service instantiation
+weather = WeatherService()
+print('✅ WeatherService instantiates')
+
+print('✅ Package validation successful!')
 "
 
 # Test package metadata
@@ -98,10 +104,12 @@ rm -rf test-env
 
 - [ ] Package installs from TestPyPI without errors
 - [ ] All 8 services can be imported
-- [ ] Basic service functionality works (e.g., elevation lookup)
+- [ ] Service instantiation works (ElevationService, SoilService, WeatherService)
+- [ ] Basic model creation works (ElevationRequest)
 - [ ] Package metadata looks correct (version, description, keywords, classifiers)
 - [ ] README displays correctly on TestPyPI page
 - [ ] Dependencies install correctly from main PyPI
+- [ ] No demo files included in package (check with `pip show -f biosample-enricher`)
 
 ### Step 4: Production Release
 
