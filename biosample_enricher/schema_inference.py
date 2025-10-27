@@ -10,7 +10,7 @@ import json
 import sys
 
 from genson import SchemaBuilder
-from pymongo import MongoClient
+from pymongo import MongoClient  # type: ignore[import-not-found]  # Optional dependency
 
 
 def parse_args() -> argparse.Namespace:

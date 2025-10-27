@@ -1,6 +1,10 @@
 """Tests for the main CLI entry point."""
 
+import pytest
 from click.testing import CliRunner
+
+# Skip if pymongo not available (needed by cli_metrics)
+pytest.importorskip("pymongo")
 
 from biosample_enricher import __version__
 from biosample_enricher.cli import main, show_version

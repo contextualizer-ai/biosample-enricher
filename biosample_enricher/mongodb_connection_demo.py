@@ -17,7 +17,7 @@ from datetime import datetime
 from typing import Any
 
 import click
-import pymongo
+import pymongo  # type: ignore[import-not-found]  # Optional dependency
 
 from biosample_enricher.adapters import (
     MongoGOLDBiosampleFetcher,
