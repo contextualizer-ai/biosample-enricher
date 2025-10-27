@@ -1,0 +1,74 @@
+name: Test Release to TestPyPI
+
+on:
+  push:
+    tags:
+      - 'v*-rc*'  # Trigger on release candidate tags like v0.1.0-rc1, v0.2.0-rc2
+
+jobs:
+  test-publish:
+    name: Publish to TestPyPI
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # REQUIRED for trusted publishing
+      contents: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Get full history for hatch-vcs version calculation
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Set up Python
+      run: uv python install 3.11
+
+    - name: Install dependencies
+      run: uv sync --dev
+
+    - name: Run quality checks
+      run: |
+        uv run ruff format --check biosample_enricher/ tests/
+        uv run ruff check biosample_enricher/ tests/
+        uv run mypy biosample_enricher/
+
+    - name: Run fast tests
+      run: uv run pytest tests/ -m "not network and not slow" --cov=biosample_enricher
+
+    - name: Build package
+      run: uv build
+
+    - name: Check package contents
+      run: |
+        tar -tzf dist/*.tar.gz | head -20
+        unzip -l dist/*.whl | head -20
+
+    - name: Publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        print-hash: true
+
+    - name: Create validation summary
+      if: success()
+      run: |
+        echo "## ✅ TestPyPI Publication Successful" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Next Steps for Validation:" >> $GITHUB_STEP_SUMMARY
+        echo "1. Wait ~5 minutes for TestPyPI to process the package" >> $GITHUB_STEP_SUMMARY
+        echo "2. Install from TestPyPI:" >> $GITHUB_STEP_SUMMARY
+        echo '```bash' >> $GITHUB_STEP_SUMMARY
+        echo 'pip install --index-url https://test.pypi.org/simple/ \' >> $GITHUB_STEP_SUMMARY
+        echo '    --extra-index-url https://pypi.org/simple \' >> $GITHUB_STEP_SUMMARY
+        echo '    biosample-enricher' >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "3. Test basic functionality:" >> $GITHUB_STEP_SUMMARY
+        echo '```python' >> $GITHUB_STEP_SUMMARY
+        echo 'from biosample_enricher import ElevationService, ElevationRequest' >> $GITHUB_STEP_SUMMARY
+        echo 'service = ElevationService()' >> $GITHUB_STEP_SUMMARY
+        echo 'request = ElevationRequest(latitude=40.7128, longitude=-74.0060)' >> $GITHUB_STEP_SUMMARY
+        echo 'print("Success!")' >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        echo "4. If validation passes, create production release" >> $GITHUB_STEP_SUMMARY
