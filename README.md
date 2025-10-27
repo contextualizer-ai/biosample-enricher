@@ -85,7 +85,11 @@ observations = elevation_service.get_elevation(request)
 for obs in observations:
     if obs.value_numeric is not None:
         print(f"{obs.provider.name}: {obs.value_numeric}m")
-    # Output: usgs_3dep: 13.15m, google_elevation: 13.26m
+# Output:
+# usgs_3dep: 13.15m
+# google_elevation: 13.26m
+# open_topo_data: 25.0m
+# osm_elevation: 51.0m
 
 # Get weather data for a location and date
 weather_service = WeatherService()
