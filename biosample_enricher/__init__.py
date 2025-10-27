@@ -1,5 +1,5 @@
 """Biosample Enricher: Infer AI-friendly metadata about biosamples."""
 
-__version__ = "0.1.0"
+from biosample_enricher._version import __version__
 
-__all__: list[str] = []
+__all__ = ["__version__"]
