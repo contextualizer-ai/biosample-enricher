@@ -466,7 +466,7 @@ metrics-local: | data/outputs/metrics ## Run metrics evaluation (usage: make met
 	@echo "NMDC database: $(NMDC_DB), GOLD database: $(GOLD_DB)"
 	NMDC_MONGO_CONNECTION="mongodb://ncbi_reader:register_manatee_coach78@localhost:27778/?directConnection=true&authMechanism=DEFAULT&authSource=admin" \
 	GOLD_MONGO_CONNECTION="mongodb://ncbi_reader:register_manatee_coach78@localhost:27778/?directConnection=true&authMechanism=DEFAULT&authSource=admin" \
-	uv run biosample-enricher metrics evaluate \
+	uv run biosample-enricher-metrics evaluate \
 		--nmdc-samples $(NMDC_SAMPLES) \
 		--gold-samples $(GOLD_SAMPLES) \
 		--output-dir data/outputs/metrics \

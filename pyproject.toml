@@ -126,8 +126,8 @@ schema-inference = "biosample_enricher.schema_inference:main"
 schema-statistics = "biosample_enricher.schema_statistics:main"
 # Utility commands
 biosample-version = "biosample_enricher.cli:show_version"
-metrics-dashboard = "biosample_enricher.metrics.dashboard:main"
-metrics-markdown = "biosample_enricher.metrics.markdown:main"
+# Metrics evaluation (requires optional dependencies: pip install biosample-enricher[metrics])
+biosample-enricher-metrics = "biosample_enricher.cli_metrics:metrics"
 elevation-mapper-demo = "biosample_enricher.biosample_elevation_mapper:demonstrate_field_mapping"
 # Note: Demo scripts moved to examples/ directory and excluded from package.
 # Run demos using: make demo-weather, make demo-geocoding, etc.
