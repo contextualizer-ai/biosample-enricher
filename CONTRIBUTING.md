@@ -426,6 +426,7 @@ git commit -m "fixes"
        def fetch_data(self, lat: float, lon: float) -> DomainObservation:
            """Fetch data from provider."""
            session = get_cached_session()
+           # Construct 'url' and 'params' according to the provider's API requirements
            response = session.get(url, params=params)
            # Process response
            return DomainObservation(...)
