@@ -16,7 +16,7 @@ def show_version() -> None:
 
 
 @click.group()
-@click.version_option()
+@click.version_option(version=__version__)
 def main() -> None:
     """Biosample Enricher: Infer AI-friendly metadata about biosamples."""
 
