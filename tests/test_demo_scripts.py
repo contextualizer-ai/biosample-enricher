@@ -35,7 +35,7 @@ class TestGeocodingDemo:
 
     def test_geocoding_demo_functions(self):
         """Test that geocoding demo functions are importable."""
-        from biosample_enricher import geocoding_comprehensive_demo as demo
+        from examples import geocoding_comprehensive_demo as demo
 
         # Test that main functions exist
         assert hasattr(demo, "test_google_apis")
@@ -76,7 +76,7 @@ class TestRandomSamplingDemo:
 
     def test_random_sampling_functions(self):
         """Test that random sampling demo functions are importable."""
-        from biosample_enricher import random_sampling_demo as demo
+        from examples import random_sampling_demo as demo
 
         # Test that main functions exist
         assert hasattr(demo, "test_mongodb_random_sampling")
@@ -90,7 +90,7 @@ class TestSyntheticValidationDemo:
 
     def test_synthetic_data_generation(self):
         """Test that synthetic validation demo functions are importable."""
-        from biosample_enricher import synthetic_validation_demo as demo
+        from examples import synthetic_validation_demo as demo
 
         # Test that main functions exist
         assert hasattr(demo, "map_synthetic_to_model")
@@ -142,7 +142,7 @@ class TestMongoDBConnectionDemo:
 
     def test_connection_demo(self):
         """Test that MongoDB connection demo is importable."""
-        from biosample_enricher import mongodb_connection_demo as demo
+        from examples import mongodb_connection_demo as demo
 
         # Test that main functions exist
         assert hasattr(demo, "test_mongodb_connection")
@@ -160,7 +160,7 @@ class TestIDRetrievalDemo:
 
     def test_id_retrieval_functions(self):
         """Test that ID retrieval demo is importable."""
-        from biosample_enricher import id_retrieval_demo as demo
+        from examples import id_retrieval_demo as demo
 
         # Test that main functions exist
         assert hasattr(demo, "test_primary_id_retrieval")
@@ -175,15 +175,15 @@ class TestDemoScriptImports:
         """Test importing all demo modules."""
         demo_modules = [
             "biosample_enricher.elevation_demos",
-            "biosample_enricher.geocoding_comprehensive_demo",
-            "biosample_enricher.gold_adapter_demo",
-            "biosample_enricher.id_retrieval_demo",
-            "biosample_enricher.mongodb_connection_demo",
-            "biosample_enricher.nmdc_adapter_demo",
-            "biosample_enricher.pydantic_validation_demo",
-            "biosample_enricher.random_sampling_demo",
-            "biosample_enricher.synthetic_validation_demo",
-            "biosample_enricher.unified_adapter_demo",
+            "examples.geocoding_comprehensive_demo",
+            "examples.gold_adapter_demo",
+            "examples.id_retrieval_demo",
+            "examples.mongodb_connection_demo",
+            "examples.nmdc_adapter_demo",
+            "examples.pydantic_validation_demo",
+            "examples.random_sampling_demo",
+            "examples.synthetic_validation_demo",
+            "examples.unified_adapter_demo",
         ]
 
         for module_name in demo_modules:
@@ -208,7 +208,7 @@ class TestDemoScriptMainFunctions:
 
     def test_synthetic_validation_main(self):
         """Test synthetic validation demo main."""
-        from biosample_enricher import synthetic_validation_demo as demo
+        from examples import synthetic_validation_demo as demo
 
         # Check that main function exists
         assert hasattr(demo, "validate_synthetic_biosamples")
