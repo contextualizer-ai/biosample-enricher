@@ -6,15 +6,8 @@ import os
 from typing import Any
 
 import requests
+from pymongo import MongoClient
 from requests_cache import CachedSession, create_key
-
-try:
-    from pymongo import MongoClient
-
-    HAS_PYMONGO = True
-except ImportError:
-    MongoClient = None  # type: ignore[misc,assignment]
-    HAS_PYMONGO = False
 
 from biosample_enricher.logging_config import get_logger
 
@@ -91,11 +84,8 @@ def _mongo_session(
     uri: str, db_name: str, collection_name: str, timeout_ms: int = 5000
 ) -> CachedSession:
     """Create MongoDB-backed cached session."""
-    if not HAS_PYMONGO:
-        raise ImportError("pymongo not available - cannot use MongoDB backend")
-
     logger.debug(f"Attempting MongoDB connection to {uri}")
-    client: MongoClient = MongoClient(uri, serverSelectionTimeoutMS=timeout_ms)  # type: ignore[misc]
+    client: MongoClient = MongoClient(uri, serverSelectionTimeoutMS=timeout_ms)
     client.admin.command("ping")  # Fail fast if unreachable
     logger.info(f"Using MongoDB cache backend: {db_name}.{collection_name}")
     return CachedSession(

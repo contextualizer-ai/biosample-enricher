@@ -3,6 +3,7 @@
 from typing import Any
 
 from biosample_enricher.logging_config import get_logger
+from biosample_enricher.osm_features.google_provider import GooglePlacesProvider
 from biosample_enricher.osm_features.models import (
     CombinedFeaturesResult,
     Coordinates,
@@ -11,16 +12,6 @@ from biosample_enricher.osm_features.models import (
 from biosample_enricher.osm_features.provider import OSMOverpassProvider
 
 logger = get_logger(__name__)
-
-# Import Google provider with graceful fallback
-try:
-    from biosample_enricher.osm_features.google_provider import GooglePlacesProvider
-
-    HAS_GOOGLE_PROVIDER = True
-except ImportError as e:
-    logger.warning(f"Google Places provider not available: {e}")
-    GooglePlacesProvider = None  # type: ignore[misc,assignment]
-    HAS_GOOGLE_PROVIDER = False
 
 
 class OSMFeaturesService:
@@ -37,9 +28,9 @@ class OSMFeaturesService:
         self.default_radius_m = default_radius_m
         self.osm_provider = OSMOverpassProvider()
 
-        # Initialize Google provider if available and enabled
+        # Initialize Google provider if enabled
         self.google_provider = None
-        if HAS_GOOGLE_PROVIDER and enable_google:
+        if enable_google:
             try:
                 self.google_provider = GooglePlacesProvider()
                 if not self.google_provider.is_available():
