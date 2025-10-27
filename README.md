@@ -140,27 +140,60 @@ make dev-setup
 ### Available Make Commands
 
 ```bash
-# Show all available commands
-make help
+# Development setup and cleanup
+make dev-setup          # Complete development setup (install-dev + pre-commit hooks)
+make clean              # Clean build artifacts and cache
+make clean-all          # Clean everything (artifacts, cache, and all generated outputs)
 
-# Development workflow
-make dev-check          # Run formatting, linting, type-checking, and tests
-make test               # Run tests
+# Code quality checks
+make format             # Format code with ruff
+make lint               # Run linting with ruff
+make lint-fix           # Run linting with auto-fix
+make type-check         # Run type checking with mypy
+make dep-check          # Check for unused dependencies with deptry
+
+# Combined quality checks
+make quality            # Run all code quality checks (format, lint, type-check, dep-check)
+make check              # Run all checks including tests (format, lint, type-check, dep-check, test)
+make check-ci           # Run all CI checks (same as check)
+make dev-check          # Quick development check (format, lint, type-check, test)
+
+# Testing
+make test               # Run tests with timing
 make test-cov           # Run tests with coverage
-make lint               # Run linting
-make format             # Format code
-make type-check         # Run type checking
+make test-unit          # Run unit tests only (fast, no external dependencies)
+make test-integration   # Run integration tests
+make test-network       # Run network tests (requires internet)
+make test-fast          # Run fast tests (excludes slow and network tests)
 
 # Package management
 make install            # Install in production mode
 make install-dev        # Install with development dependencies
 make build              # Build the package
-make clean              # Clean build artifacts
 
-# Examples
-make run                # Show CLI help
-make enrich-example     # Run example enrichment
-make validate-example   # Run example validation
+# Pre-commit hooks
+make pre-commit-install # Install pre-commit hooks
+make pre-commit-run     # Run pre-commit on all files
+```
+
+### Recommended Workflow
+
+```bash
+# Initial setup (first time only)
+make clean-all          # Clean any existing artifacts
+make dev-setup          # Install dependencies and setup hooks
+
+# Daily development cycle
+make dev-check          # Quick check before committing (format, lint, type-check, test)
+
+# Full validation (before pushing/CI)
+make check-ci           # Run all CI checks
+
+# Clean rebuild (troubleshooting)
+make clean-all          # Remove everything
+rm -rf .venv            # Remove virtual environment if needed
+make dev-setup          # Fresh setup
+make check-ci           # Verify everything works
 ```
 
 ### Code Quality
