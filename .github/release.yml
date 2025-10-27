@@ -1,0 +1,60 @@
+# GitHub Auto-Release Notes Configuration
+# https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
+
+changelog:
+  exclude:
+    labels:
+      # Exclude internal changes from release notes
+      - ignore-for-release
+      - dependencies
+      - github-actions
+
+  categories:
+    - title: 🚨 Breaking Changes
+      labels:
+        - breaking-change
+        - breaking
+
+    - title: 🎉 New Features
+      labels:
+        - enhancement
+        - feature
+        - new-feature
+
+    - title: 🐛 Bug Fixes
+      labels:
+        - bug
+        - fix
+        - bugfix
+
+    - title: 📚 Documentation
+      labels:
+        - documentation
+        - docs
+
+    - title: 🧪 Testing
+      labels:
+        - testing
+        - tests
+
+    - title: 🏗️ Infrastructure & CI/CD
+      labels:
+        - ci
+        - ci-cd
+        - infrastructure
+        - github-actions
+
+    - title: 🔧 Maintenance
+      labels:
+        - maintenance
+        - chore
+        - refactor
+
+    - title: 📦 Dependencies
+      labels:
+        - dependencies
+        - deps
+
+    - title: 🔄 Other Changes
+      labels:
+        - "*"

@@ -339,25 +339,23 @@ def test_elevation():
 2. **Create a Pull Request** on GitHub:
    - Use a clear, descriptive title
    - Reference the issue number (e.g., "Closes #123")
-   - Provide detailed description of changes
+   - Fill out the PR template
+   - **Apply appropriate labels** for release notes (see below)
    - Include test results if applicable
 
-3. **PR Description Template**:
-   ```markdown
-   ## Summary
-   - Brief description of changes
+3. **PR Labels for Release Notes**:
 
-   ## Changes
-   - Bullet points of specific changes
-   - Technical details
+   Apply labels to categorize your PR in auto-generated release notes:
 
-   ## Test Plan
-   - [ ] Ran `make test-fast` - all tests pass
-   - [ ] Ran `make dev-check` - all quality checks pass
-   - [ ] Tested manually with example: [describe]
-
-   Closes #123
-   ```
+   - `breaking-change`: Breaking API changes
+   - `feature` or `enhancement`: New features
+   - `bug` or `fix`: Bug fixes
+   - `documentation` or `docs`: Documentation updates
+   - `testing` or `tests`: Test improvements
+   - `ci` or `infrastructure`: CI/CD changes
+   - `maintenance` or `refactor`: Code maintenance
+   - `dependencies`: Dependency updates
+   - `ignore-for-release`: Internal changes not user-facing
 
 4. **CI Checks**: All PRs must pass:
    - Ruff formatting
@@ -544,6 +542,57 @@ When adding significant features, update README.md with:
 - API example
 - CLI example
 - Provider information
+
+## Release Process (Maintainers)
+
+### Creating a Release
+
+1. **Ensure all PRs have appropriate labels** for release notes categorization
+
+2. **Create and push a version tag**:
+   ```bash
+   # Create annotated tag following semantic versioning
+   git tag -a v0.1.0 -m "Release v0.1.0"
+   git push origin v0.1.0
+   ```
+
+3. **GitHub will automatically**:
+   - Generate release notes from labeled PRs (via `.github/release.yml`)
+   - Categorize changes by type
+   - Link to PRs and credit contributors
+
+4. **Create the GitHub Release**:
+   - Go to GitHub Releases page
+   - Click "Draft a new release"
+   - Select the pushed tag
+   - Click "Generate release notes" (auto-populated from PRs)
+   - Review and edit if needed
+   - Publish release
+
+5. **Update CHANGELOG.md** (see #154):
+   - Sync release notes to CHANGELOG.md
+   - Maintain cumulative history
+
+### Release Note Categories
+
+PRs are automatically categorized based on labels:
+- 🚨 **Breaking Changes**: `breaking-change`, `breaking`
+- 🎉 **New Features**: `enhancement`, `feature`, `new-feature`
+- 🐛 **Bug Fixes**: `bug`, `fix`, `bugfix`
+- 📚 **Documentation**: `documentation`, `docs`
+- 🧪 **Testing**: `testing`, `tests`
+- 🏗️ **Infrastructure**: `ci`, `infrastructure`, `github-actions`
+- 🔧 **Maintenance**: `maintenance`, `chore`, `refactor`
+- 📦 **Dependencies**: `dependencies`, `deps`
+
+PRs with `ignore-for-release` or `github-actions` labels are excluded.
+
+### Semantic Versioning
+
+Follow [Semantic Versioning](https://semver.org/):
+- **MAJOR** (v1.0.0 → v2.0.0): Breaking changes
+- **MINOR** (v0.1.0 → v0.2.0): New features (backward compatible)
+- **PATCH** (v0.1.0 → v0.1.1): Bug fixes (backward compatible)
 
 ## Getting Help
 
