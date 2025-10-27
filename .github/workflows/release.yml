@@ -1,4 +1,4 @@
-name: Release
+name: Release to PyPI
 
 on:
   release:
@@ -6,13 +6,19 @@ on:
 
 jobs:
   build-and-publish:
+    name: Publish to PyPI
     runs-on: ubuntu-latest
+    # Only run for non-prerelease (production) releases
+    if: "!github.event.release.prerelease"
     permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write  # REQUIRED for trusted publishing
+      contents: read
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Get full history for hatch-vcs version calculation
 
     - name: Install uv
       uses: astral-sh/setup-uv@v3
@@ -23,11 +29,34 @@ jobs:
     - name: Install dependencies
       run: uv sync --dev
 
-    - name: Run tests
-      run: uv run pytest
+    - name: Run quality checks
+      run: |
+        uv run ruff format --check biosample_enricher/ tests/
+        uv run ruff check biosample_enricher/ tests/
+        uv run mypy biosample_enricher/
+
+    - name: Run fast tests
+      run: uv run pytest tests/ -m "not network and not slow" --cov=biosample_enricher
 
     - name: Build package
       run: uv build
 
+    - name: Check package contents
+      run: |
+        echo "### Source Distribution Contents:" >> $GITHUB_STEP_SUMMARY
+        tar -tzf dist/*.tar.gz | head -20 >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Wheel Contents:" >> $GITHUB_STEP_SUMMARY
+        unzip -l dist/*.whl | head -20 >> $GITHUB_STEP_SUMMARY
+
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        print-hash: true
+
+    - name: Create publication summary
+      if: success()
+      run: |
+        echo "## ✅ PyPI Publication Successful" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Package published to https://pypi.org/project/biosample-enricher/" >> $GITHUB_STEP_SUMMARY
