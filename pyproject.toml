@@ -14,17 +14,58 @@ license = "MIT"
 authors = [
     { name = "contextualizer-ai", email = "info@contextualizer.ai" },
 ]
+maintainers = [
+    { name = "contextualizer-ai", email = "info@contextualizer.ai" },
+]
 requires-python = ">=3.11"
-keywords = ["biosamples", "metadata", "enrichment", "bioinformatics"]
+keywords = [
+    "biosamples",
+    "metadata",
+    "enrichment",
+    "bioinformatics",
+    "environmental-data",
+    "geospatial",
+    "elevation",
+    "soil",
+    "weather",
+    "marine",
+    "oceanography",
+    "geocoding",
+    "climate",
+    "environmental-science",
+]
 classifiers = [
+    # Development status
     "Development Status :: 3 - Alpha",
+
+    # Intended audience
     "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+
+    # License
     "License :: OSI Approved :: MIT License",
+
+    # Operating systems
+    "Operating System :: OS Independent",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+
+    # Programming language
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
+
+    # Type checking
+    "Typing :: Typed",
+
+    # Topics
     "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 dependencies = [
