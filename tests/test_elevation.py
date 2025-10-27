@@ -271,12 +271,14 @@ class TestElevationService:
         # Should respect preferred provider
         assert providers[0].name == "osm_elevation"
 
+    @pytest.mark.network
     @pytest.mark.integration
     @pytest.mark.flaky
     def test_service_get_elevation_us_location(self):
         """Test successful elevation lookup for US location.
 
-        Note: Marked as flaky due to external USGS API dependency which may timeout.
+        Note: Marked as network test to skip in CI due to flaky external USGS API.
+        Also marked as flaky for local test runs that may timeout.
         """
         request = ElevationRequest(
             latitude=43.8791, longitude=-103.4591
@@ -296,12 +298,14 @@ class TestElevationService:
         assert usgs_obs[0].value_numeric is not None
         assert usgs_obs[0].value_numeric > 1000  # Mount Rushmore elevation
 
+    @pytest.mark.network
     @pytest.mark.integration
     @pytest.mark.flaky
     def test_service_get_elevation_non_us_location(self):
         """Test successful elevation lookup for non-US location.
 
-        Note: Marked as flaky due to external API dependencies which may timeout.
+        Note: Marked as network test to skip in CI due to flaky external APIs.
+        Also marked as flaky for local test runs that may timeout.
         """
         request = ElevationRequest(latitude=51.5074, longitude=-0.1278)  # London
         observations = self.service.get_elevation(request, timeout_s=30)
