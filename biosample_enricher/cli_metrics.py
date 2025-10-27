@@ -9,7 +9,6 @@ from biosample_enricher.metrics import (
     BiosampleMetricsFetcher,
     CoverageEvaluator,
     MetricsReporter,
-    MetricsVisualizer,
 )
 
 logger = get_logger(__name__)
@@ -310,6 +309,8 @@ def evaluate(
 
     # Create visualizations
     if create_plots:
+        from biosample_enricher.metrics import MetricsVisualizer
+
         logger.info("Creating visualization plots...")
         visualizer = MetricsVisualizer(output_dir)
         plot_files = visualizer.create_all_visualizations(
@@ -347,6 +348,8 @@ def visualize(csv_file: Path, output_dir: Path) -> None:
     CSV_FILE: Path to metrics summary CSV file
     """
     import pandas as pd
+
+    from biosample_enricher.metrics import MetricsVisualizer
 
     setup_logging()
 
