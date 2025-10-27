@@ -252,47 +252,47 @@ data/outputs/adapters:
 # Core Adapter Tests
 data/outputs/adapters/nmdc_adapter_test.json: | data/outputs/adapters
 	@echo "Generating $(notdir $@)..."
-	uv run nmdc-adapter-demo --output-file $@
+	uv run python examples/nmdc_adapter_demo.py --output-file $@
 
 data/outputs/adapters/gold_adapter_test.json: | data/outputs/adapters
 	@echo "Generating $(notdir $@)..."
-	uv run gold-adapter-demo --output-file $@
+	uv run python examples/gold_adapter_demo.py --output-file $@
 
 data/outputs/adapters/unified_adapter_test.json: | data/outputs/adapters
 	@echo "Generating $(notdir $@)..."
-	uv run unified-adapter-demo --output-file $@
+	uv run python examples/unified_adapter_demo.py --output-file $@
 
 # Infrastructure Tests
 data/outputs/adapters/mongodb_adapter_test.json: | data/outputs/adapters
 	@echo "Generating $(notdir $@)..."
 	@echo "Note: Requires MongoDB connection at $(MONGO_URI)"
 	@mkdir -p $(dir $@)
-	uv run mongodb-connection-demo --output-file $@
+	uv run python examples/mongodb_connection_demo.py --output-file $@
 
 data/outputs/adapters/pydantic_validation_test.json: | data/outputs/adapters
 	@echo "Generating $(notdir $@)..."
-	uv run pydantic-validation-demo --output-file $@
+	uv run python examples/pydantic_validation_demo.py --output-file $@
 
 # Advanced Features
 data/outputs/adapters/id_retrieval_test.json: | data/outputs/adapters
 	@echo "Generating $(notdir $@)..."
-	uv run id-retrieval-demo --output-file $@
+	uv run python examples/id_retrieval_demo.py --output-file $@
 
 data/outputs/adapters/random_sampling_test.json: | data/outputs/adapters
 	@echo "Generating $(notdir $@)..."
 	@echo "Note: Requires MongoDB connection at $(MONGO_URI)"
 	@mkdir -p $(dir $@)
-	uv run random-sampling-demo --output-file $@
+	uv run python examples/random_sampling_demo.py --output-file $@
 
 # Synthetic biosample validation with output file target
 data/outputs/adapters/synthetic_validation_test.json: data/input/synthetic_biosamples.json | data/outputs/adapters
 	@echo "Generating $(notdir $@)..."
-	uv run synthetic-validation-demo --input-file $< --output-file $@
+	uv run python examples/synthetic_validation_demo.py --input-file $< --output-file $@
 
 # Geocoding demonstration
 data/outputs/demos/geocoding_demo_results.json: | data/outputs/demos
 	@echo "Running geocoding demo..."
-	uv run geocoding-demo
+	uv run python examples/geocoding_comprehensive_demo.py
 
 data/outputs/demos:
 	@echo "Creating demos output directory..."
@@ -302,20 +302,20 @@ data/outputs/demos:
 # Standalone validation target
 validate-synthetic: ## Validate synthetic biosamples and show results
 	@echo "Validating synthetic biosamples..."
-	@uv run synthetic-validation-demo --input-file data/input/synthetic_biosamples.json
+	@uv run python examples/synthetic_validation_demo.py --input-file data/input/synthetic_biosamples.json
 
 # Flexible validation target with click options
 validate-biosamples: ## Validate biosamples with click options (usage: make validate-biosamples OPTS="--input-file file.json --output-file results.json")
 	@echo "Validating biosamples with options: $(OPTS)..."
-	@uv run synthetic-validation-demo $(OPTS)
+	@uv run python examples/synthetic_validation_demo.py $(OPTS)
 
 # Alternative validation target with make parameters (for backward compatibility)
 validate-biosamples-make: ## Validate biosamples (usage: make validate-biosamples-make INPUT=file.json OUTPUT=results.json)
 	@echo "Validating biosamples from $(INPUT)..."
 	@if [ -n "$(OUTPUT)" ]; then \
-		uv run synthetic-validation-demo --input-file $(INPUT) --output-file $(OUTPUT); \
+		uv run python examples/synthetic_validation_demo.py --input-file $(INPUT) --output-file $(OUTPUT); \
 	else \
-		uv run synthetic-validation-demo --input-file $(INPUT); \
+		uv run python examples/synthetic_validation_demo.py --input-file $(INPUT); \
 	fi
 
 

@@ -129,17 +129,9 @@ biosample-version = "biosample_enricher.cli:show_version"
 metrics-dashboard = "biosample_enricher.metrics.dashboard:main"
 metrics-markdown = "biosample_enricher.metrics.markdown:main"
 elevation-mapper-demo = "biosample_enricher.biosample_elevation_mapper:demonstrate_field_mapping"
-# Demonstration scripts
-nmdc-adapter-demo = "biosample_enricher.nmdc_adapter_demo:main"
-gold-adapter-demo = "biosample_enricher.gold_adapter_demo:main"
-unified-adapter-demo = "biosample_enricher.unified_adapter_demo:main"
-mongodb-connection-demo = "biosample_enricher.mongodb_connection_demo:main"
-pydantic-validation-demo = "biosample_enricher.pydantic_validation_demo:main"
-id-retrieval-demo = "biosample_enricher.id_retrieval_demo:main"
-geocoding-demo = "biosample_enricher.geocoding_comprehensive_demo:main"
-weather-demo = "biosample_enricher.weather_demo:main"
-random-sampling-demo = "biosample_enricher.random_sampling_demo:main"
-synthetic-validation-demo = "biosample_enricher.synthetic_validation_demo:main"
+# Note: Demo scripts moved to examples/ directory and excluded from package.
+# Run demos using: make demo-weather, make demo-geocoding, etc.
+# Or directly: uv run python examples/weather_demo.py
 
 [project.urls]
 Homepage = "https://github.com/contextualizer-ai/biosample-enricher"
