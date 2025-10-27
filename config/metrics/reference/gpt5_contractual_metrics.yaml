@@ -1,0 +1,48 @@
+
+# config/metrics/definitions.yaml
+schema_version: 1
+generated: 2025-09-15
+
+metrics:
+  - id: bathymetry_coverage
+    title: "Bathymetry coverage"
+    kind: coverage
+    type: additive
+    eligibility: realm == "marine"
+    before: has("bathymetry_m", "before")
+    after:  has("bathymetry_m", "after")
+    stratify_by: ["realm"]
+
+  - id: weather_any_coverage
+    title: "Any weather coverage (T/RH/Wind/Precip/Solar)"
+    kind: coverage
+    type: additive
+    eligibility: realm in ["marine","terrestrial","freshwater","host"]
+    before: any_true(["weather_any_before"])
+    after:  any_true(["weather_any_after"])
+    stratify_by: ["realm"]
+
+  - id: geo_wetland_coverage
+    title: "Wetland feature coverage (OSM/Places union)"
+    kind: coverage
+    type: additive
+    eligibility: realm == "terrestrial"
+    before: any_true(["wetland_any_before"])
+    after:  any_true(["wetland_osm_after", "wetland_google_after"])
+    stratify_by: ["realm"]
+
+  - id: wetland_feature_counts
+    title: "Wetland features per sample (after)"
+    kind: aggregator
+    eligibility: realm == "terrestrial"
+    value_field: "wetland_feature_count_after"
+    aggregates: ["mean","median","p90","max"]
+    stratify_by: ["realm"]
+
+  - id: wetland_nearest_distance_m
+    title: "Distance to nearest wetland (m, after)"
+    kind: aggregator
+    eligibility: realm == "terrestrial"
+    value_field: "wetland_min_distance_m_after"
+    aggregates: ["median","p90","max"]
+    stratify_by: ["realm"]
