@@ -2,6 +2,9 @@
 requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["biosample_enricher"]
+
 [project]
 name = "biosample-enricher"
 dynamic = ["version"]
