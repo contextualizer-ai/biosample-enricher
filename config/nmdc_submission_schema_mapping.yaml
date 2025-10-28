@@ -1,0 +1,439 @@
+# Field Mapping: biosample-enricher API outputs → NMDC Submission Schema
+#
+# This configuration maps the structured output from biosample-enricher services
+# to the flat field names expected by the NMDC submission schema.
+#
+# Reference: https://github.com/microbiomedata/submission-schema
+#
+# Structure:
+# - Common fields apply to all interface types (Soil, Water, Sediment, etc.)
+# - Interface-specific sections handle unique requirements
+# - Each mapping includes:
+#   - source_path: dot-notation path in our enrichment output
+#   - target_field: NMDC submission schema field name
+#   - units: expected unit format
+#   - transform: optional transformation function
+#   - notes: implementation guidance
+
+version: "0.1.0"
+schema_reference: "https://raw.githubusercontent.com/microbiomedata/submission-schema/main/src/nmdc_submission_schema/schema/nmdc_submission_schema.yaml"
+
+# ============================================================================
+# COMMON FIELDS (All Interface Types)
+# ============================================================================
+
+common_fields:
+  # Geographic Coordinates
+  - source_path: "input.latitude"
+    target_field: "lat_lon"
+    units: "decimal_degrees"
+    transform: "format_lat_lon"  # Combine lat/lon into single field
+    notes: |
+      NMDC expects: "latitude longitude" as single string
+      Format: "decimal degrees, limit to 8 decimal points"
+      Example: "37.99999999 -122.99999999"
+      WGS84 system required
+
+  # Elevation
+  - source_path: "elevation.observations[0].value_numeric"
+    target_field: "elev"
+    units: "meters"
+    transform: "round_to_precision"
+    precision: 2
+    notes: |
+      NMDC expects: numerical portion only, in meters
+      Use first available elevation observation
+      Round to reasonable precision (2 decimal places)
+
+  # Depth (when available)
+  - source_path: "depth.observations[0].value_numeric"
+    target_field: "depth"
+    units: "meters"
+    transform: "round_to_precision"
+    precision: 2
+    notes: |
+      NMDC expects: numerical portion only, in meters
+      Vertical distance below local surface
+      Can be interval for subsurface samples
+
+  # Geographic Location Name
+  - source_path: "forward_geocoding.location_name"
+    target_field: "geo_loc_name"
+    transform: "format_geo_loc_name"
+    notes: |
+      NMDC expects: "country or sea name: region, specific location"
+      Format: hierarchical from broad to specific
+      Use GAZ/INSDC controlled vocabularies when possible
+      Example: "USA: Colorado, Niwot Ridge"
+
+  # MIxS Environmental Triad (from input or geographic features)
+  - source_path: "input.env_broad_scale"
+    target_field: "env_broad_scale"
+    fallback_source: "geographic_features.predicted_biome"
+    transform: "ensure_envo_term"
+    notes: |
+      NMDC expects: ENVO term for biome [ENVO:00000428]
+      Example: "forest biome [ENVO:01000174]"
+      Can be predicted from geographic features if not in input
+
+  - source_path: "input.env_local_scale"
+    target_field: "env_local_scale"
+    fallback_source: "geographic_features.predicted_local_scale"
+    transform: "ensure_envo_term"
+    notes: |
+      NMDC expects: ENVO term for local environmental context
+      Example: "montane grassland [ENVO:00000300]"
+
+  - source_path: "input.env_medium"
+    target_field: "env_medium"
+    fallback_source: "sample_type_detection.predicted_medium"
+    transform: "ensure_envo_term"
+    notes: |
+      NMDC expects: ENVO term for environmental material
+      Example: "soil [ENVO:00001998]"
+
+  # Ecosystem Classification (GOLD hierarchy)
+  - source_path: "geographic_features.ecosystem"
+    target_field: "ecosystem"
+    notes: |
+      NMDC expects: top level of GOLD 5-tier classification
+      One of: Environmental, Host-associated, Engineered
+      Infer from sample type detection and geographic features
+
+  - source_path: "geographic_features.ecosystem_category"
+    target_field: "ecosystem_category"
+    notes: "GOLD classification level 2/5"
+
+  - source_path: "geographic_features.ecosystem_type"
+    target_field: "ecosystem_type"
+    notes: "GOLD classification level 3/5"
+
+  - source_path: "geographic_features.ecosystem_subtype"
+    target_field: "ecosystem_subtype"
+    notes: "GOLD classification level 4/5"
+
+# ============================================================================
+# SOIL INTERFACE MAPPINGS
+# ============================================================================
+
+soil_interface:
+  # Soil Classification
+  - source_path: "soil.classification_usda"
+    target_field: "local_class"
+    notes: |
+      USDA Soil Taxonomy classification
+      Example: "Typic Haplocryepts"
+
+  - source_path: "soil.classification_wrb"
+    target_field: "fao_class"
+    notes: |
+      WRB/FAO soil classification
+      Use controlled vocabulary from fao_class_enum
+
+  # Soil Physical Properties
+  - source_path: "soil.ph_h2o"
+    target_field: "ph"
+    units: "pH_scale"
+    transform: "round_to_precision"
+    precision: 2
+    notes: "pH in water (0-14 scale), numerical portion only"
+
+  - source_path: "soil.organic_carbon"
+    target_field: "org_carb"
+    units: "g/kg"
+    transform: "round_to_precision"
+    precision: 2
+    notes: "Soil organic carbon content"
+
+  - source_path: "soil.total_nitrogen"
+    target_field: "org_nitro"
+    units: "g/kg"
+    transform: "round_to_precision"
+    precision: 2
+    notes: "Total nitrogen content"
+
+  # Soil Texture
+  - source_path: "soil.texture_class"
+    target_field: "soil_type"
+    notes: |
+      USDA texture class
+      Example: "Loam", "Sandy clay loam"
+
+  - source_path: "soil.sand_percent"
+    target_field: "sand"
+    units: "percent"
+    notes: "Sand content percentage (0-100)"
+
+  - source_path: "soil.silt_percent"
+    target_field: "silt"
+    units: "percent"
+    notes: "Silt content percentage (0-100)"
+
+  - source_path: "soil.clay_percent"
+    target_field: "clay"
+    units: "percent"
+    notes: "Clay content percentage (0-100)"
+
+  # Weather/Climate Context for Soil
+  - source_path: "weather.temperature_annual_mean_c"
+    target_field: "annual_temp"
+    units: "Celsius"
+    transform: "round_to_precision"
+    precision: 1
+    notes: "Mean annual temperature in Celsius"
+
+  - source_path: "weather.precipitation_annual_sum_mm"
+    target_field: "annual_precpt"
+    units: "mm"
+    transform: "round_to_precision"
+    precision: 0
+    notes: "Annual precipitation in millimeters"
+
+# ============================================================================
+# WATER INTERFACE MAPPINGS
+# ============================================================================
+
+water_interface:
+  # Water Temperature
+  - source_path: "weather.temperature_c"
+    target_field: "temp"
+    fallback_source: "marine.sea_surface_temperature_c"
+    units: "Celsius"
+    transform: "round_to_precision"
+    precision: 2
+    notes: |
+      Temperature at time of sampling
+      Prefer in-situ measurement if available
+      Fall back to remote sensing data
+
+  # Marine Chemistry
+  - source_path: "marine.salinity_psu"
+    target_field: "salinity"
+    units: "PSU"
+    transform: "round_to_precision"
+    precision: 2
+    notes: |
+      Practical Salinity Unit or percentage
+      NMDC storage unit: PSU
+
+  - source_path: "marine.chlorophyll_a_mg_m3"
+    target_field: "chlorophyll"
+    units: "mg/m³"
+    transform: "round_to_precision"
+    precision: 3
+    notes: "Chlorophyll-a concentration"
+
+  - source_path: "marine.dissolved_oxygen_ml_l"
+    target_field: "diss_oxygen"
+    units: "mL/L"
+    transform: "round_to_precision"
+    precision: 2
+    notes: "Dissolved oxygen concentration"
+
+  # Water Depth
+  - source_path: "marine.bathymetry_m"
+    target_field: "depth"
+    fallback_source: "input.depth_m"
+    units: "meters"
+    transform: "abs_round_to_precision"
+    precision: 1
+    notes: |
+      Water depth (bathymetry) or sample depth
+      NMDC expects positive values in meters
+      Convert negative bathymetry to positive depth
+
+  # Water Chemistry (pH)
+  - source_path: "water.ph"
+    target_field: "ph"
+    units: "pH_scale"
+    transform: "round_to_precision"
+    precision: 2
+    notes: "pH of water sample or aqueous phase"
+
+  # Nutrients
+  - source_path: "water.nitrate_umol_l"
+    target_field: "nitrate"
+    units: "µmol/L"
+    transform: "round_to_precision"
+    precision: 2
+    notes: "Nitrate concentration"
+
+  - source_path: "water.phosphate_umol_l"
+    target_field: "phosphate"
+    units: "µmol/L"
+    transform: "round_to_precision"
+    precision: 2
+    notes: "Phosphate concentration"
+
+# ============================================================================
+# SEDIMENT INTERFACE MAPPINGS
+# ============================================================================
+
+sediment_interface:
+  # Inherits most fields from soil_interface
+  # Plus marine-specific depth context
+  - source_path: "marine.bathymetry_m"
+    target_field: "water_depth"
+    units: "meters"
+    transform: "abs_round_to_precision"
+    precision: 1
+    notes: |
+      Water depth at sediment collection site
+      Distinct from sediment depth below seafloor
+
+  - source_path: "sediment.depth_below_seafloor_cm"
+    target_field: "depth"
+    units: "meters"
+    transform: "cm_to_meters"
+    notes: "Depth below seafloor, converted from cm to meters"
+
+# ============================================================================
+# AIR INTERFACE MAPPINGS
+# ============================================================================
+
+air_interface:
+  # Altitude
+  - source_path: "elevation.observations[0].value_numeric"
+    target_field: "alt"
+    units: "meters"
+    transform: "round_to_precision"
+    precision: 0
+    notes: |
+      Altitude for air samples (vs elevation for surface samples)
+      Use same elevation data source
+
+  # Atmospheric Measurements
+  - source_path: "weather.pressure_hpa"
+    target_field: "barometric_press"
+    units: "hPa"
+    transform: "round_to_precision"
+    precision: 1
+    notes: "Barometric pressure in hectopascals"
+
+  - source_path: "weather.temperature_c"
+    target_field: "air_temp"
+    units: "Celsius"
+    transform: "round_to_precision"
+    precision: 1
+    notes: "Air temperature in Celsius"
+
+  - source_path: "weather.humidity_percent"
+    target_field: "humidity"
+    units: "percent"
+    transform: "round_to_precision"
+    precision: 1
+    notes: "Relative humidity percentage"
+
+  - source_path: "weather.wind_speed_m_s"
+    target_field: "wind_speed"
+    units: "m/s"
+    transform: "round_to_precision"
+    precision: 1
+    notes: "Wind speed in meters per second"
+
+# ============================================================================
+# TRANSFORMATION FUNCTIONS
+# ============================================================================
+
+transforms:
+  format_lat_lon:
+    description: "Combine latitude and longitude into single string"
+    implementation: "return f'{lat:.8f} {lon:.8f}'"
+    example: "37.12345678 -122.87654321"
+
+  format_geo_loc_name:
+    description: "Format hierarchical location name"
+    implementation: "return f'{country}: {state}, {locality}'"
+    example: "USA: Colorado, Niwot Ridge"
+
+  round_to_precision:
+    description: "Round numeric value to specified decimal places"
+    implementation: "return round(value, precision)"
+
+  abs_round_to_precision:
+    description: "Convert to absolute value and round"
+    implementation: "return round(abs(value), precision)"
+    notes: "Use for bathymetry → depth conversion"
+
+  cm_to_meters:
+    description: "Convert centimeters to meters"
+    implementation: "return value / 100.0"
+
+  ensure_envo_term:
+    description: "Ensure value is in ENVO term format"
+    implementation: "return f'{label} [{envo_id}]' if envo_id else label"
+    example: "forest biome [ENVO:01000174]"
+
+# ============================================================================
+# INTERFACE DETECTION RULES
+# ============================================================================
+
+interface_detection:
+  rules:
+    - condition: "input.env_medium contains 'soil' OR geographic_features contains 'terrestrial'"
+      interface: "SoilInterface"
+
+    - condition: "input.env_medium contains 'water' AND geographic_features.is_ocean"
+      interface: "WaterInterface"
+
+    - condition: "input.env_medium contains 'sediment' AND geographic_features.is_ocean"
+      interface: "SedimentInterface"
+
+    - condition: "input.env_medium contains 'sediment' AND NOT geographic_features.is_ocean"
+      interface: "SedimentInterface"  # Freshwater sediment
+
+    - condition: "input.sample_type contains 'air' OR elevation.value_numeric > 1000"
+      interface: "AirInterface"
+
+    - condition: "default"
+      interface: "MiscEnvsInterface"
+
+# ============================================================================
+# VALIDATION RULES
+# ============================================================================
+
+validation:
+  required_fields:
+    all_interfaces:
+      - "lat_lon"
+      - "geo_loc_name"
+      - "env_broad_scale"
+      - "env_local_scale"
+      - "env_medium"
+
+    soil_interface:
+      - "elev"
+      - "ecosystem"
+
+    water_interface:
+      - "depth"
+
+  unit_conversions:
+    - from: "feet"
+      to: "meters"
+      factor: 0.3048
+
+    - from: "fahrenheit"
+      to: "celsius"
+      formula: "(value - 32) * 5/9"
+
+    - from: "ppm"
+      to: "mg/L"
+      note: "context-dependent, verify molecular weight"
+
+# ============================================================================
+# NOTES ON IMPLEMENTATION STRATEGY
+# ============================================================================
+
+implementation_notes: |
+  1. Create transformer class that takes enrichment output + interface type
+  2. Apply common_fields mappings first
+  3. Apply interface-specific mappings based on detected type
+  4. Run validation to ensure required fields present
+  5. Format output as flat dictionary matching NMDC submission schema
+  6. Preserve provenance by adding metadata section with:
+     - biosample_enricher_version
+     - transformation_timestamp
+     - source_data_references
+  7. Handle missing data gracefully (None/null for unavailable fields)
+  8. Log transformation details for debugging/auditing
