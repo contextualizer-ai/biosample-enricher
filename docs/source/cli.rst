@@ -1,4 +1,4 @@
-ucli
-==================
+CLI Reference
+=============
 
 Coming soon.

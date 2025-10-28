@@ -1,4 +1,4 @@
-uarchitecture
-==================
+Architecture
+============
 
 Coming soon.
