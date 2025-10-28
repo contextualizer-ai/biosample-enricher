@@ -250,6 +250,10 @@ dev = [
     "deptry>=0.23.1",
     "types-pyyaml>=6.0.12.20250822",
     "types-seaborn>=0.13.2.20250809",
+    "sphinx>=8.2.3",
+    "sphinx-rtd-theme>=3.0.2",
+    "sphinx-autodoc-typehints>=3.5.2",
+    "myst-parser>=4.0.1",
 ]
 
 
