@@ -130,7 +130,7 @@ class GEBCOProvider(MarineProviderBase):
 
 **Dependencies:**
 ```bash
-pip install owslib rasterio
+uv add owslib rasterio
 ```
 
 **Timeline:** 1.5 weeks
@@ -205,7 +205,7 @@ class ESACCIProvider(MarineProviderBase):
 
 **Dependencies:**
 ```bash
-pip install xarray netCDF4
+uv add xarray netCDF4
 ```
 
 **Timeline:** 1.5 weeks
