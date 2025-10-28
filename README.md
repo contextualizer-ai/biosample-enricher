@@ -28,33 +28,32 @@ Biosample Enricher provides 8 specialized services for enriching biosample metad
 - Python 3.11 or higher
 - [UV package manager](https://github.com/astral-sh/uv) (recommended)
 
-### Core Installation (Recommended)
-
-Install with all 8 enrichment services but without evaluation/demo tools:
+### Add to Your Project (Recommended)
 
 ```bash
-# From source (recommended for development)
+# Basic installation - all 8 enrichment services
+uv add biosample-enricher
+
+# With optional dependencies
+uv add biosample-enricher --extra metrics   # Metrics and visualization
+uv add biosample-enricher --extra mongodb   # MongoDB support for NMDC/GOLD
+uv add biosample-enricher --extra schema    # Schema analysis tools
+uv add biosample-enricher --extra all       # All optional features
+```
+
+### From Source (Development)
+
+```bash
+# Clone and install
 git clone https://github.com/contextualizer-ai/biosample-enricher.git
 cd biosample-enricher
 uv sync
-```
 
-### Optional Extras
-
-Add optional features as needed:
-
-```bash
-# MongoDB support (for fetching from NMDC/GOLD databases)
-uv sync --extra mongodb
-
-# Metrics and visualization tools
-uv sync --extra metrics
-
-# Schema analysis tools
-uv sync --extra schema
-
-# Everything
-uv sync --extra all
+# With optional extras
+uv sync --extra mongodb    # MongoDB support
+uv sync --extra metrics    # Metrics and visualization
+uv sync --extra schema     # Schema analysis tools
+uv sync --extra all        # Everything
 ```
 
 ## Quick Start
