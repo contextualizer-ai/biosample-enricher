@@ -129,6 +129,9 @@ biosample-version = "biosample_enricher.cli:show_version"
 # Metrics evaluation (requires optional dependencies: pip install biosample-enricher[metrics])
 biosample-enricher-metrics = "biosample_enricher.cli_metrics:metrics"
 elevation-mapper-demo = "biosample_enricher.biosample_elevation_mapper:demonstrate_field_mapping"
+# MADIN dataset analysis scripts (examples/)
+madin-field-summary = "examples.generate_field_summary_table:cli"
+madin-value-reports = "examples.generate_field_value_reports:cli"
 # Note: Demo scripts moved to examples/ directory and excluded from package.
 # Run demos using: make demo-weather, make demo-geocoding, etc.
 # Or directly: uv run python examples/weather_demo.py
