@@ -1,6 +1,8 @@
 """Verify edge case tax_ids (min, max, and some specific values)."""
 
+import csv
 import time
+from pathlib import Path
 
 import click
 import requests
@@ -63,7 +65,12 @@ def check_ncbi_taxid(tax_id: int) -> tuple[bool, str, str]:
     default="madin",
     help="Collection name",
 )
-def cli(mongo_uri: str, database: str, collection: str) -> None:
+@click.option(
+    "--output-tsv",
+    type=click.Path(),
+    help="Optional: Save results to TSV file",
+)
+def cli(mongo_uri: str, database: str, collection: str, output_tsv: str | None) -> None:
     """Verify edge case tax_ids."""
     client = MongoClient(mongo_uri)
     db = client[database]
@@ -130,6 +137,41 @@ def cli(mongo_uri: str, database: str, collection: str) -> None:
         )
     else:
         console.print("  ✗ tax_id=7 not found in NCBI")
+
+    # Save to TSV if requested
+    if output_tsv:
+        output_path = Path(output_tsv)
+        with open(output_path, "w", newline="") as f:
+            writer = csv.writer(f, delimiter="\t")
+            writer.writerow(
+                [
+                    "case_type",
+                    "tax_id",
+                    "madin_org_name",
+                    "ncbi_valid",
+                    "ncbi_name",
+                    "ncbi_rank",
+                ]
+            )
+
+            for case_type, doc in edge_cases:
+                tax_id = doc.get("tax_id")
+                org_name = doc.get("org_name", "")
+                is_valid, ncbi_name, rank = check_ncbi_taxid(tax_id)
+
+                writer.writerow(
+                    [
+                        case_type,
+                        tax_id,
+                        org_name,
+                        "yes" if is_valid else "no",
+                        ncbi_name,
+                        rank,
+                    ]
+                )
+                time.sleep(0.4)  # Rate limiting
+
+        console.print(f"\n[green]Results saved to {output_path}[/green]")
 
     client.close()
 

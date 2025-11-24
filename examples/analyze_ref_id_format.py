@@ -1,5 +1,8 @@
 """Analyze whether ref_id fields are single values or comma-separated lists."""
 
+import csv
+from pathlib import Path
+
 import click
 from pymongo import MongoClient
 from rich.console import Console
@@ -27,7 +30,12 @@ console = Console()
     help="Collection name",
     show_default=True,
 )
-def cli(mongo_uri: str, database: str, collection: str) -> None:
+@click.option(
+    "--output-tsv",
+    type=click.Path(),
+    help="Optional: Save longest ref_id analysis to TSV file",
+)
+def cli(mongo_uri: str, database: str, collection: str, output_tsv: str | None) -> None:
     """Analyze ref_id field format."""
     client = MongoClient(mongo_uri)
     db = client[database]
@@ -188,6 +196,22 @@ def cli(mongo_uri: str, database: str, collection: str) -> None:
                 console.print(f"    {doc.get('org_name', '')[:40]}")
                 console.print(f"      ref_id: {ref_id}")
                 console.print(f"      Count: {len(values)} references")
+
+    # Save TSV output if requested
+    if output_tsv:
+        output_path = Path(output_tsv)
+        with open(output_path, "w", newline="") as f:
+            writer = csv.writer(f, delimiter="\t")
+            writer.writerow(["organism", "ref_id", "length", "has_comma"])
+
+            for doc in longest_refs:
+                ref_id = doc.get("ref_id", "")
+                org_name = doc.get("org_name", "")
+                length = doc.get("length", 0)
+                has_comma = "Yes" if "," in ref_id else "No"
+                writer.writerow([org_name, ref_id, length, has_comma])
+
+        console.print(f"\n[green]Results saved to {output_path}[/green]")
 
     client.close()
 

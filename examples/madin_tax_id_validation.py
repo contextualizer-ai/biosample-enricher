@@ -1,5 +1,8 @@
 """Validate tax_id consistency with NCBI Taxonomy."""
 
+import csv
+from pathlib import Path
+
 import click
 from pymongo import MongoClient
 from rich.console import Console
@@ -24,7 +27,12 @@ console = Console()
     default="madin",
     help="Collection name",
 )
-def cli(mongo_uri: str, database: str, collection: str) -> None:
+@click.option(
+    "--output-tsv",
+    type=click.Path(),
+    help="Optional: Save analysis summary to TSV file",
+)
+def cli(mongo_uri: str, database: str, collection: str, output_tsv: str | None) -> None:
     """Validate tax_id and species_tax_id field formats and consistency."""
     client = MongoClient(mongo_uri)
     db = client[database]
@@ -194,6 +202,40 @@ def cli(mongo_uri: str, database: str, collection: str) -> None:
             console.print(f"    {doc.get('org_name')}: '{doc.get('tax_id')}'")
     else:
         console.print("  No string tax_id values found")
+
+    # Save to TSV if requested
+    if output_tsv:
+        output_path = Path(output_tsv)
+        with open(output_path, "w", newline="") as f:
+            writer = csv.writer(f, delimiter="\t")
+            writer.writerow(["metric", "value"])
+            writer.writerow(["total_documents", total_docs])
+            writer.writerow(["docs_with_tax_id", has_tax_id])
+            writer.writerow(
+                [
+                    "tax_id_coverage_pct",
+                    f"{has_tax_id / total_docs * 100:.2f}" if total_docs > 0 else "0",
+                ]
+            )
+            writer.writerow(["string_tax_ids", string_tax_ids])
+            writer.writerow(["negative_tax_ids", negative_tax_ids])
+            writer.writerow(["zero_tax_ids", zero_tax_ids])
+            writer.writerow(["large_tax_ids_over_10M", large_tax_ids])
+            writer.writerow(["docs_with_species_tax_id", has_species_tax_id])
+            writer.writerow(
+                [
+                    "species_tax_id_coverage_pct",
+                    f"{has_species_tax_id / total_docs * 100:.2f}"
+                    if total_docs > 0
+                    else "0",
+                ]
+            )
+            if min_tax:
+                writer.writerow(["min_tax_id", min_tax[0]["tax_id"]])
+            if max_tax:
+                writer.writerow(["max_tax_id", max_tax[0]["tax_id"]])
+
+        console.print(f"\n[green]Analysis summary saved to {output_path}[/green]")
 
     client.close()
 

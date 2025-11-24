@@ -1,5 +1,8 @@
 """Query and display madin references from MongoDB."""
 
+import csv
+from pathlib import Path
+
 import click
 from pymongo import MongoClient
 from rich.console import Console
@@ -26,7 +29,14 @@ console = Console()
     type=int,
     help="Specific ref_id to look up",
 )
-def cli(mongo_uri: str, database: str, ref_id: int | None) -> None:
+@click.option(
+    "--output-tsv",
+    type=click.Path(),
+    help="Optional: Save results to TSV file",
+)
+def cli(
+    mongo_uri: str, database: str, ref_id: int | None, output_tsv: str | None
+) -> None:
     """Query madin references from MongoDB."""
     client = MongoClient(mongo_uri)
     db = client[database]
@@ -119,6 +129,24 @@ def cli(mongo_uri: str, database: str, ref_id: int | None) -> None:
             table.add_row(str(i), str(ref_id), f"{count:,}", ref_text)
 
         console.print(table)
+
+        # Save to TSV if requested
+        if output_tsv:
+            output_path = Path(output_tsv)
+            with open(output_path, "w", newline="") as f:
+                writer = csv.writer(f, delimiter="\t")
+                writer.writerow(["rank", "ref_id", "citation_count", "reference_text"])
+
+                for i, item in enumerate(top_refs, 1):
+                    ref_id_val = item["_id"]
+                    count = item["count"]
+                    ref_doc = ref_coll.find_one({"ref_id": ref_id_val})
+                    ref_text = "NOT FOUND"
+                    if ref_doc:
+                        ref_text = ref_doc["reference"]
+                    writer.writerow([i, ref_id_val, count, ref_text])
+
+            console.print(f"\n[green]Results saved to {output_path}[/green]")
 
     client.close()
 

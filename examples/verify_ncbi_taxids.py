@@ -1,6 +1,8 @@
 """Verify that madin tax_ids are valid NCBI Taxonomy IDs by checking a sample."""
 
+import csv
 import time
+from pathlib import Path
 
 import click
 import requests
@@ -61,7 +63,18 @@ def check_ncbi_taxid(tax_id: int) -> tuple[bool, str]:
     default=20,
     help="Number of random tax_ids to verify",
 )
-def cli(mongo_uri: str, database: str, collection: str, sample_size: int) -> None:
+@click.option(
+    "--output-tsv",
+    type=click.Path(),
+    help="Optional: Save results to TSV file",
+)
+def cli(
+    mongo_uri: str,
+    database: str,
+    collection: str,
+    sample_size: int,
+    output_tsv: str | None,
+) -> None:
     """Verify random sample of tax_ids against NCBI Taxonomy API."""
     client = MongoClient(mongo_uri)
     db = client[database]
@@ -149,6 +162,54 @@ def cli(mongo_uri: str, database: str, collection: str, sample_size: int) -> Non
         console.print(
             f"\n[red]✗ {len(samples) - valid_count} tax_ids not found in NCBI[/red]"
         )
+
+    # Save to TSV if requested
+    if output_tsv:
+        output_path = Path(output_tsv)
+        with open(output_path, "w", newline="") as f:
+            writer = csv.writer(f, delimiter="\t")
+            writer.writerow(
+                [
+                    "madin_tax_id",
+                    "madin_org_name",
+                    "ncbi_valid",
+                    "ncbi_scientific_name",
+                    "names_match",
+                ]
+            )
+
+            # Re-process samples for TSV output
+            for doc in samples:
+                tax_id = doc.get("tax_id")
+                org_name = doc.get("org_name", "")
+
+                is_valid, ncbi_name = check_ncbi_taxid(tax_id)
+
+                names_match = "unknown"
+                if is_valid and ncbi_name != "NOT FOUND":
+                    madin_norm = org_name.lower().strip()
+                    ncbi_norm = ncbi_name.lower().strip()
+
+                    if madin_norm == ncbi_norm:
+                        names_match = "exact"
+                    elif madin_norm in ncbi_norm or ncbi_norm in madin_norm:
+                        names_match = "partial"
+                    else:
+                        names_match = "no"
+
+                writer.writerow(
+                    [
+                        tax_id,
+                        org_name,
+                        "yes" if is_valid else "no",
+                        ncbi_name,
+                        names_match,
+                    ]
+                )
+
+                time.sleep(0.4)  # Rate limiting
+
+        console.print(f"\n[green]Results saved to {output_path}[/green]")
 
     client.close()
 

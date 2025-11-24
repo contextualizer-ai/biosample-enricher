@@ -146,15 +146,15 @@ def display_results_table(
     show_default=True,
 )
 @click.option(
-    "--output-csv",
-    help="Optional: Save results to CSV file",
+    "--output-tsv",
+    help="Optional: Save results to TSV file",
     type=click.Path(),
 )
 def cli(
     mongo_uri: str,
     database: str,
     collection: str,
-    output_csv: str | None,
+    output_tsv: str | None,
 ) -> None:
     """Analyze unique values per field in the madin MongoDB collection."""
     try:
@@ -171,14 +171,14 @@ def cli(
         # Display results
         display_results_table(unique_counts, total_docs)
 
-        # Optionally save to CSV
-        if output_csv:
+        # Optionally save to TSV
+        if output_tsv:
             import csv
 
-            with open(output_csv, "w", newline="") as f:
-                writer = csv.writer(f)
+            with open(output_tsv, "w", newline="") as f:
+                writer = csv.writer(f, delimiter="\t")
                 writer.writerow(
-                    ["Field Name", "Unique Values", "% of Total", "Cardinality"]
+                    ["field_name", "unique_values", "percent_of_total", "cardinality"]
                 )
 
                 for field in sorted(unique_counts.keys()):
@@ -204,10 +204,10 @@ def cli(
                     else:
                         cardinality = "High"
 
-                    writer.writerow([field, count, f"{percentage:.1f}%", cardinality])
+                    writer.writerow([field, count, f"{percentage:.1f}", cardinality])
 
-            logger.info(f"Results saved to {output_csv}")
-            console.print(f"\n[green]Results saved to {output_csv}[/green]")
+            logger.info(f"Results saved to {output_tsv}")
+            console.print(f"\n[green]Results saved to {output_tsv}[/green]")
 
         # Print summary
         console.print("\n[bold]Summary:[/bold]")

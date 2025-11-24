@@ -3,6 +3,9 @@
 This script shows common and rare values for a given field.
 """
 
+import csv
+from pathlib import Path
+
 import click
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, OperationFailure
@@ -161,6 +164,11 @@ def display_results(
     help="Number of rarest values to show",
     show_default=True,
 )
+@click.option(
+    "--output-tsv",
+    type=click.Path(),
+    help="Optional: Save results to TSV file",
+)
 def cli(
     mongo_uri: str,
     database: str,
@@ -168,6 +176,7 @@ def cli(
     field: str,
     top_n: int,
     bottom_n: int,
+    output_tsv: str | None,
 ) -> None:
     """Analyze value distribution for a specific field in MongoDB collection."""
     try:
@@ -185,6 +194,29 @@ def cli(
 
         # Display results
         display_results(field, most_common, rarest, total_docs)
+
+        # Save to TSV if requested
+        if output_tsv:
+            output_path = Path(output_tsv)
+            with open(output_path, "w", newline="") as f:
+                writer = csv.writer(f, delimiter="\t")
+                writer.writerow(
+                    ["category", "rank", "value", "count", "percent_of_total"]
+                )
+
+                # Write most common
+                for i, (value, count) in enumerate(most_common, 1):
+                    percentage = (count / total_docs * 100) if total_docs > 0 else 0
+                    writer.writerow(
+                        ["most_common", i, value, count, f"{percentage:.2f}"]
+                    )
+
+                # Write rarest
+                for i, (value, count) in enumerate(rarest, 1):
+                    percentage = (count / total_docs * 100) if total_docs > 0 else 0
+                    writer.writerow(["rarest", i, value, count, f"{percentage:.2f}"])
+
+            console.print(f"\n[green]Results saved to {output_path}[/green]")
 
         # Print summary
         console.print("\n[bold]Summary:[/bold]")

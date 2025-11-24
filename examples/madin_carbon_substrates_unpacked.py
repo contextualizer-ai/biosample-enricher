@@ -4,6 +4,7 @@ This script splits the carbon_substrates field on commas and counts
 individual substrate occurrences.
 """
 
+import csv
 from collections import Counter
 
 import click
@@ -166,8 +167,8 @@ def display_results(
     show_default=True,
 )
 @click.option(
-    "--output-csv",
-    help="Optional: Save full results to CSV file",
+    "--output-tsv",
+    help="Optional: Save full results to TSV file",
     type=click.Path(),
 )
 def cli(
@@ -175,7 +176,7 @@ def cli(
     database: str,
     collection: str,
     top_n: int,
-    output_csv: str | None,
+    output_tsv: str | None,
 ) -> None:
     """Analyze individual carbon substrates after unpacking comma-separated lists."""
     try:
@@ -194,13 +195,11 @@ def cli(
         console.print(f"Unique individual substrates: {len(substrate_counts):,}")
         console.print(f"Total substrate mentions: {sum(substrate_counts.values()):,}")
 
-        # Optionally save to CSV
-        if output_csv:
-            import csv
-
-            with open(output_csv, "w", newline="") as f:
-                writer = csv.writer(f)
-                writer.writerow(["Substrate", "Count", "% of Docs with Data"])
+        # Optionally save to TSV
+        if output_tsv:
+            with open(output_tsv, "w", newline="") as f:
+                writer = csv.writer(f, delimiter="\t")
+                writer.writerow(["substrate", "count", "percent_of_docs_with_data"])
 
                 for substrate, count in substrate_counts.most_common():
                     percentage = (
@@ -208,10 +207,10 @@ def cli(
                         if docs_with_substrates > 0
                         else 0
                     )
-                    writer.writerow([substrate, count, f"{percentage:.2f}%"])
+                    writer.writerow([substrate, count, f"{percentage:.2f}"])
 
-            logger.info(f"Full results saved to {output_csv}")
-            console.print(f"\n[green]Full results saved to {output_csv}[/green]")
+            logger.info(f"Full results saved to {output_tsv}")
+            console.print(f"\n[green]Full results saved to {output_tsv}[/green]")
 
     except ConnectionFailure as e:
         logger.error(f"Failed to connect to MongoDB: {e}")
