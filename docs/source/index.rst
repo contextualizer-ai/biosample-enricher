@@ -64,13 +64,18 @@ Quick Start
    print(result["values"])
    # {'annual_precpt': 519.3, 'annual_temp': 14.1, 'elev': 10.2}
 
+.. seealso::
+
+   **Main API Reference**: :doc:`submission_values`
+      Complete documentation for ``get_submission_values()`` including all supported slots, providers, consensus strategies, and response format.
+
 .. toctree::
    :maxdepth: 2
    :caption: User Guide
 
+   submission_values
    installation
    quickstart
-   submission_values
    cli
    services/index
 

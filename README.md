@@ -118,8 +118,8 @@ All other services are free and require no authentication.
 
 ## Documentation
 
+- [**get_submission_values() Reference**](https://contextualizer-ai.github.io/biosample-enricher/submission_values.html) - Main API documentation
 - [Full Documentation](https://contextualizer-ai.github.io/biosample-enricher/)
-- [API Reference](https://contextualizer-ai.github.io/biosample-enricher/submission_values.html)
 - [CLI Reference](https://contextualizer-ai.github.io/biosample-enricher/cli.html)
 
 ## Development
