@@ -1,4 +1,5 @@
 License
 =======
 
-Coming soon.
+.. include:: ../../LICENSE
+   :literal:
