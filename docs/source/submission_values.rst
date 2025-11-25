@@ -180,7 +180,7 @@ See the `submission-schema documentation <https://microbiomedata.github.io/nmdc-
 Parameters
 ----------
 
-.. function:: get_submission_values(lat, lon, slots, datetime_obj=None, providers=None)
+.. function:: get_submission_values(lat, lon, slots, datetime_obj=None, providers=None, strategy="mean")
 
    Get NMDC submission-schema values for specified slots.
 
@@ -216,12 +216,40 @@ Parameters
 
    :param list[str] providers: Specific providers to use (optional)
                                If None (default), queries all available providers.
-                               For climate slots, must be from: ``["meteostat", "nasa_power"]``
 
-                               **Example**::
+                               **Valid providers by slot category:**
+
+                               - Climate slots: ``["meteostat", "nasa_power"]``
+                               - Elevation slots: ``["usgs", "google", "open_topo_data", "osm"]``
+
+                               **Examples**::
 
                                  # Use only meteostat for climate
                                  providers=["meteostat"]
+
+                                 # Use only USGS for elevation
+                                 providers=["usgs"]
+
+   :param str strategy: How to combine values from multiple providers (optional)
+                        Default is ``"mean"``.
+
+                        **Valid values** (from ``CONSENSUS_STRATEGIES``):
+
+                        - ``"mean"``: Average across all successful providers (default, most reliable)
+                        - ``"median"``: Middle value when sorted (robust to outliers)
+                        - ``"first"``: Use first successful provider in priority order (fastest)
+                        - ``"best_quality"``: Use provider with best quality metric (closest station, highest resolution)
+
+                        See :ref:`consensus-strategies` for detailed descriptions and usage guidance.
+
+                        **Example**::
+
+                          # Use median to handle outliers
+                          result = get_submission_values(
+                              lat=46.8523, lon=-121.7603,
+                              slots=["elev"],
+                              strategy="median"
+                          )
 
    :returns: Dictionary with two keys:
 
@@ -460,6 +488,8 @@ Slots by Category
      - ``ph``, ``soil_type``
      - soilgrids, usda_nrcs
      - No
+
+.. _consensus-strategies:
 
 Consensus Strategies
 ~~~~~~~~~~~~~~~~~~~~
