@@ -1,20 +1,9 @@
 Providers
 =========
 
-This section provides comprehensive documentation about all data providers available in biosample-enricher.
-
-Provider Documentation
-----------------------
+Comprehensive documentation about all data providers available in biosample-enricher.
 
 .. include:: ../../PROVIDERS.md
-   :parser: myst_parser.sphinx_
-
-API Index
----------
-
-For a complete alphabetical index of all functions and methods, see:
-
-.. include:: ../../API_INDEX.md
    :parser: myst_parser.sphinx_
 
 Documentation Generation

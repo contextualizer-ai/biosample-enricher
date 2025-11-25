@@ -85,6 +85,7 @@ Quick Start
    :maxdepth: 2
    :caption: API Reference
 
+   api/api_index
    api/services
    api/models
    api/providers
