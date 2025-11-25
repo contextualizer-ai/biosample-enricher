@@ -333,7 +333,7 @@ class MultiProviderClimateNormals(BaseModel):
         }
 
     def to_submission_schema(
-        self, provider: str | None = None, strategy: str = "consensus"
+        self, provider: str | None = None, strategy: str = "mean"
     ) -> dict[str, Any]:
         """
         Extract values in submission-schema compatible format.
@@ -341,7 +341,8 @@ class MultiProviderClimateNormals(BaseModel):
         Args:
             provider: Specific provider to use (e.g., "meteostat"). If None, uses strategy.
             strategy: How to combine multiple providers:
-                     - "consensus": Average across all successful providers (default)
+                     - "mean": Average across all successful providers (default)
+                     - "median": Middle value when sorted (robust to outliers)
                      - "first": Use first successful provider
                      - "best_quality": Use provider with lowest station_distance_km
 
@@ -355,11 +356,33 @@ class MultiProviderClimateNormals(BaseModel):
                 raise ValueError(f"Provider {provider} not available in results")
             return result.to_submission_schema()
 
-        if strategy == "consensus":
+        if strategy == "mean":
             return {
                 "annual_precpt": self.get_consensus_precipitation(),
                 "annual_temp": self.get_consensus_temperature(),
-                "data_strategy": "consensus",
+                "data_strategy": "mean",
+                "providers_used": self.successful_providers,
+            }
+        elif strategy == "median":
+            # Calculate median across providers
+            precip_values: list[float] = [
+                p
+                for r in self.providers.values()
+                if (p := r.get_annual_precipitation()) is not None
+            ]
+            temp_values: list[float] = [
+                t
+                for r in self.providers.values()
+                if (t := r.get_annual_temperature()) is not None
+            ]
+            return {
+                "annual_precpt": sorted(precip_values)[len(precip_values) // 2]
+                if precip_values
+                else None,
+                "annual_temp": sorted(temp_values)[len(temp_values) // 2]
+                if temp_values
+                else None,
+                "data_strategy": "median",
                 "providers_used": self.successful_providers,
             }
         elif strategy == "first":
