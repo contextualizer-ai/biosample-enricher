@@ -37,7 +37,7 @@ def main() -> None:
 
     \b
     For full documentation:
-        https://microbiomedata.github.io/biosample-enricher/
+        https://contextualizer-ai.github.io/biosample-enricher/
     """
 
 

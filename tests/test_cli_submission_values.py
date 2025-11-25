@@ -1,5 +1,5 @@
 """
-Tests for the submission values CLI (biosample-enricher command).
+Tests for the CLI that wraps get_submission_values() for NMDC metadata suggestions.
 
 Tests the CLI interface for get_submission_values() including:
 - get command with various options
