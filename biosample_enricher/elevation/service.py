@@ -315,7 +315,6 @@ class ElevationService:
         # Create classification from first observation (they should all be the same)
         classification = CoordinateClassification(
             is_us_territory=True,  # This would need to be stored in observation
-            confidence=1.0,
         )
 
         return ElevationResult(

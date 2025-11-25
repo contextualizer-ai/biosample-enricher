@@ -52,7 +52,6 @@ class CoordinateClassifier:
                 classification = CoordinateClassification(
                     is_us_territory=location_info["is_us_territory"],
                     region=location_info.get("region"),
-                    confidence=location_info["confidence"],
                     is_land=None
                     if location_info["is_ocean"] is None
                     else not location_info["is_ocean"],
@@ -61,7 +60,7 @@ class CoordinateClassifier:
                 logger.debug(
                     f"Enhanced classification: US={classification.is_us_territory}, "
                     f"region={classification.region}, land={classification.is_land}, "
-                    f"confidence={classification.confidence:.3f}, method={location_info['method']}"
+                    f"method={location_info['method']}"
                 )
                 return classification
 
@@ -71,24 +70,21 @@ class CoordinateClassifier:
                 )
 
         # Fall back to heuristic method
-        is_us, region, confidence = self._classify_us_territory(lat, lon)
+        is_us, region = self._classify_us_territory(lat, lon)
         is_likely_land = self._classify_land_vs_ocean(lat, lon)
 
         classification = CoordinateClassification(
             is_us_territory=is_us,
             region=region,
-            confidence=confidence,
             is_land=is_likely_land,
         )
 
         logger.debug(
-            f"Heuristic classification: US={is_us}, region={region}, land={is_likely_land}, confidence={confidence:.3f}"
+            f"Heuristic classification: US={is_us}, region={region}, land={is_likely_land}"
         )
         return classification
 
-    def _classify_us_territory(
-        self, lat: float, lon: float
-    ) -> tuple[bool, str | None, float]:
+    def _classify_us_territory(self, lat: float, lon: float) -> tuple[bool, str | None]:
         """
         Determine if coordinates are within US territory.
 
@@ -97,42 +93,42 @@ class CoordinateClassifier:
             lon: Longitude in decimal degrees
 
         Returns:
-            Tuple of (is_us_territory, region_code, confidence)
+            Tuple of (is_us_territory, region_code)
         """
         # Continental US (CONUS) - approximate bounding box
         if self._in_conus(lat, lon):
-            return True, "CONUS", 0.95
+            return True, "CONUS"
 
         # Alaska
         if self._in_alaska(lat, lon):
-            return True, "AK", 0.95
+            return True, "AK"
 
         # Hawaii
         if self._in_hawaii(lat, lon):
-            return True, "HI", 0.95
+            return True, "HI"
 
         # Puerto Rico
         if self._in_puerto_rico(lat, lon):
-            return True, "PR", 0.95
+            return True, "PR"
 
         # US Virgin Islands
         if self._in_usvi(lat, lon):
-            return True, "VI", 0.95
+            return True, "VI"
 
         # Guam
         if self._in_guam(lat, lon):
-            return True, "GU", 0.95
+            return True, "GU"
 
         # American Samoa
         if self._in_american_samoa(lat, lon):
-            return True, "AS", 0.95
+            return True, "AS"
 
         # Northern Mariana Islands
         if self._in_northern_marianas(lat, lon):
-            return True, "MP", 0.95
+            return True, "MP"
 
         # Not in US territory
-        return False, None, 0.95
+        return False, None
 
     def _in_conus(self, lat: float, lon: float) -> bool:
         """Check if coordinates are in Continental US."""
@@ -292,7 +288,6 @@ class CoordinateClassifier:
             "is_us_territory": classification.is_us_territory,
             "region": classification.region,
             "is_land": classification.is_land,
-            "confidence": classification.confidence,
             "recommended_providers": recommended_providers,
             "routing_hint": self._get_routing_hint(classification),
         }

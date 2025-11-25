@@ -42,7 +42,6 @@ class TestCoordinateClassifier:
 
         assert result.is_us_territory is True
         assert result.region == "CONUS"
-        assert result.confidence >= 0.9
 
     def test_classify_alaska(self):
         """Test classification of Alaska coordinates."""
@@ -51,7 +50,6 @@ class TestCoordinateClassifier:
 
         assert result.is_us_territory is True
         assert result.region == "AK"
-        assert result.confidence >= 0.9
 
     def test_classify_hawaii(self):
         """Test classification of Hawaii coordinates."""
@@ -60,7 +58,6 @@ class TestCoordinateClassifier:
 
         assert result.is_us_territory is True
         assert result.region == "HI"
-        assert result.confidence >= 0.9
 
     def test_classify_puerto_rico(self):
         """Test classification of Puerto Rico coordinates."""
@@ -69,7 +66,6 @@ class TestCoordinateClassifier:
 
         assert result.is_us_territory is True
         assert result.region == "PR"
-        assert result.confidence >= 0.9
 
     def test_classify_guam(self):
         """Test classification of Guam coordinates."""
@@ -78,7 +74,6 @@ class TestCoordinateClassifier:
 
         assert result.is_us_territory is True
         assert result.region == "GU"
-        assert result.confidence >= 0.9
 
     def test_classify_non_us(self):
         """Test classification of non-US coordinates."""
@@ -87,8 +82,6 @@ class TestCoordinateClassifier:
 
         assert result.is_us_territory is False
         assert result.region is None
-        # Confidence varies: 0.95 with OSM Nominatim, 0.7 with heuristic fallback
-        assert result.confidence >= 0.7
 
     def test_classify_boundary_cases(self):
         """Test coordinates near US boundaries."""
@@ -393,13 +386,10 @@ class TestElevationModels:
 
     def test_coordinate_classification_model(self):
         """Test coordinate classification model."""
-        classification = CoordinateClassification(
-            is_us_territory=True, region="CONUS", confidence=0.95
-        )
+        classification = CoordinateClassification(is_us_territory=True, region="CONUS")
 
         assert classification.is_us_territory is True
         assert classification.region == "CONUS"
-        assert classification.confidence == 0.95
         assert classification.is_land is None  # Default value
 
     def test_fetch_result_model(self):

@@ -53,6 +53,42 @@ def test_get_annual_climate_values():
 
 
 @pytest.mark.network
+def test_get_climate_with_strategy():
+    """Test that strategy parameter works for climate slots."""
+    # Get climate with different strategies
+    result_mean = get_submission_values(
+        lat=37.7749,  # San Francisco
+        lon=-122.4194,
+        slots=["annual_precpt", "annual_temp"],
+        strategy="mean",
+    )
+    result_median = get_submission_values(
+        lat=37.7749,
+        lon=-122.4194,
+        slots=["annual_precpt", "annual_temp"],
+        strategy="median",
+    )
+
+    # Both should return values
+    assert "annual_precpt" in result_mean["values"], "mean should return annual_precpt"
+    assert "annual_precpt" in result_median["values"], (
+        "median should return annual_precpt"
+    )
+
+    # Metadata should reflect the strategy used
+    assert result_mean["metadata"]["climate_normals"]["consensus_strategy"] == "mean"
+    assert (
+        result_median["metadata"]["climate_normals"]["consensus_strategy"] == "median"
+    )
+
+    logger.info(
+        "Climate with mean: %.1f mm, with median: %.1f mm",
+        result_mean["values"]["annual_precpt"],
+        result_median["values"]["annual_precpt"],
+    )
+
+
+@pytest.mark.network
 def test_get_daily_temperature():
     """Test retrieving temperature at time of sampling (requires datetime)."""
     values = _get_values(
