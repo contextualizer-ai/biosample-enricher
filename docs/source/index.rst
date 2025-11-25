@@ -18,59 +18,51 @@ Infer AI-friendly environmental and geographic metadata about biosamples from mu
 Overview
 --------
 
-Biosample Enricher provides 8 specialized services for enriching biosample metadata with environmental and geographic information from authoritative data sources. Each service focuses on a specific domain and returns structured, type-safe data ready for analysis or AI applications.
+Get NMDC submission-schema values from geographic coordinates. Biosample Enricher retrieves environmental and geographic metadata from authoritative data sources and returns it in the format needed for NMDC submissions.
 
 Features
 --------
 
-- **8 Specialized Services**: Elevation, soil, weather, marine, land cover, forward/reverse geocoding, geographic features
-- **Service-Based Architecture**: Independent services with focused responsibilities
+- **Simple API**: One function - ``get_submission_values(lat, lon, slots)``
+- **Multiple Data Sources**: Climate normals, elevation, weather, soil, marine data
+- **Multi-Provider Consensus**: Queries multiple providers and returns consensus values
 - **Type Safety**: Full type hints with Pydantic validation and mypy checking
 - **Smart Caching**: HTTP caching with coordinate canonicalization for efficiency
-- **Multiple Providers**: Automatic fallback between data providers (USGS, Google, OSM, etc.)
-- **Click-Based CLIs**: User-friendly command-line tools for each service
-- **Flexible Installation**: Core services only, or add optional mongodb/metrics/schema extras
+- **CLI Tool**: Get values without writing code
+- **Flexible Installation**: Core functionality only, or add optional mongodb/metrics/schema extras
 
 Installation
 ------------
 
-Using UV (Recommended)
-^^^^^^^^^^^^^^^^^^^^^^
-
 .. code-block:: bash
 
-   # Basic installation - all 8 enrichment services
-   uv add biosample-enricher
+   # Recommended: Use uv
+   uv pip install biosample-enricher
 
-   # With optional dependencies
-   uv add biosample-enricher --extra metrics   # Metrics and visualization
-   uv add biosample-enricher --extra mongodb   # MongoDB support for NMDC/GOLD
-   uv add biosample-enricher --extra schema    # Schema analysis tools
-   uv add biosample-enricher --extra all       # All optional features
-
-Using Pip
-^^^^^^^^^
-
-.. code-block:: bash
-
+   # Or with pip
    pip install biosample-enricher
-   pip install biosample-enricher[metrics]
+
+   # Optional dependencies
+   uv pip install biosample-enricher[metrics]   # Metrics and visualization
+   uv pip install biosample-enricher[mongodb]   # MongoDB support for NMDC/GOLD
+   uv pip install biosample-enricher[all]       # All optional features
 
 Quick Start
 -----------
 
 .. code-block:: python
 
-   from biosample_enricher import ElevationService, ElevationRequest
+   from biosample_enricher.submission_values import get_submission_values
 
-   # Get elevation for a location
-   service = ElevationService()
-   request = ElevationRequest(latitude=40.7128, longitude=-74.0060)
-   observations = service.get_elevation(request)
+   # Get NMDC submission values for a location
+   result = get_submission_values(
+       lat=37.7749,   # San Francisco
+       lon=-122.4194,
+       slots=["annual_precpt", "annual_temp", "elev"]
+   )
 
-   for obs in observations:
-       if obs.value_numeric is not None:
-           print(f"{obs.provider.name}: {obs.value_numeric}m")
+   print(result["values"])
+   # {'annual_precpt': 519.3, 'annual_temp': 14.1, 'elev': 10.2}
 
 .. toctree::
    :maxdepth: 2
@@ -78,8 +70,9 @@ Quick Start
 
    installation
    quickstart
-   services/index
+   submission_values
    cli
+   services/index
 
 .. toctree::
    :maxdepth: 2
