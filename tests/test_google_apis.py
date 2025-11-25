@@ -1,5 +1,6 @@
 """Integration tests for Google APIs (Elevation and Geocoding)."""
 
+import logging
 import os
 
 import pytest
@@ -8,6 +9,8 @@ from biosample_enricher.elevation.providers.google import GoogleElevationProvide
 from biosample_enricher.reverse_geocoding.providers.google import (
     GoogleReverseGeocodingProvider,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.mark.integration
@@ -36,11 +39,15 @@ class TestGoogleAPIsIntegration:
         assert result.location is not None
         assert result.vertical_datum == "EGM96"
 
-        print("\nGoogle Elevation API Test:")
-        print(f"  Location: {lat:.4f}, {lon:.4f}")
-        print(f"  Elevation: {result.elevation:.2f}m")
-        print(f"  Resolution: {result.resolution_m}m")
-        print(f"  Vertical Datum: {result.vertical_datum}")
+        logger.info(
+            "Google Elevation API Test: location=(%.4f, %.4f), "
+            "elevation=%.2fm, resolution=%sm, datum=%s",
+            lat,
+            lon,
+            result.elevation,
+            result.resolution_m,
+            result.vertical_datum,
+        )
 
     def test_google_reverse_geocoding_api(self, api_key):
         """Test Google Reverse Geocoding API with real API call."""
@@ -65,15 +72,21 @@ class TestGoogleAPIsIntegration:
             or best_match.city == "Mountain View"
         )
 
-        print("\nGoogle Reverse Geocoding API Test:")
-        print(f"  Location: {lat:.4f}, {lon:.4f}")
-        print(f"  Formatted Address: {best_match.formatted_address}")
-        print(f"  Country: {best_match.country} ({best_match.country_code})")
-        print(f"  State: {best_match.state}")
-        print(f"  City: {best_match.city}")
-        print(f"  Postcode: {best_match.postcode}")
-        print(f"  Place ID: {best_match.place_id}")
-        print(f"  Total Results: {len(result.result.locations)}")
+        logger.info(
+            "Google Reverse Geocoding API Test: location=(%.4f, %.4f), "
+            "address=%s, country=%s (%s), state=%s, city=%s, "
+            "postcode=%s, place_id=%s, total_results=%d",
+            lat,
+            lon,
+            best_match.formatted_address,
+            best_match.country,
+            best_match.country_code,
+            best_match.state,
+            best_match.city,
+            best_match.postcode,
+            best_match.place_id,
+            len(result.result.locations),
+        )
 
     def test_google_apis_combined(self, api_key):
         """Test both Google APIs together for the same location."""
@@ -106,15 +119,18 @@ class TestGoogleAPIsIntegration:
         assert best_match.country == "United States"
         assert best_match.state == "California"
 
-        print("\nCombined Google APIs Test (Yosemite Valley):")
-        print(f"  Location: {lat:.4f}, {lon:.4f}")
-        print(f"  Elevation: {elevation_result.elevation:.2f}m")
-        print(f"  Address: {best_match.formatted_address}")
-        print("  Place Components:")
-        print(f"    - Country: {best_match.country}")
-        print(f"    - State: {best_match.state}")
-        print(f"    - County: {best_match.county}")
-        print(f"    - City: {best_match.city}")
+        logger.info(
+            "Combined Google APIs Test (Yosemite Valley): location=(%.4f, %.4f), "
+            "elevation=%.2fm, address=%s, country=%s, state=%s, county=%s, city=%s",
+            lat,
+            lon,
+            elevation_result.elevation,
+            best_match.formatted_address,
+            best_match.country,
+            best_match.state,
+            best_match.county,
+            best_match.city,
+        )
 
     def test_google_apis_ocean_location(self, api_key):
         """Test Google APIs with an ocean location."""
@@ -142,13 +158,19 @@ class TestGoogleAPIsIntegration:
         assert geocoding_result.result is not None
         # Ocean locations might have zero results
 
-        print("\nOcean Location Test (Pacific Ocean):")
-        print(f"  Location: {lat:.4f}, {lon:.4f}")
-        print(f"  Elevation: {elevation_result.elevation:.2f}m (below sea level)")
-        print(f"  Geocoding Results: {len(geocoding_result.result.locations)}")
+        nearest_address = None
         if geocoding_result.result.locations:
             best_match = geocoding_result.result.get_best_match()
-            print(f"  Nearest: {best_match.formatted_address}")
+            nearest_address = best_match.formatted_address
+        logger.info(
+            "Ocean Location Test (Pacific Ocean): location=(%.4f, %.4f), "
+            "elevation=%.2fm (below sea level), geocoding_results=%d, nearest=%s",
+            lat,
+            lon,
+            elevation_result.elevation,
+            len(geocoding_result.result.locations),
+            nearest_address,
+        )
 
     def test_google_apis_error_handling(self, api_key):
         """Test error handling for invalid coordinates."""
@@ -162,4 +184,4 @@ class TestGoogleAPIsIntegration:
         with pytest.raises(ValueError, match="Invalid longitude"):
             geocoding_provider.fetch(0, 181)
 
-        print("\nError handling tests passed successfully")
+        logger.info("Error handling tests passed successfully")

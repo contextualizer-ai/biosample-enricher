@@ -5,11 +5,14 @@ These tests demonstrate how to get NMDC submission-schema compliant values
 for various environmental slots using the get_submission_values() function.
 """
 
+import logging
 from datetime import datetime
 
 import pytest
 
 from biosample_enricher.submission_values import get_submission_values
+
+logger = logging.getLogger(__name__)
 
 
 def _get_values(*args, **kwargs):
@@ -20,41 +23,38 @@ def _get_values(*args, **kwargs):
 
 @pytest.mark.network
 def test_get_annual_climate_values():
-    """
-    Test retrieving annual climate values (annual_precpt, annual_temp).
-
-    These values come from 30-year climate normals and don't require a datetime.
-    """
+    """Test retrieving annual climate values (annual_precpt, annual_temp)."""
     values = _get_values(
         lat=37.7749,  # San Francisco
         lon=-122.4194,
         slots=["annual_precpt", "annual_temp"],
     )
 
-    # Should get both values
-    assert "annual_precpt" in values
-    assert "annual_temp" in values
+    assert "annual_precpt" in values, "annual_precpt should be returned"
+    assert "annual_temp" in values, "annual_temp should be returned"
 
     # annual_precpt should be a float in millimeters
-    assert isinstance(values["annual_precpt"], float)
-    assert 400 < values["annual_precpt"] < 700  # SF gets ~450-550mm/year
+    assert isinstance(values["annual_precpt"], float), "annual_precpt should be float"
+    assert 400 < values["annual_precpt"] < 700, (
+        f"SF annual_precpt={values['annual_precpt']:.1f}mm outside expected [400,700]"
+    )
 
     # annual_temp should be a float in degrees Celsius
-    assert isinstance(values["annual_temp"], float)
-    assert 13 < values["annual_temp"] < 16  # SF averages ~14-15°C
+    assert isinstance(values["annual_temp"], float), "annual_temp should be float"
+    assert 13 < values["annual_temp"] < 16, (
+        f"SF annual_temp={values['annual_temp']:.1f}°C outside expected [13,16]"
+    )
 
-    print("\nSan Francisco climate (1991-2020):")
-    print(f"  annual_precpt: {values['annual_precpt']:.1f} mm/year")
-    print(f"  annual_temp: {values['annual_temp']:.1f} °C")
+    logger.info(
+        "San Francisco climate: annual_precpt=%.1f mm/year, annual_temp=%.1f °C",
+        values["annual_precpt"],
+        values["annual_temp"],
+    )
 
 
 @pytest.mark.network
 def test_get_daily_temperature():
-    """
-    Test retrieving temperature at time of sampling.
-
-    Requires a datetime for collection date.
-    """
+    """Test retrieving temperature at time of sampling (requires datetime)."""
     values = _get_values(
         lat=37.7749,  # San Francisco
         lon=-122.4194,
@@ -62,80 +62,72 @@ def test_get_daily_temperature():
         datetime_obj=datetime(2023, 7, 15),  # July 15, 2023
     )
 
-    # Should get temperature value
-    assert "temp" in values
+    assert "temp" in values, "temp should be returned when datetime provided"
+    assert isinstance(values["temp"], float), "temp should be float"
+    assert -50 < values["temp"] < 50, (
+        f"temp={values['temp']:.1f}°C outside reasonable range [-50,50]"
+    )
 
-    # temp should be a float in degrees Celsius
-    assert isinstance(values["temp"], float)
-    assert -50 < values["temp"] < 50  # Reasonable temperature range
-
-    print("\nSan Francisco temperature on 2023-07-15:")
-    print(f"  temp: {values['temp']:.1f} °C")
+    logger.info("San Francisco temp on 2023-07-15: %.1f °C", values["temp"])
 
 
 @pytest.mark.network
 def test_get_elevation():
-    """
-    Test retrieving elevation for a location.
-    """
+    """Test retrieving elevation for a location."""
     values = _get_values(
         lat=37.7749,  # San Francisco
         lon=-122.4194,
         slots=["elev"],
     )
 
-    # Should get elevation value
-    assert "elev" in values
+    assert "elev" in values, "elev should be returned"
+    assert isinstance(values["elev"], float), "elev should be float"
+    assert 0 < values["elev"] < 200, (
+        f"SF elev={values['elev']:.1f}m outside expected [0,200]"
+    )
 
-    # elev should be a float in meters
-    assert isinstance(values["elev"], float)
-    assert 0 < values["elev"] < 200  # SF is near sea level but hilly
-
-    print("\nSan Francisco elevation:")
-    print(f"  elev: {values['elev']:.1f} m")
+    logger.info("San Francisco elevation: %.1f m", values["elev"])
 
 
 @pytest.mark.network
 def test_get_multiple_slots():
-    """
-    Test retrieving multiple slots in a single call.
-
-    Demonstrates mixing annual climate data with location data.
-    """
+    """Test retrieving multiple slots in a single call."""
     values = _get_values(
         lat=40.7128,  # New York City
         lon=-74.0060,
         slots=["annual_precpt", "annual_temp", "elev"],
     )
 
-    # Should get all three values
-    assert "annual_precpt" in values
-    assert "annual_temp" in values
-    assert "elev" in values
+    assert "annual_precpt" in values, "annual_precpt should be returned"
+    assert "annual_temp" in values, "annual_temp should be returned"
+    assert "elev" in values, "elev should be returned"
 
-    # Verify types
-    assert isinstance(values["annual_precpt"], float)
-    assert isinstance(values["annual_temp"], float)
-    assert isinstance(values["elev"], float)
+    assert isinstance(values["annual_precpt"], float), "annual_precpt should be float"
+    assert isinstance(values["annual_temp"], float), "annual_temp should be float"
+    assert isinstance(values["elev"], float), "elev should be float"
 
     # Verify NYC climate ranges
-    assert 1000 < values["annual_precpt"] < 1400  # NYC gets ~1100-1200mm/year
-    assert 10 < values["annual_temp"] < 15  # NYC averages ~12-13°C
-    assert 0 < values["elev"] < 100  # NYC is near sea level
+    assert 1000 < values["annual_precpt"] < 1400, (
+        f"NYC annual_precpt={values['annual_precpt']:.1f}mm outside expected [1000,1400]"
+    )
+    assert 10 < values["annual_temp"] < 15, (
+        f"NYC annual_temp={values['annual_temp']:.1f}°C outside expected [10,15]"
+    )
+    assert 0 < values["elev"] < 100, (
+        f"NYC elev={values['elev']:.1f}m outside expected [0,100]"
+    )
 
-    print("\nNew York City:")
-    print(f"  annual_precpt: {values['annual_precpt']:.1f} mm/year")
-    print(f"  annual_temp: {values['annual_temp']:.1f} °C")
-    print(f"  elev: {values['elev']:.1f} m")
+    logger.info(
+        "NYC: annual_precpt=%.1f mm, annual_temp=%.1f °C, elev=%.1f m",
+        values["annual_precpt"],
+        values["annual_temp"],
+        values["elev"],
+    )
 
 
 @pytest.mark.network
 def test_get_daily_and_annual_together():
-    """
-    Test getting both annual climate normals and day-specific weather.
-
-    When datetime is provided, we can get both types of data.
-    """
+    """Test getting both annual climate normals and day-specific weather."""
     values = _get_values(
         lat=33.4484,  # Phoenix, AZ
         lon=-112.0740,
@@ -143,101 +135,92 @@ def test_get_daily_and_annual_together():
         datetime_obj=datetime(2023, 7, 15),
     )
 
-    # Should get all three values
-    assert "annual_precpt" in values
-    assert "annual_temp" in values
-    assert "temp" in values
+    assert "annual_precpt" in values, "annual_precpt should be returned"
+    assert "annual_temp" in values, "annual_temp should be returned"
+    assert "temp" in values, "temp should be returned when datetime provided"
 
     # Phoenix climate checks
-    assert 150 < values["annual_precpt"] < 300  # Phoenix is very dry
-    assert 20 < values["annual_temp"] < 25  # Phoenix is hot
+    assert 150 < values["annual_precpt"] < 300, (
+        f"Phoenix annual_precpt={values['annual_precpt']:.1f}mm outside expected [150,300]"
+    )
+    assert 20 < values["annual_temp"] < 25, (
+        f"Phoenix annual_temp={values['annual_temp']:.1f}°C outside expected [20,25]"
+    )
 
     # Day-specific temp should be even hotter in July
-    assert values["temp"] > values["annual_temp"]
+    assert values["temp"] > values["annual_temp"], (
+        f"July temp ({values['temp']:.1f}°C) should exceed annual avg ({values['annual_temp']:.1f}°C)"
+    )
 
-    print("\nPhoenix climate and weather:")
-    print(f"  annual_precpt: {values['annual_precpt']:.1f} mm/year (30-year avg)")
-    print(f"  annual_temp: {values['annual_temp']:.1f} °C (30-year avg)")
-    print(f"  temp: {values['temp']:.1f} °C (2023-07-15)")
+    logger.info(
+        "Phoenix: annual_precpt=%.1f mm, annual_temp=%.1f °C, July temp=%.1f °C",
+        values["annual_precpt"],
+        values["annual_temp"],
+        values["temp"],
+    )
 
 
 @pytest.mark.network
 def test_missing_datetime_for_daily_weather():
-    """
-    Test that requesting daily weather without datetime doesn't fail.
-
-    Should log a warning and omit the day-specific slots.
-    """
+    """Test that requesting daily weather without datetime omits those slots."""
     values = _get_values(
         lat=37.7749,
         lon=-122.4194,
         slots=["annual_precpt", "temp"],  # temp needs datetime but it's not provided
     )
 
-    # Should still get annual_precpt
-    assert "annual_precpt" in values
+    assert "annual_precpt" in values, "annual_precpt should be returned"
+    assert "temp" not in values, "temp should be omitted without datetime"
 
-    # temp should be missing since no datetime provided
-    assert "temp" not in values
-
-    print("\nWithout datetime (only annual values retrieved):")
-    print(f"  annual_precpt: {values['annual_precpt']:.1f} mm/year")
-    print("  temp: not retrieved (datetime required)")
+    logger.info(
+        "Without datetime: annual_precpt=%.1f mm, temp omitted",
+        values["annual_precpt"],
+    )
 
 
 @pytest.mark.network
 def test_get_soil_ph():
-    """
-    Test retrieving soil pH for a location.
-    """
+    """Test retrieving soil pH for a location."""
     values = _get_values(
         lat=40.7128,  # New York
         lon=-74.0060,
         slots=["ph"],
     )
 
-    # Should get pH value (if soil data available for this location)
+    # pH may or may not be available depending on provider
     if "ph" in values:
-        # ph should be a float between 0-14
-        assert isinstance(values["ph"], float)
-        assert 0 <= values["ph"] <= 14
-
-        print("\nNew York soil pH:")
-        print(f"  ph: {values['ph']:.1f}")
+        assert isinstance(values["ph"], float), "ph should be float"
+        assert 0 <= values["ph"] <= 14, (
+            f"pH={values['ph']:.1f} outside valid range [0,14]"
+        )
+        logger.info("New York soil pH: %.1f", values["ph"])
     else:
-        print("\nSoil pH not available for this location")
+        logger.info("Soil pH not available for this location")
 
 
 @pytest.mark.network
 def test_get_marine_depth():
-    """
-    Test retrieving water depth for a marine location.
-    """
+    """Test retrieving water depth for a marine location."""
     values = _get_values(
         lat=36.7783,  # Monterey Bay, CA (ocean)
         lon=-121.8479,
         slots=["depth"],
     )
 
-    # Should get depth value for ocean location
+    # Depth may or may not be available depending on provider
     if "depth" in values:
-        # depth should be a string with units
-        assert isinstance(values["depth"], str)
-        assert "m" in values["depth"]
-
-        print("\nMonterey Bay depth:")
-        print(f"  depth: {values['depth']}")
+        assert isinstance(values["depth"], str), "depth should be string with units"
+        assert "m" in values["depth"], (
+            f"depth should include 'm' unit: {values['depth']}"
+        )
+        logger.info("Monterey Bay depth: %s", values["depth"])
     else:
-        print("\nDepth not available for this location")
+        logger.info("Depth not available for this location")
 
 
 @pytest.mark.network
 def test_comprehensive_biosample_enrichment():
-    """
-    Comprehensive test showing how to enrich a biosample with multiple slots.
-
-    This demonstrates the typical use case for NMDC submission portal.
-    """
+    """Comprehensive test showing typical NMDC submission portal use case."""
     # Simulated biosample with location and collection date
     biosample = {
         "id": "nmdc:bsm-12-abc123",
@@ -246,65 +229,60 @@ def test_comprehensive_biosample_enrichment():
         "collection_date": "2023-08-20T14:30:00Z",
     }
 
-    # Extract coordinates and datetime
     lat = biosample["lat_lon"]["latitude"]
     lon = biosample["lat_lon"]["longitude"]
     collection_dt = datetime.fromisoformat(
         biosample["collection_date"].replace("Z", "+00:00")
     )
 
-    # Request multiple environmental slots
     values = _get_values(
         lat=lat,
         lon=lon,
-        slots=[
-            "annual_precpt",  # 30-year climate
-            "annual_temp",  # 30-year climate
-            "temp",  # Day-specific
-            "elev",  # Location
-            "ph",  # Soil
-        ],
+        slots=["annual_precpt", "annual_temp", "temp", "elev", "ph"],
         datetime_obj=collection_dt,
     )
 
-    # Should get most values (some might fail gracefully)
-    assert len(values) >= 3  # At least annual climate + elevation
+    assert len(values) >= 3, (
+        f"Should get at least 3 slots, got {len(values)}: {list(values.keys())}"
+    )
 
-    print(f"\nBiosample enrichment for {biosample['name']}:")
-    print(f"  Location: ({lat}, {lon})")
-    print(f"  Collection date: {biosample['collection_date']}")
-    print("\nEnriched values:")
-    for slot, value in sorted(values.items()):
-        if isinstance(value, float):
-            print(f"  {slot}: {value:.2f}")
-        else:
-            print(f"  {slot}: {value}")
+    logger.info(
+        "Biosample '%s' enriched with %d slots: %s",
+        biosample["name"],
+        len(values),
+        list(values.keys()),
+    )
 
 
+@pytest.mark.unit
 def test_invalid_latitude():
     """Test that invalid latitude raises ValueError."""
     with pytest.raises(ValueError, match="Latitude must be between -90 and 90"):
         get_submission_values(lat=91.0, lon=-122.0, slots=["elev"])
 
 
+@pytest.mark.unit
 def test_invalid_longitude():
     """Test that invalid longitude raises ValueError."""
     with pytest.raises(ValueError, match="Longitude must be between -180 and 180"):
         get_submission_values(lat=37.0, lon=181.0, slots=["elev"])
 
 
+@pytest.mark.unit
 def test_empty_slots_list():
     """Test that empty slots list raises ValueError."""
     with pytest.raises(ValueError, match="slots list cannot be empty"):
         get_submission_values(lat=37.0, lon=-122.0, slots=[])
 
 
+@pytest.mark.unit
 def test_unsupported_slot():
     """Test that unsupported slot name raises ValueError."""
     with pytest.raises(ValueError, match="Unsupported slot"):
         get_submission_values(lat=37.0, lon=-122.0, slots=["invalid_slot_name"])
 
 
+@pytest.mark.unit
 def test_mixed_supported_and_unsupported_slots():
     """Test that mixing valid and invalid slots raises ValueError."""
     with pytest.raises(ValueError, match="Unsupported slot"):
@@ -315,11 +293,7 @@ def test_mixed_supported_and_unsupported_slots():
 
 @pytest.mark.network
 def test_all_weather_slots():
-    """
-    Test requesting all weather-related slots at once.
-
-    Demonstrates that the function efficiently fetches data in bulk.
-    """
+    """Test requesting all weather-related slots at once."""
     values = _get_values(
         lat=47.6062,  # Seattle
         lon=-122.3321,
@@ -335,26 +309,18 @@ def test_all_weather_slots():
         datetime_obj=datetime(2023, 7, 15),
     )
 
-    # Should get annual climate values
-    assert "annual_precpt" in values
-    assert "annual_temp" in values
+    assert "annual_precpt" in values, "annual_precpt should be returned"
+    assert "annual_temp" in values, "annual_temp should be returned"
+    assert len(values) >= 2, f"Should get at least 2 slots, got {len(values)}"
 
-    # May or may not get all daily weather depending on provider availability
-    # But should get at least some
-    assert len(values) >= 2
-
-    print("\nSeattle weather data:")
-    for slot, value in sorted(values.items()):
-        print(f"  {slot}: {value}")
+    logger.info(
+        "Seattle weather: %d slots retrieved: %s", len(values), list(values.keys())
+    )
 
 
 @pytest.mark.network
 def test_different_geographic_locations():
-    """
-    Test that the function works across different geographic locations.
-
-    This verifies global coverage.
-    """
+    """Test that the function works across different geographic locations."""
     test_locations = [
         {"name": "Tokyo, Japan", "lat": 35.6762, "lon": 139.6503},
         {"name": "Sydney, Australia", "lat": -33.8688, "lon": 151.2093},
@@ -369,43 +335,34 @@ def test_different_geographic_locations():
             slots=["annual_precpt", "elev"],
         )
 
-        # Should get at least one value for each location
-        assert len(values) >= 1
+        assert len(values) >= 1, (
+            f"{location['name']}: should get at least 1 slot, got {len(values)}"
+        )
 
-        print(f"\n{location['name']}: {len(values)} slots retrieved")
-        if "annual_precpt" in values:
-            print(f"  annual_precpt: {values['annual_precpt']:.1f} mm/year")
-        if "elev" in values:
-            print(f"  elev: {values['elev']:.1f} m")
+        logger.info(
+            "%s: %d slots - %s",
+            location["name"],
+            len(values),
+            {k: f"{v:.1f}" if isinstance(v, float) else v for k, v in values.items()},
+        )
 
 
 @pytest.mark.network
 def test_partial_success_handling():
-    """
-    Test that the function handles partial success gracefully.
-
-    If some slots fail, others should still be returned.
-    """
-    # Request a mix of slots - some might fail
+    """Test that partial provider failures don't crash the function."""
     values = _get_values(
         lat=37.7749,
         lon=-122.4194,
-        slots=[
-            "annual_precpt",  # Should succeed
-            "elev",  # Should succeed
-            "flooding",  # Not yet implemented
-            "cur_vegetation",  # Not yet implemented
-        ],
+        slots=["annual_precpt", "annual_temp", "elev", "ph"],
     )
 
-    # Should get the implemented slots even if others fail
-    assert "annual_precpt" in values
-    assert "elev" in values
+    # Climate and elevation should succeed (reliable providers)
+    assert "annual_precpt" in values, "annual_precpt should succeed"
+    assert "annual_temp" in values, "annual_temp should succeed"
+    assert "elev" in values, "elev should succeed"
 
-    # Unimplemented slots should be omitted (not None)
-    assert "flooding" not in values
-    assert "cur_vegetation" not in values
+    # Soil pH may fail but should not crash
+    if "ph" in values:
+        assert isinstance(values["ph"], float), "ph should be float if present"
 
-    print("\nPartial success test:")
-    print(f"  Retrieved: {list(values.keys())}")
-    print("  Omitted: flooding, cur_vegetation (not yet implemented)")
+    logger.info("Partial success: retrieved %s", list(values.keys()))

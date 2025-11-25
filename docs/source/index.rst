@@ -37,15 +37,15 @@ Installation
 .. code-block:: bash
 
    # Recommended: Use uv
-   uv pip install biosample-enricher
+   uv add biosample-enricher
 
    # Or with pip
    pip install biosample-enricher
 
    # Optional dependencies
-   uv pip install biosample-enricher[metrics]   # Metrics and visualization
-   uv pip install biosample-enricher[mongodb]   # MongoDB support for NMDC/GOLD
-   uv pip install biosample-enricher[all]       # All optional features
+   uv add biosample-enricher --extra metrics    # Metrics and visualization
+   uv add biosample-enricher --extra mongodb    # MongoDB support for NMDC/GOLD
+   uv add biosample-enricher --extra all        # All optional features
 
 Quick Start
 -----------
