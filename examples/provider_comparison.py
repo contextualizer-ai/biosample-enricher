@@ -6,7 +6,7 @@ Shows how to inspect metadata to compare results from different data providers.
 Useful for understanding data quality and consistency.
 """
 
-from biosample_enricher.submission_values import get_submission_values
+from biosample_enricher.environmental_metadata import get_environmental_metadata
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
     print(f"Getting climate data for Boston ({lat}, {lon})...\n")
 
     # Get climate normals (automatically queries multiple providers)
-    result = get_submission_values(
+    result = get_environmental_metadata(
         lat=lat, lon=lon, slots=["annual_precpt", "annual_temp"]
     )
 

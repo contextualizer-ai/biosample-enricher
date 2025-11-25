@@ -1,9 +1,10 @@
 """
-Get submission-schema compliant values for NMDC biosample enrichment.
+Get environmental metadata for geographic coordinates.
 
 This module provides a single entry point for retrieving environmental data
-formatted for NMDC submission-schema slots. It orchestrates calls to multiple
-provider services and extracts specific slot values in the correct units and formats.
+from multiple provider services. It returns values in standardized formats
+suitable for NMDC submissions and other applications requiring location-based
+environmental metadata.
 
 Supported Slots
 ---------------
@@ -110,10 +111,10 @@ Flooding (from USGS, NOAA):
 Usage Example
 -------------
     >>> from datetime import datetime
-    >>> from biosample_enricher.submission_values import get_submission_values
+    >>> from biosample_enricher.environmental_metadata import get_environmental_metadata
     >>>
     >>> # Get annual climate values (no datetime needed)
-    >>> values = get_submission_values(
+    >>> values = get_environmental_metadata(
     ...     lat=37.7749,
     ...     lon=-122.4194,
     ...     slots=["annual_precpt", "annual_temp", "elev"]
@@ -126,7 +127,7 @@ Usage Example
     }
     >>>
     >>> # Get day-specific weather values (datetime required)
-    >>> values = get_submission_values(
+    >>> values = get_environmental_metadata(
     ...     lat=37.7749,
     ...     lon=-122.4194,
     ...     slots=["temp", "humidity", "wind_speed"],
@@ -140,7 +141,7 @@ Usage Example
     }
     >>>
     >>> # Mix of annual and day-specific values
-    >>> values = get_submission_values(
+    >>> values = get_environmental_metadata(
     ...     lat=40.7128,
     ...     lon=-74.0060,
     ...     slots=["annual_precpt", "temp", "elev", "ph"],
@@ -212,7 +213,7 @@ from biosample_enricher.weather.service import WeatherService
 logger = get_logger(__name__)
 
 __all__ = [
-    "get_submission_values",
+    "get_environmental_metadata",
     "CLIMATE_SLOTS",
     "WEATHER_SLOTS",
     "ELEVATION_SLOTS",
@@ -246,7 +247,7 @@ CLIMATE_PROVIDERS = frozenset(["meteostat", "nasa_power"])
 ELEVATION_PROVIDERS = frozenset(["usgs", "google", "open_topo_data", "osm"])
 
 
-def get_submission_values(
+def get_environmental_metadata(
     lat: float,
     lon: float,
     slots: list[str],
@@ -255,10 +256,11 @@ def get_submission_values(
     strategy: str = "mean",
 ) -> dict[str, Any]:
     """
-    Get NMDC submission-schema compliant values for specified slots.
+    Get environmental metadata for geographic coordinates.
 
-    This method knows how to map submission-schema slot names to the appropriate
-    provider services and extract values in the correct format and units.
+    Retrieves environmental data from multiple provider services and returns
+    values in standardized formats. Supports climate, elevation, weather,
+    marine, and soil data.
 
     ALWAYS returns provider metadata for transparency - showing which providers
     contributed to each value and enabling quality checking by comparing sources.
@@ -318,7 +320,7 @@ def get_submission_values(
 
     Example:
         >>> from datetime import datetime
-        >>> result = get_submission_values(
+        >>> result = get_environmental_metadata(
         ...     lat=37.7749,
         ...     lon=-122.4194,
         ...     slots=["annual_precpt", "annual_temp"],
@@ -374,7 +376,9 @@ def get_submission_values(
                     f"Valid providers for requested slots: {sorted(valid_providers)}"
                 )
 
-    logger.info(f"Getting submission values for {len(slots)} slots at ({lat}, {lon})")
+    logger.info(
+        f"Getting environmental metadata for {len(slots)} slots at ({lat}, {lon})"
+    )
 
     result = {}
 
@@ -491,7 +495,7 @@ def _get_weather_values(
         datetime_obj: Optional datetime for weather data
         providers: Optional list of preferred provider names
         strategy: Consensus strategy - "mean", "median", "first", "best_quality"
-                 Default is "mean" (consistent with get_submission_values)
+                 Default is "mean" (consistent with get_environmental_metadata)
 
     Returns:
         Tuple of (values_dict, metadata_dict) where metadata_dict contains
@@ -656,7 +660,7 @@ def _get_elevation_values(
         slots: List of requested slot names
         providers: Optional list of preferred provider names
         strategy: Consensus strategy - "mean", "median", "first", "best_quality"
-                 Default is "mean" (consistent with get_submission_values)
+                 Default is "mean" (consistent with get_environmental_metadata)
 
     Returns:
         Tuple of (values_dict, metadata_dict)

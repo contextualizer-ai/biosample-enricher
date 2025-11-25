@@ -8,7 +8,7 @@ Following feedback from NMDC team members who found the documentation confusing 
 
 1. **Shows future capabilities** not yet ready for users (MongoDB integration, schema alignment)
 2. **Provides multiple ways** to accomplish the same task (violates "one way to do things" principle)
-3. **Distracts from core use case** - getting submission values with `get_submission_values()`
+3. **Distracts from core use case** - getting submission values with `get_environmental_metadata()`
 
 This is **not deleted code** - it's fully version controlled and can be restored anytime.
 
@@ -42,12 +42,12 @@ This is **not deleted code** - it's fully version controlled and can be restored
 
 **Why Archived**:
 - MongoDB examples don't work without MongoDB setup (confusing for users)
-- Service examples show low-level APIs instead of `get_submission_values()`
+- Service examples show low-level APIs instead of `get_environmental_metadata()`
 - Created "multiple ways to do things" confusion
 - Tests required optional dependencies (pymongo) that most users don't have
 
 **Replaced With**:
-- New simple examples in `examples/` showing ONLY `get_submission_values()`
+- New simple examples in `examples/` showing ONLY `get_environmental_metadata()`
 - See: `examples/basic_climate.py`, `examples/error_handling.py`, etc.
 
 ## When to Restore
@@ -129,7 +129,7 @@ The decision to archive was based on this principle:
 > — The Zen of Python
 
 For NMDC users:
-- **One function**: `get_submission_values()`
+- **One function**: `get_environmental_metadata()`
 - **One pattern**: Pass lat/lon/slots, get values back
 - **One documentation path**: Read submission_values.rst, copy example, done
 

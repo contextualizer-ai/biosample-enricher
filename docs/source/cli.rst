@@ -1,7 +1,7 @@
 CLI Reference
 =============
 
-The ``biosample-enricher`` CLI provides command-line access to ``get_submission_values()``.
+The ``biosample-enricher`` CLI provides command-line access to ``get_environmental_metadata()``.
 
 Installation
 ------------
@@ -29,7 +29,7 @@ Commands Overview
 biosample-enricher get
 ----------------------
 
-The main command for retrieving NMDC submission values.
+The main command for retrieving environmental metadata.
 
 **Basic Usage:**
 
@@ -184,15 +184,15 @@ For programmatic access, use the Python API:
 
 .. code-block:: python
 
-   from biosample_enricher.submission_values import get_submission_values
+   from biosample_enricher.environmental_metadata import get_environmental_metadata
 
-   result = get_submission_values(
+   result = get_environmental_metadata(
        lat=37.7749,
        lon=-122.4194,
        slots=["annual_precpt", "annual_temp"]
    )
 
-See :doc:`submission_values` for complete Python API documentation.
+See :doc:`environmental_metadata` for complete Python API documentation.
 
 Troubleshooting
 ---------------
@@ -217,5 +217,5 @@ Check the metadata to see which providers were queried and any errors.
 Related Documentation
 ---------------------
 
-- :doc:`submission_values` - Full Python API documentation
+- :doc:`environmental_metadata` - Full Python API documentation
 - :doc:`quickstart` - Quick start guide

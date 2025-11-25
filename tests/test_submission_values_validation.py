@@ -1,12 +1,12 @@
-"""Tests for submission_values slot and provider validation."""
+"""Tests for environmental_metadata slot and provider validation."""
 
 import pytest
 
-from biosample_enricher.submission_values import (
+from biosample_enricher.environmental_metadata import (
     ALL_SUPPORTED_SLOTS,
     CLIMATE_PROVIDERS,
     CLIMATE_SLOTS,
-    get_submission_values,
+    get_environmental_metadata,
 )
 
 
@@ -14,7 +14,7 @@ from biosample_enricher.submission_values import (
 def test_invalid_slot_raises_error():
     """Test that invalid slot names raise ValueError with helpful message."""
     with pytest.raises(ValueError, match="Unsupported slot.*invalid_slot_name"):
-        get_submission_values(
+        get_environmental_metadata(
             lat=37.7749,
             lon=-122.4194,
             slots=["annual_precpt", "invalid_slot_name"],
@@ -25,7 +25,7 @@ def test_invalid_slot_raises_error():
 def test_invalid_climate_provider_raises_error():
     """Test that invalid climate provider names raise ValueError."""
     with pytest.raises(ValueError, match="Invalid provider.*invalid_provider"):
-        get_submission_values(
+        get_environmental_metadata(
             lat=37.7749,
             lon=-122.4194,
             slots=["annual_precpt"],
@@ -49,7 +49,7 @@ def test_valid_climate_providers_accepted():
     # Should not raise - just testing validation, not actual API calls
     # (will fail later when trying to connect, but validation should pass)
     try:
-        get_submission_values(
+        get_environmental_metadata(
             lat=37.7749,
             lon=-122.4194,
             slots=["annual_precpt"],
@@ -67,7 +67,7 @@ def test_valid_climate_providers_accepted():
 def test_helpful_error_message_shows_available_options():
     """Test that error messages include available slots/providers."""
     with pytest.raises(ValueError) as exc_info:
-        get_submission_values(
+        get_environmental_metadata(
             lat=37.7749,
             lon=-122.4194,
             slots=["invalid_slot"],
@@ -82,7 +82,7 @@ def test_helpful_error_message_shows_available_options():
 def test_empty_slots_raises_error():
     """Test that empty slots list raises ValueError."""
     with pytest.raises(ValueError, match="slots list cannot be empty"):
-        get_submission_values(
+        get_environmental_metadata(
             lat=37.7749,
             lon=-122.4194,
             slots=[],

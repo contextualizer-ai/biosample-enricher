@@ -4,27 +4,27 @@ Architecture
 Core Design
 -----------
 
-The biosample-enricher architecture focuses on one primary use case: **retrieving NMDC submission-schema values from geographic coordinates**.
+The biosample-enricher architecture focuses on one primary use case: **retrieving environmental metadata from geographic coordinates**.
 
 Key Components
 --------------
 
-get_submission_values()
+get_environmental_metadata()
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 The main entry point that orchestrates all data retrieval:
 
 .. code-block:: python
 
-   from biosample_enricher.submission_values import get_submission_values
+   from biosample_enricher.environmental_metadata import get_environmental_metadata
 
-   result = get_submission_values(
+   result = get_environmental_metadata(
        lat=37.7749,
        lon=-122.4194,
        slots=["annual_precpt", "annual_temp"]
    )
 
-**See** :doc:`submission_values` for complete documentation.
+**See** :doc:`environmental_metadata` for complete documentation.
 
 Multi-Provider System
 ~~~~~~~~~~~~~~~~~~~~~
@@ -60,7 +60,7 @@ Located in: ``biosample_enricher/http_cache.py``
 Data Flow
 ---------
 
-1. **User calls** ``get_submission_values(lat, lon, slots)``
+1. **User calls** ``get_environmental_metadata(lat, lon, slots)``
 2. **Dispatcher** routes each slot to appropriate service (climate, elevation, etc.)
 3. **Service** queries multiple providers via cached HTTP client
 4. **Providers** return data in standardized format
@@ -90,7 +90,7 @@ Example result structure:
 Design Principles
 -----------------
 
-1. **One way to do it**: ``get_submission_values()`` is THE function
+1. **One way to do it**: ``get_environmental_metadata()`` is THE function
 2. **Fail gracefully**: Missing providers don't break the system
 3. **Cache aggressively**: Minimize API calls
 4. **Type safety**: Full type annotations with mypy strict mode
@@ -111,6 +111,6 @@ These may be restored when needed. See ``archived/README.md`` for restoration in
 Related Documentation
 ---------------------
 
-- :doc:`submission_values` - Main API documentation
+- :doc:`environmental_metadata` - Main API documentation
 - :doc:`api/providers` - Provider comparison and details
 - :doc:`testing` - Testing standards and guidelines

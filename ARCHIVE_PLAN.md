@@ -16,7 +16,7 @@ Simplify the codebase and documentation by archiving future-development code tha
 - `tests/test_adapters.py`
 - `tests/test_schema_tools.py`
 
-**Why**: These enable reading biosamples from MongoDB and transforming them to schemas. Not needed for simple `get_submission_values()` use case. Olivia's feedback: "what does it mean to get X for/from a biosample" - this complexity is the problem.
+**Why**: These enable reading biosamples from MongoDB and transforming them to schemas. Not needed for simple `get_environmental_metadata()` use case. Olivia's feedback: "what does it mean to get X for/from a biosample" - this complexity is the problem.
 
 **Restoration**: Move back from `archived/mongodb/` when ready to implement Issue #189 (NMDC Submission Schema Transformer)
 
@@ -54,7 +54,7 @@ Simplify the codebase and documentation by archiving future-development code tha
 **Keep only:**
 - `biosample_enricher/cli.py` - Main entry point for submission values
 
-**Why**: Multiple CLIs = multiple ways to do things. Violates "one way to do anything" principle. Users should use `get_submission_values()` function, not 8 different CLIs.
+**Why**: Multiple CLIs = multiple ways to do things. Violates "one way to do anything" principle. Users should use `get_environmental_metadata()` function, not 8 different CLIs.
 
 **Restoration**: Move back if we decide service-level CLIs are valuable for advanced users.
 
@@ -74,7 +74,7 @@ Simplify the codebase and documentation by archiving future-development code tha
 - `biosample_enricher/providers.py` (86 lines) - Old provider registry?
 - `biosample_enricher/cache_management.py` (98 lines) - If not actively used
 
-**Why**: If these are legacy or not used by `get_submission_values()`, archive them.
+**Why**: If these are legacy or not used by `get_environmental_metadata()`, archive them.
 
 **Restoration**: Move back if needed.
 
@@ -102,7 +102,7 @@ Simplify the codebase and documentation by archiving future-development code tha
 - `biosample_enricher/reverse_geocoding/` - Future use
 - `biosample_enricher/osm_features/` - Future use
 
-**Note**: Services stay because they're the implementation of `get_submission_values()`. They're just not documented as user-facing APIs.
+**Note**: Services stay because they're the implementation of `get_environmental_metadata()`. They're just not documented as user-facing APIs.
 
 ### Tests (Keep all)
 - `tests/` - All tests stay, just move archived code's tests to `archived/`
@@ -208,7 +208,7 @@ Moved to archived/:
 - Demo code (elevation_demos.py)
 
 Why: Simplify focus on core use case - getting NMDC submission values.
-Users should use get_submission_values(), not navigate 8 different CLIs
+Users should use get_environmental_metadata(), not navigate 8 different CLIs
 and MongoDB integration that isn't ready yet.
 
 Restoration: See archived/README.md for how to restore each component.
@@ -231,7 +231,7 @@ Related to Issue #204 (shift focus to NMDC submissions)
 
 ### Breaking Changes
 - **CLI commands removed**: 8 archived CLIs no longer available
-  - Mitigation: Document in CHANGELOG, point to `get_submission_values()`
+  - Mitigation: Document in CHANGELOG, point to `get_environmental_metadata()`
 - **Import errors**: If anyone imports `biosample_enricher.adapters`, etc.
   - Mitigation: Search codebase first, should be minimal external usage
 
@@ -265,7 +265,7 @@ After archiving, a new user (like Olivia) should:
 
 1. Land on docs homepage
 2. See "Get NMDC Submission Values" prominently
-3. Copy-paste one example with `get_submission_values()`
+3. Copy-paste one example with `get_environmental_metadata()`
 4. Get their values
 5. Never wonder "what does it mean to get X for/from a biosample"
 
