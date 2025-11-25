@@ -4,8 +4,8 @@ This directory contains reference implementations and experimental approaches fo
 
 ## gpt5_contractual_metrics.yaml
 
-**Source**: GPT-5 generated contractual metrics framework (from Issue #134)  
-**Status**: Reference only - not integrated into production  
+**Source**: GPT-5 generated contractual metrics framework (from Issue #134)
+**Status**: Reference only - not integrated into production
 **Created**: September 2025
 
 ### Approach

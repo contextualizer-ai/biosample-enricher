@@ -14,9 +14,9 @@ Get NMDC submission values in 3 steps
 
 .. code-block:: python
 
-   from biosample_enricher.submission_values import get_submission_values
+   from biosample_enricher.environmental_metadata import get_environmental_metadata
 
-   result = get_submission_values(
+   result = get_environmental_metadata(
        lat=37.7749,   # San Francisco
        lon=-122.4194,
        slots=["annual_precpt", "annual_temp"]
@@ -32,7 +32,7 @@ The values are already in the correct units and format for NMDC submission-schem
 Next Steps
 ----------
 
-- **Full guide**: :doc:`submission_values` - Complete documentation with all supported slots
+- **Full guide**: :doc:`environmental_metadata` - Complete documentation with all supported slots
 - **CLI**: :doc:`cli` - Command-line interface
 - **Quick reference**: See :ref:`quick-reference` for all supported slots and constants
 
@@ -44,7 +44,7 @@ Get climate data
 
 .. code-block:: python
 
-   result = get_submission_values(
+   result = get_environmental_metadata(
        lat=42.3601,
        lon=-71.0589,
        slots=["annual_precpt", "annual_temp"]
@@ -55,7 +55,7 @@ Get elevation
 
 .. code-block:: python
 
-   result = get_submission_values(
+   result = get_environmental_metadata(
        lat=40.7128,
        lon=-74.0060,
        slots=["elev"]
@@ -66,7 +66,7 @@ Mix multiple slot types
 
 .. code-block:: python
 
-   result = get_submission_values(
+   result = get_environmental_metadata(
        lat=46.7867,
        lon=-121.7365,
        slots=["annual_precpt", "annual_temp", "elev"]
@@ -78,7 +78,7 @@ Handle errors
 .. code-block:: python
 
    try:
-       result = get_submission_values(
+       result = get_environmental_metadata(
            lat=37.7749,
            lon=-122.4194,
            slots=["annual_precpt", "invalid_slot"]
@@ -90,6 +90,6 @@ Handle errors
 Need Help?
 ----------
 
-- **Questions?** See the :doc:`submission_values` guide
+- **Questions?** See the :doc:`environmental_metadata` guide
 - **CLI?** See the :doc:`cli` reference
 - **Issues?** `Report on GitHub <https://github.com/contextualizer-ai/biosample-enricher/issues>`_

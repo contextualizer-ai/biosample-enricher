@@ -1,8 +1,8 @@
 """
-Tests for submission-schema value retrieval (Issue #191).
+Tests for environmental metadata retrieval (Issue #191).
 
-These tests demonstrate how to get NMDC submission-schema compliant values
-for various environmental slots using the get_submission_values() function.
+These tests demonstrate how to get environmental metadata
+for various slots using the get_environmental_metadata() function.
 """
 
 import logging
@@ -10,14 +10,14 @@ from datetime import datetime
 
 import pytest
 
-from biosample_enricher.submission_values import get_submission_values
+from biosample_enricher.environmental_metadata import get_environmental_metadata
 
 logger = logging.getLogger(__name__)
 
 
 def _get_values(*args, **kwargs):
     """Helper to extract values from new structure for backward compat in tests."""
-    result = get_submission_values(*args, **kwargs)
+    result = get_environmental_metadata(*args, **kwargs)
     return result["values"]
 
 
@@ -56,13 +56,13 @@ def test_get_annual_climate_values():
 def test_get_climate_with_strategy():
     """Test that strategy parameter works for climate slots."""
     # Get climate with different strategies
-    result_mean = get_submission_values(
+    result_mean = get_environmental_metadata(
         lat=37.7749,  # San Francisco
         lon=-122.4194,
         slots=["annual_precpt", "annual_temp"],
         strategy="mean",
     )
-    result_median = get_submission_values(
+    result_median = get_environmental_metadata(
         lat=37.7749,
         lon=-122.4194,
         slots=["annual_precpt", "annual_temp"],
@@ -294,35 +294,35 @@ def test_comprehensive_biosample_enrichment():
 def test_invalid_latitude():
     """Test that invalid latitude raises ValueError."""
     with pytest.raises(ValueError, match="Latitude must be between -90 and 90"):
-        get_submission_values(lat=91.0, lon=-122.0, slots=["elev"])
+        get_environmental_metadata(lat=91.0, lon=-122.0, slots=["elev"])
 
 
 @pytest.mark.unit
 def test_invalid_longitude():
     """Test that invalid longitude raises ValueError."""
     with pytest.raises(ValueError, match="Longitude must be between -180 and 180"):
-        get_submission_values(lat=37.0, lon=181.0, slots=["elev"])
+        get_environmental_metadata(lat=37.0, lon=181.0, slots=["elev"])
 
 
 @pytest.mark.unit
 def test_empty_slots_list():
     """Test that empty slots list raises ValueError."""
     with pytest.raises(ValueError, match="slots list cannot be empty"):
-        get_submission_values(lat=37.0, lon=-122.0, slots=[])
+        get_environmental_metadata(lat=37.0, lon=-122.0, slots=[])
 
 
 @pytest.mark.unit
 def test_unsupported_slot():
     """Test that unsupported slot name raises ValueError."""
     with pytest.raises(ValueError, match="Unsupported slot"):
-        get_submission_values(lat=37.0, lon=-122.0, slots=["invalid_slot_name"])
+        get_environmental_metadata(lat=37.0, lon=-122.0, slots=["invalid_slot_name"])
 
 
 @pytest.mark.unit
 def test_mixed_supported_and_unsupported_slots():
     """Test that mixing valid and invalid slots raises ValueError."""
     with pytest.raises(ValueError, match="Unsupported slot"):
-        get_submission_values(
+        get_environmental_metadata(
             lat=37.0, lon=-122.0, slots=["annual_precpt", "invalid_slot", "elev"]
         )
 

@@ -6,9 +6,9 @@ Shows how different consensus strategies affect multi-provider results.
 When multiple providers return data, you can choose how to combine them.
 """
 
-from biosample_enricher.submission_values import (
+from biosample_enricher.environmental_metadata import (
     CONSENSUS_STRATEGIES,
-    get_submission_values,
+    get_environmental_metadata,
 )
 
 
@@ -27,7 +27,7 @@ def main() -> None:
         print(f"\nStrategy: {strategy}")
         print("-" * 40)
 
-        result = get_submission_values(
+        result = get_environmental_metadata(
             lat=lat,
             lon=lon,
             slots=["elev"],

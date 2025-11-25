@@ -1,7 +1,7 @@
-"""CLI for get_submission_values() - the primary API for NMDC metadata suggestions.
+"""CLI for get_environmental_metadata() - the primary API for environmental metadata.
 
 This CLI provides command-line access to the main biosample-enricher functionality:
-retrieving NMDC submission-schema compliant values for geographic coordinates.
+retrieving environmental metadata for geographic coordinates.
 
 Examples:
     # Get climate and elevation data for San Francisco
@@ -24,7 +24,7 @@ from datetime import datetime
 
 import click
 
-from biosample_enricher.submission_values import (
+from biosample_enricher.environmental_metadata import (
     ALL_SUPPORTED_SLOTS,
     CLIMATE_PROVIDERS,
     CLIMATE_SLOTS,
@@ -34,7 +34,7 @@ from biosample_enricher.submission_values import (
     MARINE_SLOTS,
     SOIL_SLOTS,
     WEATHER_SLOTS,
-    get_submission_values,
+    get_environmental_metadata,
 )
 
 logger = logging.getLogger(__name__)
@@ -196,7 +196,7 @@ def get_values(
 
     # Call the main function
     try:
-        result = get_submission_values(
+        result = get_environmental_metadata(
             lat=lat,
             lon=lon,
             slots=slot_list,

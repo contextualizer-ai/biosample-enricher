@@ -13,7 +13,7 @@ Biosample Enricher retrieves environmental metadata from authoritative data sour
 
 ## Features
 
-- **Simple API**: One function - `get_submission_values(lat, lon, slots)`
+- **Simple API**: One function - `get_environmental_metadata(lat, lon, slots)`
 - **Multiple Data Sources**: Climate normals, elevation, weather, soil, marine data
 - **Multi-Provider Consensus**: Queries multiple providers and returns consensus values
 - **Type Safety**: Full type hints with Pydantic validation and mypy checking
@@ -55,10 +55,10 @@ uv sync
 ### Python API
 
 ```python
-from biosample_enricher.submission_values import get_submission_values
+from biosample_enricher.environmental_metadata import get_environmental_metadata
 
-# Get NMDC submission values for a location
-result = get_submission_values(
+# Get environmental metadata for a location
+result = get_environmental_metadata(
     lat=37.7749,   # San Francisco
     lon=-122.4194,
     slots=["annual_precpt", "annual_temp", "elev"]
@@ -118,8 +118,8 @@ All other services are free and require no authentication.
 
 ## Documentation
 
+- [**get_environmental_metadata() Reference**](https://contextualizer-ai.github.io/biosample-enricher/environmental_metadata.html) - Main API documentation
 - [Full Documentation](https://contextualizer-ai.github.io/biosample-enricher/)
-- [API Reference](https://contextualizer-ai.github.io/biosample-enricher/submission_values.html)
 - [CLI Reference](https://contextualizer-ai.github.io/biosample-enricher/cli.html)
 
 ## Development

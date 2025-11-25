@@ -23,7 +23,7 @@ Get NMDC submission-schema values from geographic coordinates. Biosample Enriche
 Features
 --------
 
-- **Simple API**: One function - ``get_submission_values(lat, lon, slots)``
+- **Simple API**: One function - ``get_environmental_metadata(lat, lon, slots)``
 - **Multiple Data Sources**: Climate normals, elevation, weather, soil, marine data
 - **Multi-Provider Consensus**: Queries multiple providers and returns consensus values
 - **Type Safety**: Full type hints with Pydantic validation and mypy checking
@@ -52,10 +52,10 @@ Quick Start
 
 .. code-block:: python
 
-   from biosample_enricher.submission_values import get_submission_values
+   from biosample_enricher.environmental_metadata import get_environmental_metadata
 
-   # Get NMDC submission values for a location
-   result = get_submission_values(
+   # Get environmental metadata for a location
+   result = get_environmental_metadata(
        lat=37.7749,   # San Francisco
        lon=-122.4194,
        slots=["annual_precpt", "annual_temp", "elev"]
@@ -64,13 +64,18 @@ Quick Start
    print(result["values"])
    # {'annual_precpt': 519.3, 'annual_temp': 14.1, 'elev': 10.2}
 
+.. seealso::
+
+   **Main API Reference**: :doc:`environmental_metadata`
+      Complete documentation for ``get_environmental_metadata()`` including all supported slots, providers, consensus strategies, and response format.
+
 .. toctree::
    :maxdepth: 2
    :caption: User Guide
 
+   environmental_metadata
    installation
    quickstart
-   submission_values
    cli
    services/index
 

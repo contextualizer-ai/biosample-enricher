@@ -6,7 +6,7 @@ Get climate data AND elevation in a single call.
 Shows how to mix different types of submission-schema slots.
 """
 
-from biosample_enricher.submission_values import get_submission_values
+from biosample_enricher.environmental_metadata import get_environmental_metadata
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
     print(f"Getting data for Mount Rainier area ({lat}, {lon})...\n")
 
     # Get climate + elevation together
-    result = get_submission_values(
+    result = get_environmental_metadata(
         lat=lat, lon=lon, slots=["annual_precpt", "annual_temp", "elev"]
     )
 

@@ -5,9 +5,9 @@ Error Handling Example
 Shows how to gracefully handle invalid inputs and missing data.
 """
 
-from biosample_enricher.submission_values import (
+from biosample_enricher.environmental_metadata import (
     ALL_SUPPORTED_SLOTS,
-    get_submission_values,
+    get_environmental_metadata,
 )
 
 
@@ -16,7 +16,7 @@ def example_invalid_coordinates():
     print("Example 1: Invalid coordinates\n")
 
     try:
-        get_submission_values(
+        get_environmental_metadata(
             lat=999,  # Invalid: must be -90 to 90
             lon=-122.4194,
             slots=["annual_precpt"],
@@ -30,7 +30,7 @@ def example_invalid_slot():
     print("Example 2: Invalid slot name\n")
 
     try:
-        get_submission_values(
+        get_environmental_metadata(
             lat=37.7749, lon=-122.4194, slots=["annual_precpt", "invalid_slot_name"]
         )
     except ValueError as e:
@@ -43,7 +43,7 @@ def example_missing_data():
     print("Example 3: Missing data for a slot\n")
 
     # Requesting depth data for a land location
-    result = get_submission_values(
+    result = get_environmental_metadata(
         lat=37.7749,  # San Francisco (on land)
         lon=-122.4194,
         slots=["annual_precpt", "depth"],  # depth won't be available on land

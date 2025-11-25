@@ -1,7 +1,7 @@
 """
-Tests for the CLI that wraps get_submission_values() for NMDC metadata suggestions.
+Tests for the CLI that wraps get_environmental_metadata() for NMDC metadata suggestions.
 
-Tests the CLI interface for get_submission_values() including:
+Tests the CLI interface for get_environmental_metadata() including:
 - get command with various options
 - info command
 - slots/providers/strategies helper commands
@@ -31,7 +31,7 @@ class TestCLIHelp:
         """Test main CLI help."""
         result = runner.invoke(main, ["--help"])
         assert result.exit_code == 0
-        assert "Get NMDC submission-schema values" in result.output
+        assert "Get environmental metadata" in result.output
         assert "get" in result.output
         assert "info" in result.output
 

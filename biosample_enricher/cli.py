@@ -1,7 +1,7 @@
 """Command-line interface for biosample enricher.
 
-The primary CLI command is `get` which wraps get_submission_values() for
-retrieving NMDC submission-schema compliant values from geographic coordinates.
+The primary CLI command is `get` which wraps get_environmental_metadata() for
+retrieving environmental metadata from geographic coordinates.
 
 Examples:
     # Get climate and elevation data
@@ -23,7 +23,7 @@ from biosample_enricher.cli_submission_values import submission_values_cli
 @click.group()
 @click.version_option(version=__version__)
 def main() -> None:
-    """Biosample Enricher: Get NMDC submission-schema values for coordinates.
+    """Biosample Enricher: Get environmental metadata for coordinates.
 
     \b
     Quick Start:
@@ -33,7 +33,7 @@ def main() -> None:
     \b
     The primary command is 'get' which retrieves environmental metadata
     from authoritative data sources (elevation, climate, weather, soil, marine)
-    and returns it in NMDC submission format.
+    and returns it in a standardized format.
 
     \b
     For full documentation:

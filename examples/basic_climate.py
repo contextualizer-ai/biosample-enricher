@@ -6,7 +6,7 @@ Get 30-year climate averages (annual_precpt, annual_temp) for a location.
 This is the simplest and most common use case.
 """
 
-from biosample_enricher.submission_values import get_submission_values
+from biosample_enricher.environmental_metadata import get_environmental_metadata
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
     print(f"Getting climate data for San Francisco ({lat}, {lon})...\n")
 
     # Get annual precipitation and temperature
-    result = get_submission_values(
+    result = get_environmental_metadata(
         lat=lat, lon=lon, slots=["annual_precpt", "annual_temp"]
     )
 

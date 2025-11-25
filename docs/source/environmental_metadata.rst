@@ -1,26 +1,26 @@
-NMDC Submission Values
+Environmental Metadata
 ======================
 
-.. currentmodule:: biosample_enricher.submission_values
+.. currentmodule:: biosample_enricher.environmental_metadata
 
-The simplest way to get NMDC submission-schema values for your biosamples.
+Get environmental metadata for geographic coordinates.
 
 What It Does
 ------------
 
-**Get environmental metadata values** for NMDC submission-schema slots like ``annual_precpt``, ``annual_temp``, ``elev``, ``depth``, etc.
+**Get environmental metadata values** for slots like ``annual_precpt``, ``annual_temp``, ``elev``, ``depth``, etc.
 
-Give it GPS coordinates → Get back submission-ready values with units and provenance.
+Give it GPS coordinates → Get back values with units and provenance. Compatible with NMDC submission-schema and other applications.
 
 Quick Example
 -------------
 
 .. code-block:: python
 
-   from biosample_enricher.submission_values import get_submission_values
+   from biosample_enricher.environmental_metadata import get_environmental_metadata
 
    # Get climate data for San Francisco
-   result = get_submission_values(
+   result = get_environmental_metadata(
        lat=37.7749,
        lon=-122.4194,
        slots=["annual_precpt", "annual_temp"]
@@ -180,7 +180,7 @@ See the `submission-schema documentation <https://microbiomedata.github.io/nmdc-
 Parameters
 ----------
 
-.. function:: get_submission_values(lat, lon, slots, datetime_obj=None, providers=None, strategy="mean")
+.. function:: get_environmental_metadata(lat, lon, slots, datetime_obj=None, providers=None, strategy="mean")
 
    Get NMDC submission-schema values for specified slots.
 
@@ -245,7 +245,7 @@ Parameters
                         **Example**::
 
                           # Use median to handle outliers
-                          result = get_submission_values(
+                          result = get_environmental_metadata(
                               lat=46.8523, lon=-121.7603,
                               slots=["elev"],
                               strategy="median"
@@ -324,10 +324,10 @@ Basic Climate Data
 
 .. code-block:: python
 
-   from biosample_enricher.submission_values import get_submission_values
+   from biosample_enricher.environmental_metadata import get_environmental_metadata
 
    # Get 30-year climate averages for a location
-   result = get_submission_values(
+   result = get_environmental_metadata(
        lat=42.3601,   # Boston
        lon=-71.0589,
        slots=["annual_precpt", "annual_temp"]
@@ -350,7 +350,7 @@ Mixing Multiple Slot Types
 .. code-block:: python
 
    # Get climate + elevation in one call
-   result = get_submission_values(
+   result = get_environmental_metadata(
        lat=40.7128,   # New York City
        lon=-74.0060,
        slots=["annual_precpt", "annual_temp", "elev"]
@@ -367,7 +367,7 @@ Using Specific Providers
 .. code-block:: python
 
    # Use only meteostat for climate (not NASA POWER)
-   result = get_submission_values(
+   result = get_environmental_metadata(
        lat=51.5074,   # London
        lon=-0.1278,
        slots=["annual_precpt", "annual_temp"],
@@ -385,7 +385,7 @@ Weather Data (Requires Datetime)
    from datetime import datetime
 
    # Get weather at sample collection time
-   result = get_submission_values(
+   result = get_environmental_metadata(
        lat=34.0522,   # Los Angeles
        lon=-118.2437,
        slots=["temp", "humidity", "wind_speed"],
@@ -405,7 +405,7 @@ Error Handling
 
    # Handle invalid inputs gracefully
    try:
-       result = get_submission_values(
+       result = get_environmental_metadata(
            lat=37.7749,
            lon=-122.4194,
            slots=["annual_precpt", "invalid_slot_name"]
@@ -416,7 +416,7 @@ Error Handling
        # Supported slots: ['air_temp', 'annual_precpt', 'annual_temp', ...]
 
    # Check for missing data
-   result = get_submission_values(
+   result = get_environmental_metadata(
        lat=37.7749,
        lon=-122.4194,
        slots=["annual_precpt", "depth"]  # depth may not be available on land
@@ -440,7 +440,7 @@ These constants are available for programmatic access:
 
 .. code-block:: python
 
-   from biosample_enricher.submission_values import (
+   from biosample_enricher.environmental_metadata import (
        # Slot categories
        ALL_SUPPORTED_SLOTS,   # All slots combined
        CLIMATE_SLOTS,         # {'annual_precpt', 'annual_temp'}
@@ -558,7 +558,7 @@ Checking Available Slots and Providers
 
 .. code-block:: python
 
-   from biosample_enricher.submission_values import (
+   from biosample_enricher.environmental_metadata import (
        ALL_SUPPORTED_SLOTS,
        CLIMATE_SLOTS,
        WEATHER_SLOTS,

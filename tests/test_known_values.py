@@ -1,7 +1,7 @@
 """
 Tests that validate consensus results against known reference values.
 
-These tests verify that get_submission_values returns values within expected
+These tests verify that get_environmental_metadata returns values within expected
 ranges for well-characterized locations. The expected ranges are based on
 published climate data and elevation measurements.
 
@@ -12,7 +12,7 @@ Reference sources:
 
 import pytest
 
-from biosample_enricher.submission_values import get_submission_values
+from biosample_enricher.environmental_metadata import get_environmental_metadata
 
 # Known reference data for test locations
 # Format: (lat, lon, name, expected_values)
@@ -127,7 +127,7 @@ class TestKnownClimateValues:
     )
     def test_annual_precpt_in_expected_range(self, location: dict):
         """Test annual precipitation is within expected range."""
-        result = get_submission_values(
+        result = get_environmental_metadata(
             lat=location["lat"],
             lon=location["lon"],
             slots=["annual_precpt"],
@@ -152,7 +152,7 @@ class TestKnownClimateValues:
     )
     def test_annual_temp_in_expected_range(self, location: dict):
         """Test annual temperature is within expected range."""
-        result = get_submission_values(
+        result = get_environmental_metadata(
             lat=location["lat"],
             lon=location["lon"],
             slots=["annual_temp"],
@@ -182,7 +182,7 @@ class TestKnownElevationValues:
     )
     def test_elev_in_expected_range(self, location: dict):
         """Test elevation is within expected range."""
-        result = get_submission_values(
+        result = get_environmental_metadata(
             lat=location["lat"],
             lon=location["lon"],
             slots=["elev"],
@@ -206,7 +206,7 @@ class TestConsensusAcrossProviders:
     def test_elevation_providers_agree_within_tolerance(self):
         """Test that elevation providers agree within reasonable tolerance."""
         # San Francisco - well-documented location
-        result = get_submission_values(
+        result = get_environmental_metadata(
             lat=37.7749,
             lon=-122.4194,
             slots=["elev"],
@@ -236,7 +236,7 @@ class TestConsensusAcrossProviders:
     def test_climate_providers_agree_within_tolerance(self):
         """Test that climate providers agree within reasonable tolerance."""
         # San Francisco - well-documented location
-        result = get_submission_values(
+        result = get_environmental_metadata(
             lat=37.7749,
             lon=-122.4194,
             slots=["annual_precpt", "annual_temp"],
@@ -283,10 +283,10 @@ class TestStrategyEffects:
         """Test that mean and first strategies can produce different elevation values."""
         lat, lon = 37.7749, -122.4194  # San Francisco
 
-        mean_result = get_submission_values(
+        mean_result = get_environmental_metadata(
             lat=lat, lon=lon, slots=["elev"], strategy="mean"
         )
-        first_result = get_submission_values(
+        first_result = get_environmental_metadata(
             lat=lat, lon=lon, slots=["elev"], strategy="first"
         )
 
@@ -313,7 +313,7 @@ class TestStrategyEffects:
         strategies = ["mean", "median", "first"]
 
         for strategy in strategies:
-            result = get_submission_values(
+            result = get_environmental_metadata(
                 lat=lat, lon=lon, slots=["elev"], strategy=strategy
             )
 

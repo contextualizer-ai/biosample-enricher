@@ -8,7 +8,7 @@ Weather slots like temp, humidity, wind_speed require a datetime parameter.
 
 from datetime import datetime
 
-from biosample_enricher.submission_values import get_submission_values
+from biosample_enricher.environmental_metadata import get_environmental_metadata
 
 
 def main() -> None:
@@ -24,7 +24,7 @@ def main() -> None:
     print(f"Collection datetime: {collection_datetime.isoformat()}\n")
 
     # Get weather data - datetime_obj is REQUIRED for weather slots
-    result = get_submission_values(
+    result = get_environmental_metadata(
         lat=lat,
         lon=lon,
         slots=["temp", "humidity", "wind_speed"],
@@ -65,7 +65,7 @@ def compare_weather_and_climate() -> None:
     print("Comparing Weather vs Climate for Phoenix, AZ")
     print("=" * 60 + "\n")
 
-    result = get_submission_values(
+    result = get_environmental_metadata(
         lat=lat,
         lon=lon,
         slots=["annual_temp", "temp"],  # annual_temp = climate, temp = weather

@@ -1,15 +1,15 @@
 # NMDC Submission Values Examples
 
-Simple, copy-paste ready examples showing how to use `get_submission_values()` to populate NMDC submission-schema slots.
+Simple, copy-paste ready examples showing how to use `get_environmental_metadata()` to populate NMDC submission-schema slots.
 
 ## Quick Start
 
 All examples use the same simple pattern:
 
 ```python
-from biosample_enricher.submission_values import get_submission_values
+from biosample_enricher.environmental_metadata import get_environmental_metadata
 
-result = get_submission_values(
+result = get_environmental_metadata(
     lat=your_latitude,
     lon=your_longitude,
     slots=["slot_name_1", "slot_name_2"]
@@ -78,6 +78,6 @@ uv run biosample-enricher get --lat 46.8523 --lon -121.7603 --slots elev --strat
 
 ## Need More Help?
 
-- **Full documentation**: [NMDC Submission Values Guide](https://contextualizer-ai.github.io/biosample-enricher/submission_values.html)
+- **Full documentation**: [NMDC Submission Values Guide](https://contextualizer-ai.github.io/biosample-enricher/environmental_metadata.html)
 - **CLI reference**: [CLI Documentation](https://contextualizer-ai.github.io/biosample-enricher/cli.html)
 - **Issues?** [Report on GitHub](https://github.com/contextualizer-ai/biosample-enricher/issues)

@@ -36,7 +36,7 @@ Public constants exported by modules (typically used for configuration, validati
 
 - **Value**: `{'Sand': {'sand': (85, 100), 'clay': (0, 10)}, 'Loamy sand': {'sand': (70, 85), 'clay': (0, 15)},...`
 
-### `submission_values`
+### `environmental_metadata`
 
 #### `ALL_SUPPORTED_SLOTS`
 
@@ -1034,11 +1034,11 @@ Public constants exported by modules (typically used for configuration, validati
 - **Signature**: `get_session() -> CachedSession`
 - **Description**: Get cached session with SQLite backend.
 
-#### `get_submission_values`
+#### `get_environmental_metadata`
 
 - **Type**: function
-- **Module**: `submission_values`
-- **Signature**: `get_submission_values(lat: float, lon: float, slots: list[str], datetime_obj: datetime | None, providers: list[str] | None) -> dict[str, Any]`
+- **Module**: `environmental_metadata`
+- **Signature**: `get_environmental_metadata(lat: float, lon: float, slots: list[str], datetime_obj: datetime | None, providers: list[str] | None) -> dict[str, Any]`
 - **Description**: Get NMDC submission-schema compliant values for specified slots.
 
 #### `GOLDBiosampleAdapter.extract_location`
