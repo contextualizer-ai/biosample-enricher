@@ -1,6 +1,9 @@
 """Tests for the public API exports in __init__.py."""
 
+import pytest
 
+
+@pytest.mark.unit
 class TestPublicAPIImports:
     """Test that public API can be imported from the top-level package."""
 
@@ -108,6 +111,7 @@ class TestPublicAPIImports:
         assert request.longitude == -74.0060
 
 
+@pytest.mark.network
 class TestPublicAPIUsage:
     """Test realistic usage patterns of the public API."""
 

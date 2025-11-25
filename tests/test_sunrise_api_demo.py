@@ -12,11 +12,14 @@ Usage:
     uv run pytest tests/examples/test_sunrise_api_demo.py -m network -s
 """
 
+import logging
 import time
 
 import pytest
 
 from biosample_enricher.http_cache import get_session, request
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.mark.network
@@ -29,8 +32,7 @@ def test_sunrise_api_cache_demo():
     2. Cache hit on second request (much faster)
     3. Coordinate canonicalization (different precision gives same result)
     """
-    print("\n🌅 Sunrise-Sunset API Cache Demo")
-    print("=" * 50)
+    logger.info("Sunrise-Sunset API Cache Demo starting")
 
     # Clear cache to start fresh
     session = get_session()
@@ -40,69 +42,80 @@ def test_sunrise_api_cache_demo():
     url = "https://api.sunrise-sunset.org/json"
     params = {"lat": 37.7749, "lng": -122.4194, "date": "2025-09-10"}
 
-    print(f"Testing URL: {url}")
-    print(f"Parameters: {params}")
-    print()
+    logger.info("Testing URL: %s with params: %s", url, params)
 
     # First request - should miss cache
-    print("📡 First request (cache miss expected)...")
+    logger.info("First request (cache miss expected)...")
     start_time = time.time()
 
     try:
         response1 = request("GET", url, params=params, timeout=10)
         first_request_time = time.time() - start_time
 
-        print(f"✅ Status: {response1.status_code}")
-        print(f"⏱️  Time: {first_request_time:.3f} seconds")
-        print(f"💾 From cache: {getattr(response1, 'from_cache', False)}")
+        logger.info(
+            "First request: status=%d, time=%.3fs, from_cache=%s",
+            response1.status_code,
+            first_request_time,
+            getattr(response1, "from_cache", False),
+        )
 
         if response1.status_code == 200:
             data = response1.json()
-            print(f"📊 Response: {data['status']}")
             if "results" in data:
-                print(f"🌅 Sunrise: {data['results']['sunrise']}")
-                print(f"🌇 Sunset: {data['results']['sunset']}")
-        print()
+                logger.info(
+                    "Response: status=%s, sunrise=%s, sunset=%s",
+                    data["status"],
+                    data["results"]["sunrise"],
+                    data["results"]["sunset"],
+                )
 
         # Second request - should hit cache
-        print("📡 Second request (cache hit expected)...")
+        logger.info("Second request (cache hit expected)...")
         start_time = time.time()
 
         response2 = request("GET", url, params=params, timeout=10)
         second_request_time = time.time() - start_time
 
-        print(f"✅ Status: {response2.status_code}")
-        print(f"⏱️  Time: {second_request_time:.3f} seconds")
-        print(f"💾 From cache: {getattr(response2, 'from_cache', False)}")
-        print()
+        logger.info(
+            "Second request: status=%d, time=%.3fs, from_cache=%s",
+            response2.status_code,
+            second_request_time,
+            getattr(response2, "from_cache", False),
+        )
 
         # Test coordinate canonicalization
-        print("🎯 Testing coordinate canonicalization...")
+        logger.info("Testing coordinate canonicalization...")
         precise_params = {
             "lat": 37.774929483,
             "lng": -122.419416284,
             "date": "2025-09-10",
         }
-        print(f"High precision params: {precise_params}")
+        logger.info("High precision params: %s", precise_params)
 
         start_time = time.time()
         response3 = request("GET", url, params=precise_params, timeout=10)
         third_request_time = time.time() - start_time
 
-        print(f"✅ Status: {response3.status_code}")
-        print(f"⏱️  Time: {third_request_time:.3f} seconds")
-        print(f"💾 From cache: {getattr(response3, 'from_cache', False)}")
-        print()
+        logger.info(
+            "Third request: status=%d, time=%.3fs, from_cache=%s",
+            response3.status_code,
+            third_request_time,
+            getattr(response3, "from_cache", False),
+        )
 
         # Performance comparison
-        print("📈 Performance Summary:")
-        print(f"   First request (API call): {first_request_time:.3f}s")
-        print(f"   Second request (cache):   {second_request_time:.3f}s")
-        print(f"   Third request (canon):    {third_request_time:.3f}s")
-
-        if second_request_time < first_request_time:
-            speedup = first_request_time / second_request_time
-            print(f"   🚀 Cache speedup: {speedup:.1f}x faster")
+        speedup = (
+            first_request_time / second_request_time
+            if second_request_time < first_request_time
+            else 0
+        )
+        logger.info(
+            "Performance Summary: first=%.3fs, second=%.3fs, third=%.3fs, speedup=%.1fx",
+            first_request_time,
+            second_request_time,
+            third_request_time,
+            speedup,
+        )
 
         # Validate responses are identical
         if (
@@ -116,12 +129,11 @@ def test_sunrise_api_cache_demo():
             data3 = response3.json()
 
             if data1 == data2 == data3:
-                print("   ✅ All responses identical - cache working correctly!")
+                logger.info("All responses identical - cache working correctly")
             else:
-                print("   ⚠️  Response data differs between requests")
+                logger.warning("Response data differs between requests")
 
-        print()
-        print("🎉 Demo completed successfully!")
+        logger.info("Demo completed successfully")
 
         # For pytest assertions
         assert response1.status_code == 200
@@ -135,7 +147,7 @@ def test_sunrise_api_cache_demo():
         )
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.error("Error during demo: %s", e)
         raise
 
     finally:

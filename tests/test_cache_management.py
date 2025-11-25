@@ -3,11 +3,13 @@
 import json
 from unittest.mock import MagicMock, patch
 
+import pytest
 from click.testing import CliRunner
 
 from biosample_enricher.cache_management import cli
 
 
+@pytest.mark.unit
 class TestCacheManagementCLI:
     """Test the cache management CLI."""
 

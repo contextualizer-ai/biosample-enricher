@@ -201,6 +201,7 @@ Known Limitations and Future Work:
 from datetime import datetime
 from typing import Any
 
+from biosample_enricher.consensus import compute_consensus
 from biosample_enricher.elevation.service import ElevationService
 from biosample_enricher.logging_config import get_logger
 from biosample_enricher.marine.service import MarineService
@@ -219,7 +220,12 @@ __all__ = [
     "SOIL_SLOTS",
     "ALL_SUPPORTED_SLOTS",
     "CLIMATE_PROVIDERS",
+    "ELEVATION_PROVIDERS",
+    "CONSENSUS_STRATEGIES",
 ]
+
+# Available consensus strategies for combining multi-provider values
+CONSENSUS_STRATEGIES = frozenset(["mean", "median", "first", "best_quality"])
 
 # Supported submission schema slots
 CLIMATE_SLOTS = frozenset(["annual_precpt", "annual_temp"])
@@ -234,8 +240,9 @@ ALL_SUPPORTED_SLOTS = (
     CLIMATE_SLOTS | WEATHER_SLOTS | ELEVATION_SLOTS | MARINE_SLOTS | SOIL_SLOTS
 )
 
-# Available providers for climate normals
+# Available providers by slot category
 CLIMATE_PROVIDERS = frozenset(["meteostat", "nasa_power"])
+ELEVATION_PROVIDERS = frozenset(["usgs", "google", "open_topo_data", "osm"])
 
 
 def get_submission_values(
@@ -244,6 +251,7 @@ def get_submission_values(
     slots: list[str],
     datetime_obj: datetime | None = None,
     providers: list[str] | None = None,
+    strategy: str = "mean",
 ) -> dict[str, Any]:
     """
     Get NMDC submission-schema compliant values for specified slots.
@@ -271,8 +279,13 @@ def get_submission_values(
                      Not used for CLIMATE_SLOTS, ELEVATION_SLOTS, MARINE_SLOTS, SOIL_SLOTS
         providers: Optional list of specific provider names to use (filters available providers).
                   For climate data (CLIMATE_SLOTS): Must be from CLIMATE_PROVIDERS ("meteostat", "nasa_power")
-                  For other slots: provider names vary by service
+                  For elevation data (ELEVATION_SLOTS): Must be from ELEVATION_PROVIDERS ("usgs", "google", "open_topo_data", "osm")
                   If None, all available providers are queried.
+        strategy: How to combine values from multiple providers (default: "mean"):
+                 - "mean": Average across all successful providers
+                 - "median": Middle value (robust to outliers)
+                 - "first": Use first successful provider in priority order
+                 - "best_quality": Use provider with best quality metric (e.g., closest station, highest resolution)
 
     Returns:
         Dict with two keys:
@@ -285,11 +298,15 @@ def get_submission_values(
         - "metadata": Dict with provider information for transparency:
             - "climate_normals": Provider details for annual_precpt/annual_temp (if requested)
               - "providers_used": List of provider names that contributed data
-              - "consensus_strategy": How values were combined ("consensus" = averaged)
+              - "consensus_strategy": How values were combined ("mean", "median", "first", "best_quality")
               - "provider_results": Dict of {provider_name: {annual_precpt, annual_temp, period, ...}}
               - "failed_providers": Dict of {provider_name: error_message}
+            - "elevation": Provider details for elev (if requested)
+              - "providers_used": List of provider names that contributed data
+              - "consensus_strategy": How values were combined
+              - "provider_results": Dict of {provider_name: {elevation_m, resolution_m, ...}}
+              - "failed_providers": Dict of {provider_name: error_message}
             - "weather": Provider details for temp/humidity/etc. (future)
-            - "elevation": Provider details for elev (future)
             - "marine": Provider details for depth (future)
             - "soil": Provider details for ph/soil_type (future)
 
@@ -338,14 +355,22 @@ def get_submission_values(
 
     # Validate providers if specified
     if providers is not None:
-        # Check if user is requesting climate slots
         requesting_climate = bool(set(slots) & CLIMATE_SLOTS)
+        requesting_elevation = bool(set(slots) & ELEVATION_SLOTS)
+
+        # Build set of valid providers based on requested slots
+        valid_providers: set[str] = set()
         if requesting_climate:
-            invalid_providers = set(providers) - CLIMATE_PROVIDERS
+            valid_providers |= CLIMATE_PROVIDERS
+        if requesting_elevation:
+            valid_providers |= ELEVATION_PROVIDERS
+
+        if valid_providers:
+            invalid_providers = set(providers) - valid_providers
             if invalid_providers:
                 raise ValueError(
-                    f"Invalid climate provider(s): {sorted(invalid_providers)}. "
-                    f"Available climate providers: {sorted(CLIMATE_PROVIDERS)}"
+                    f"Invalid provider(s): {sorted(invalid_providers)}. "
+                    f"Valid providers for requested slots: {sorted(valid_providers)}"
                 )
 
     logger.info(f"Getting submission values for {len(slots)} slots at ({lat}, {lon})")
@@ -391,10 +416,16 @@ def get_submission_values(
     if requested_elevation_slots:
         try:
             elevation_service = ElevationService()
-            elevation_values = _get_elevation_values(
-                elevation_service, lat, lon, requested_elevation_slots, providers
+            elevation_values, elevation_metadata = _get_elevation_values(
+                elevation_service,
+                lat,
+                lon,
+                requested_elevation_slots,
+                providers,
+                strategy,
             )
             result.update(elevation_values)
+            all_metadata.update(elevation_metadata)
         except Exception as e:
             logger.error(f"Failed to get elevation values: {e}")
 
@@ -507,7 +538,7 @@ def _get_weather_values(
 
             metadata["climate_normals"] = {
                 "providers_used": normals.successful_providers,
-                "consensus_strategy": "consensus",
+                "consensus_strategy": "mean",
                 "requested_start_year": normals.requested_start_year,
                 "requested_end_year": normals.requested_end_year,
                 "provider_results": provider_results,
@@ -593,33 +624,101 @@ def _get_elevation_values(
     lat: float,
     lon: float,
     slots: list[str],
-    _providers: list[str] | None,
-) -> dict[str, Any]:
+    providers: list[str] | None,
+    strategy: str = "first",
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """
-    Extract elevation-related slot values.
+    Extract elevation-related slot values with metadata.
+
+    Uses the shared consensus module to combine values from multiple providers.
+    Default strategy is "first" (use first successful provider) for backwards
+    compatibility, but "mean" is recommended for more robust results.
 
     Note: Only retrieves ground surface elevation (elev). Does NOT support
     altitude (alt) for airborne samples, as that cannot be determined from
     lat/lon alone and requires actual measurement from the sampling platform.
+
+    Args:
+        service: ElevationService instance
+        lat: Latitude in decimal degrees
+        lon: Longitude in decimal degrees
+        slots: List of requested slot names
+        providers: Optional list of preferred provider names
+        strategy: Consensus strategy - "mean", "median", "first", "best_quality"
+                 Default is "first" for backwards compatibility
+
+    Returns:
+        Tuple of (values_dict, metadata_dict)
     """
     values: dict[str, Any] = {}
+    metadata: dict[str, Any] = {}
 
     try:
-        # Create ElevationRequest
-        request = ElevationRequest(latitude=lat, longitude=lon)
+        # Create ElevationRequest with preferred providers if specified
+        elevation_providers = None
+        if providers is not None:
+            # Filter to only elevation-relevant providers
+            elevation_providers = [p for p in providers if p in ELEVATION_PROVIDERS]
+
+        request = ElevationRequest(
+            latitude=lat,
+            longitude=lon,
+            preferred_providers=elevation_providers,
+        )
         observations = service.get_elevation(request)
 
-        # Get first successful observation
-        if observations and "elev" in slots:
-            for obs in observations:
-                if obs.value_numeric is not None:
-                    values["elev"] = obs.value_numeric  # meters above sea level
-                    break  # Use first successful observation
+        # Collect data from all observations
+        provider_results: dict[str, Any] = {}
+        provider_elevations: dict[str, float | None] = {}
+        quality_scores: dict[str, float] = {}  # For best_quality strategy
+        failed_providers: dict[str, str] = {}
+
+        for obs in observations:
+            provider_name = obs.provider.name
+            if obs.value_numeric is not None:
+                provider_results[provider_name] = {
+                    "elevation_m": obs.value_numeric,
+                    "resolution_m": obs.spatial_resolution_m,
+                    "distance_to_input_m": obs.distance_to_input_m,
+                    "vertical_datum": obs.vertical_datum,
+                }
+                provider_elevations[provider_name] = obs.value_numeric
+                # Use resolution as quality metric (lower is better)
+                if obs.spatial_resolution_m is not None:
+                    quality_scores[provider_name] = obs.spatial_resolution_m
+            elif obs.error_message:
+                failed_providers[provider_name] = obs.error_message
+
+        # Use shared consensus module to compute final value
+        consensus_result = compute_consensus(
+            provider_elevations,
+            strategy=strategy,
+            quality_scores=quality_scores if strategy == "best_quality" else None,
+            lower_is_better=True,  # Lower resolution = better
+        )
+
+        # Set value if we have one
+        if "elev" in slots and consensus_result["value"] is not None:
+            values["elev"] = consensus_result["value"]
+
+        # Build metadata
+        metadata["elevation"] = {
+            "providers_used": consensus_result["providers_used"],
+            "consensus_strategy": consensus_result["strategy"],
+            "provider_results": provider_results,
+            "failed_providers": failed_providers,
+        }
 
     except Exception as e:
         logger.warning(f"Failed to get elevation: {e}")
+        metadata["elevation"] = {
+            "providers_used": [],
+            "consensus_strategy": strategy,
+            "provider_results": {},
+            "failed_providers": {"error": str(e)},
+        }
 
-    return values
+    return values, metadata
 
 
 def _get_marine_values(

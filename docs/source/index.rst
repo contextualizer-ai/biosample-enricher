@@ -70,8 +70,9 @@ Quick Start
 
    installation
    quickstart
-   services/index
+   submission_values
    cli
+   services/index
 
 .. toctree::
    :maxdepth: 2

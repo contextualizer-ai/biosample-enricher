@@ -6,6 +6,7 @@ Tests both single coordinate lookups and batch processing with various options.
 """
 
 import json
+import logging
 import tempfile
 from pathlib import Path
 
@@ -14,7 +15,10 @@ from click.testing import CliRunner
 
 from biosample_enricher.cli_elevation import elevation_cli
 
+logger = logging.getLogger(__name__)
 
+
+@pytest.mark.network
 class TestElevationCLI:
     """Test the elevation CLI interface."""
 
@@ -290,6 +294,7 @@ class TestElevationCLI:
         assert "--timeout" in result.output  # Check for a different option
 
 
+@pytest.mark.network
 class TestElevationCLIIntegration:
     """Integration tests for elevation CLI with real coordinates."""
 
@@ -390,8 +395,8 @@ class TestElevationCLIIntegration:
                 }
 
             # US should include USGS, international should not rely on USGS
-            print(f"US providers: {us_providers}")
-            print(f"International providers: {intl_providers}")
+            logger.info("US providers: %s", us_providers)
+            logger.info("International providers: %s", intl_providers)
 
 
 if __name__ == "__main__":

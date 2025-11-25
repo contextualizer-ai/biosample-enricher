@@ -6,6 +6,7 @@ Ensures environment variables from .env are loaded for all tests.
 
 import contextlib
 import importlib
+import logging
 import os
 import threading
 import time
@@ -16,6 +17,8 @@ import pytest
 import requests_cache
 from dotenv import load_dotenv
 
+logger = logging.getLogger(__name__)
+
 
 def pytest_configure(config):
     """Configure pytest session - load environment variables."""
@@ -23,9 +26,9 @@ def pytest_configure(config):
     env_path = Path(__file__).parent.parent / ".env"
     if env_path.exists():
         load_dotenv(env_path)
-        print(f"Loaded environment variables from {env_path}")
+        logger.debug("Loaded environment variables from %s", env_path)
     else:
-        print(f"No .env file found at {env_path}")
+        logger.debug("No .env file found at %s", env_path)
 
 
 @pytest.fixture(scope="session", autouse=True)

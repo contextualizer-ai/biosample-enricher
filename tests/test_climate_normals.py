@@ -6,10 +6,14 @@ following Olivia's feedback about general-purpose design (Issue #199)
 and submission-schema extraction (Issue #193).
 """
 
+import logging
+
 import pytest
 
 from biosample_enricher.weather.providers.meteostat import MeteostatProvider
 from biosample_enricher.weather.service import WeatherService
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.mark.network
@@ -65,13 +69,15 @@ def test_get_annual_precipitation_for_location():
         assert provider_result.station_distance_km >= 0
         assert provider_result.provider in ["meteostat", "nasa_power"]
 
-    print("\nSan Francisco Climate (dynamic period):")
-    print(
-        f"  Requested period: {normals.requested_start_year}-{normals.requested_end_year}"
+    logger.info(
+        "San Francisco Climate (dynamic period): period=%d-%d, "
+        "annual_precpt=%.1f mm/year, annual_temp=%.1f °C, providers=%s",
+        normals.requested_start_year,
+        normals.requested_end_year,
+        annual_precip_mm,
+        schema_values["annual_temp"],
+        normals.successful_providers,
     )
-    print(f"  Annual precipitation (consensus): {annual_precip_mm:.1f} mm/year")
-    print(f"  Annual temperature (consensus): {schema_values['annual_temp']:.1f} °C")
-    print(f"  Successful providers: {normals.successful_providers}")
 
 
 @pytest.mark.network
@@ -113,8 +119,11 @@ def test_climate_normals_multiple_locations():
             f"got {annual_precip:.1f}mm"
         )
 
-        print(
-            f"{location['name']}: {annual_precip:.1f} mm/year (providers: {normals.successful_providers})"
+        logger.info(
+            "%s: %.1f mm/year (providers: %s)",
+            location["name"],
+            annual_precip,
+            normals.successful_providers,
         )
 
 
