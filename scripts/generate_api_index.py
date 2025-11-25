@@ -18,12 +18,14 @@ from typing import Any
 
 
 class FunctionVisitor(ast.NodeVisitor):
-    """AST visitor to extract function and method definitions."""
+    """AST visitor to extract function and method definitions, plus module constants."""
 
     def __init__(self, module_path: str):
         self.module_path = module_path
         self.functions: list[dict[str, Any]] = []
+        self.constants: list[dict[str, Any]] = []
         self.current_class: str | None = None
+        self.all_exports: set[str] = set()
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         """Visit class definition to track methods."""
@@ -93,17 +95,51 @@ class FunctionVisitor(ast.NodeVisitor):
         # Convert to FunctionDef for processing
         self.visit_FunctionDef(node)  # type: ignore
 
+    def visit_Assign(self, node: ast.Assign) -> None:
+        """Visit assignment to capture __all__ and module constants."""
+        # Check if this is __all__ assignment
+        for target in node.targets:
+            if isinstance(target, ast.Name) and target.id == "__all__":
+                # Extract exported names from __all__
+                if isinstance(node.value, ast.List):
+                    for elt in node.value.elts:
+                        if isinstance(elt, ast.Constant):
+                            self.all_exports.add(elt.value)
 
-def scan_python_file(file_path: Path, package_root: Path) -> list[dict[str, Any]]:
+            # Check if this is a module-level constant (ALL_CAPS)
+            elif isinstance(target, ast.Name):
+                name = target.id
+                # Only capture ALL_CAPS constants at module level (not in classes)
+                if (
+                    not self.current_class
+                    and name.isupper()
+                    and not name.startswith("_")
+                ):
+                    # Try to get a simple value representation
+                    value_repr = ast.unparse(node.value) if node.value else "..."
+
+                    self.constants.append(
+                        {
+                            "name": name,
+                            "module": self.module_path,
+                            "value": value_repr,
+                            "lineno": node.lineno,
+                        }
+                    )
+
+
+def scan_python_file(
+    file_path: Path, package_root: Path
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """
-    Scan a Python file and extract all public functions and methods.
+    Scan a Python file and extract all public functions, methods, and constants.
 
     Args:
         file_path: Path to Python file
         package_root: Root of the package
 
     Returns:
-        List of function/method metadata dictionaries
+        Tuple of (functions, constants) metadata dictionaries
     """
     try:
         with open(file_path) as f:
@@ -116,23 +152,26 @@ def scan_python_file(file_path: Path, package_root: Path) -> list[dict[str, Any]
 
         visitor = FunctionVisitor(module_path)
         visitor.visit(tree)
-        return visitor.functions
+        return visitor.functions, visitor.constants
     except Exception as e:
         print(f"Warning: Failed to parse {file_path}: {e}")
-        return []
+        return [], []
 
 
-def scan_package(package_path: Path) -> list[dict[str, Any]]:
+def scan_package(
+    package_path: Path,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """
-    Scan entire package and extract all public functions and methods.
+    Scan entire package and extract all public functions, methods, and constants.
 
     Args:
         package_path: Path to package root
 
     Returns:
-        List of all function/method metadata
+        Tuple of (all_functions, all_constants) metadata
     """
     all_functions = []
+    all_constants = []
 
     # Find all Python files
     for py_file in package_path.rglob("*.py"):
@@ -140,18 +179,22 @@ def scan_package(package_path: Path) -> list[dict[str, Any]]:
         if "__pycache__" in str(py_file) or "test_" in py_file.name:
             continue
 
-        functions = scan_python_file(py_file, package_path)
+        functions, constants = scan_python_file(py_file, package_path)
         all_functions.extend(functions)
+        all_constants.extend(constants)
 
-    return all_functions
+    return all_functions, all_constants
 
 
-def generate_markdown_index(functions: list[dict[str, Any]]) -> str:
+def generate_markdown_index(
+    functions: list[dict[str, Any]], constants: list[dict[str, Any]]
+) -> str:
     """
-    Generate markdown index from function metadata.
+    Generate markdown index from function and constant metadata.
 
     Args:
         functions: List of function/method metadata
+        constants: List of module constant metadata
 
     Returns:
         Markdown formatted index
@@ -162,10 +205,45 @@ def generate_markdown_index(functions: list[dict[str, Any]]) -> str:
     lines.append("# Alphabetical API Index")
     lines.append("")
     lines.append(
-        "This is a comprehensive alphabetical index of all public functions and methods in the biosample-enricher package."
+        "This is a comprehensive alphabetical index of all public functions, methods, and constants in the biosample-enricher package."
     )
     lines.append("")
     lines.append("---")
+    lines.append("")
+
+    # Module Constants Section
+    if constants:
+        lines.append("## Module Constants")
+        lines.append("")
+        lines.append(
+            "Public constants exported by modules (typically used for configuration, validation, or schema definitions)."
+        )
+        lines.append("")
+
+        # Group by module
+        by_module = defaultdict(list)
+        for const in sorted(constants, key=lambda c: c["name"]):
+            by_module[const["module"]].append(const)
+
+        for module in sorted(by_module.keys()):
+            lines.append(f"### `{module}`")
+            lines.append("")
+
+            for const in by_module[module]:
+                lines.append(f"#### `{const['name']}`")
+                lines.append("")
+                # Truncate long values
+                value = const["value"]
+                if len(value) > 100:
+                    value = value[:97] + "..."
+                lines.append(f"- **Value**: `{value}`")
+                lines.append("")
+
+        lines.append("---")
+        lines.append("")
+
+    # Functions and Methods Section
+    lines.append("## Functions and Methods")
     lines.append("")
 
     # Group by first letter
@@ -176,12 +254,12 @@ def generate_markdown_index(functions: list[dict[str, Any]]) -> str:
 
     # Generate index
     for letter in sorted(by_letter.keys()):
-        lines.append(f"## {letter}")
+        lines.append(f"### {letter}")
         lines.append("")
 
         for func in by_letter[letter]:
             # Function/method name
-            lines.append(f"### `{func['full_name']}`")
+            lines.append(f"#### `{func['full_name']}`")
             lines.append("")
 
             # Metadata
@@ -228,11 +306,12 @@ def main() -> int:
     print(f"Scanning package: {package_path}")
 
     # Scan package
-    functions = scan_package(package_path)
+    functions, constants = scan_package(package_path)
     print(f"Found {len(functions)} public functions and methods")
+    print(f"Found {len(constants)} module constants")
 
     # Generate markdown
-    markdown = generate_markdown_index(functions)
+    markdown = generate_markdown_index(functions, constants)
 
     # Write output
     output_path = Path(args.output)
@@ -242,13 +321,14 @@ def main() -> int:
         f.write(markdown)
 
     print(f"✓ Generated index: {output_path}")
-    print(f"  Total entries: {len(functions)}")
+    print(f"  Total entries: {len(functions) + len(constants)}")
 
     # Summary statistics
     methods = sum(1 for f in functions if f["kind"] == "method")
     funcs = sum(1 for f in functions if f["kind"] == "function")
     print(f"  Functions: {funcs}")
     print(f"  Methods: {methods}")
+    print(f"  Constants: {len(constants)}")
 
     return 0
 
