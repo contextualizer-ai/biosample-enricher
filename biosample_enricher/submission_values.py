@@ -201,7 +201,7 @@ Known Limitations and Future Work:
 from datetime import datetime
 from typing import Any
 
-from biosample_enricher.consensus import compute_consensus
+from biosample_enricher.consensus import ConsensusStrategy, compute_consensus
 from biosample_enricher.elevation.service import ElevationService
 from biosample_enricher.logging_config import get_logger
 from biosample_enricher.marine.service import MarineService
@@ -225,7 +225,8 @@ __all__ = [
 ]
 
 # Available consensus strategies for combining multi-provider values
-CONSENSUS_STRATEGIES = frozenset(["mean", "median", "first", "best_quality"])
+# Dynamically generated from ConsensusStrategy enum to avoid duplication
+CONSENSUS_STRATEGIES = frozenset(s.value for s in ConsensusStrategy)
 
 # Supported submission schema slots
 CLIMATE_SLOTS = frozenset(["annual_precpt", "annual_temp"])
@@ -625,14 +626,12 @@ def _get_elevation_values(
     lon: float,
     slots: list[str],
     providers: list[str] | None,
-    strategy: str = "first",
+    strategy: str = "mean",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """
     Extract elevation-related slot values with metadata.
 
     Uses the shared consensus module to combine values from multiple providers.
-    Default strategy is "first" (use first successful provider) for backwards
-    compatibility, but "mean" is recommended for more robust results.
 
     Note: Only retrieves ground surface elevation (elev). Does NOT support
     altitude (alt) for airborne samples, as that cannot be determined from
@@ -645,7 +644,7 @@ def _get_elevation_values(
         slots: List of requested slot names
         providers: Optional list of preferred provider names
         strategy: Consensus strategy - "mean", "median", "first", "best_quality"
-                 Default is "first" for backwards compatibility
+                 Default is "mean" (consistent with get_submission_values)
 
     Returns:
         Tuple of (values_dict, metadata_dict)

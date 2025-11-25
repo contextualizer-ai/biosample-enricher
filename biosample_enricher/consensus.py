@@ -147,8 +147,7 @@ def compute_consensus(
             "all_values": provider_values,
         }
 
-    elif strategy == ConsensusStrategy.FIRST.value or strategy == "first_successful":
-        # "first_successful" is an alias for "first"
+    elif strategy == ConsensusStrategy.FIRST.value:
         first_provider = providers[0]
         return {
             "value": valid_values[first_provider],
