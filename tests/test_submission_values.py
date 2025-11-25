@@ -301,13 +301,13 @@ def test_empty_slots_list():
 
 def test_unsupported_slot():
     """Test that unsupported slot name raises ValueError."""
-    with pytest.raises(ValueError, match="Unsupported slots"):
+    with pytest.raises(ValueError, match="Unsupported slot"):
         get_submission_values(lat=37.0, lon=-122.0, slots=["invalid_slot_name"])
 
 
 def test_mixed_supported_and_unsupported_slots():
     """Test that mixing valid and invalid slots raises ValueError."""
-    with pytest.raises(ValueError, match="Unsupported slots"):
+    with pytest.raises(ValueError, match="Unsupported slot"):
         get_submission_values(
             lat=37.0, lon=-122.0, slots=["annual_precpt", "invalid_slot", "elev"]
         )
