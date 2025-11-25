@@ -29,10 +29,60 @@ logger = get_logger(__name__)
 
 class OpenMeteoProvider(WeatherProviderBase):
     """
-    Open-Meteo weather data provider for biosample enrichment.
+    Open-Meteo - ERA5/ERA5-Land reanalysis
 
-    Provides day-specific weather data by aggregating hourly observations
-    with proper temporal precision tracking and quality assessment.
+    Technical Characteristics:
+        API Type: REST
+        Endpoint: https://archive-api.open-meteo.com/v1/era5
+        Authentication: none
+        Coverage: Global
+        Resolution: 11km (ERA5-Land)
+        Temporal: 1959-present (daily)
+        Freshness: 5-day lag
+
+    Reliability:
+        Stability: HIGH
+        Data Quality: satellite_reanalysis
+        Uptime: Good
+        Known Issues:
+            - Does not provide pre-computed climate normals
+            - Would require 30-360 API calls to compute normals
+
+    Cost:
+        Model: free
+        Free Tier: 10,000 requests/day
+        Quotas: 10,000/day
+
+    Strengths:
+        ✓ ERA5 reanalysis (high quality)
+        ✓ 11km resolution (better than NASA POWER)
+        ✓ No API key required
+        ✓ Long temporal coverage (1959-present)
+        ✓ Good for daily weather
+
+    Weaknesses:
+        ✗ Not used for climate normals (too many API calls)
+        ✗ Rate limited (10,000/day)
+        ✗ Hourly aggregation required for daily values
+
+    Best For:
+        • Day-specific weather (collection date)
+        • Historical daily data
+
+    Not Suitable For:
+        • Climate normals (use Meteostat/NASA POWER)
+
+    Complements:
+        • Meteostat (for daily weather)
+
+    NMDC Integration:
+        Schema Slots: temp, air_temp, humidity, wind_speed, wind_direction
+        Role: fallback_daily_weather
+        Excellent For: global
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://archive-api.open-meteo.com/v1/era5
     """
 
     BASE_URL = "https://archive-api.open-meteo.com/v1/era5"

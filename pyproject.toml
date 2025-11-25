@@ -126,6 +126,10 @@ schema-inference = "biosample_enricher.schema_inference:main"
 schema-statistics = "biosample_enricher.schema_statistics:main"
 # Utility commands
 biosample-version = "biosample_enricher.cli:show_version"
+# Documentation generation
+generate-api-index = "scripts.generate_api_index:main"
+generate-provider-docstrings = "scripts.generate_provider_docstrings:main"
+generate-provider-docs = "scripts.generate_provider_docs:main"
 # Metrics evaluation (requires optional dependencies: pip install biosample-enricher[metrics])
 biosample-enricher-metrics = "biosample_enricher.cli_metrics:metrics"
 elevation-mapper-demo = "biosample_enricher.biosample_elevation_mapper:demonstrate_field_mapping"

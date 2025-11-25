@@ -6,15 +6,28 @@ with temporal precision tracking and standardized schema mapping.
 """
 
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Protocol
 
 from biosample_enricher.logging_config import get_logger
-from biosample_enricher.weather.models import TemporalQuality, WeatherResult
+from biosample_enricher.weather.models import (
+    ClimateNormalsResult,
+    MultiProviderClimateNormals,
+    TemporalQuality,
+    WeatherResult,
+)
 from biosample_enricher.weather.providers.base import WeatherProviderBase
 from biosample_enricher.weather.providers.meteostat import MeteostatProvider
 from biosample_enricher.weather.providers.open_meteo import OpenMeteoProvider
 
 logger = get_logger(__name__)
+
+
+class ClimateNormalsProvider(Protocol):
+    """Protocol for providers that support climate normals."""
+
+    def get_climate_normals(
+        self, lat: float, lon: float, start_year: int, end_year: int
+    ) -> ClimateNormalsResult: ...
 
 
 class WeatherService:
@@ -154,6 +167,149 @@ class WeatherService:
             return self._create_empty_result(
                 lat, lon, target_date, all_providers_attempted, all_failed_providers
             )
+
+    def get_climate_normals(
+        self,
+        lat: float,
+        lon: float,
+        years_back: int = 30,
+        providers: list[str] | None = None,
+    ) -> MultiProviderClimateNormals:
+        """
+        Get climate averages (normals) for a location from all available providers.
+
+        By default, queries ALL available providers and returns results from each
+        successful provider in a MultiProviderClimateNormals object. This allows:
+        - Comparing values across different data sources
+        - Detecting provider outages/failures
+        - Validating data quality by cross-checking
+        - Computing consensus values across providers
+
+        Supported providers:
+        - Meteostat: Station-based 1991-2020 normals (30-year WMO standard)
+        - NASA POWER: Satellite-based 2001-2020 climatologies (20-year MERRA-2)
+
+        Climate normals represent typical conditions over a multi-year period,
+        providing context for biosample environmental metadata like
+        annual precipitation totals and average temperatures.
+
+        For biosample enrichment:
+        - Use this for annual_precpt, annual_temp slots
+        - Use get_daily_weather() for collection-date weather
+
+        Following general-purpose design (Issue #199): This method provides
+        comprehensive climate data that ANY project can use. Use the
+        `to_submission_schema()` method on the result to extract values
+        in submission-schema format (Issue #193).
+
+        Args:
+            lat: Latitude in decimal degrees
+            lon: Longitude in decimal degrees
+            years_back: Number of years back from current year to request (default: 30).
+                       For example, if current year is 2025 and years_back=30,
+                       requests period 1995-2025. Providers will return whatever
+                       period they actually have available, which may differ.
+            providers: Optional list of provider names to query (e.g., ["meteostat", "nasa_power"]).
+                      If None, queries ALL available providers (default behavior).
+
+        Returns:
+            MultiProviderClimateNormals with results from all successful providers.
+            The result includes both requested period and actual returned periods
+            from each provider for transparency.
+
+        Raises:
+            ValueError: If no climate data available from any provider.
+
+        Example:
+            >>> service = WeatherService()
+            >>> # Request 30 years back from current year (dynamic period)
+            >>> normals = service.get_climate_normals(40.7128, -74.0060)
+            >>>
+            >>> # Get results from all successful providers
+            >>> print(f"Successful providers: {normals.successful_providers}")
+            Successful providers: ['meteostat', 'nasa_power']
+            >>>
+            >>> # Extract consensus values for submission-schema (Issue #191)
+            >>> schema_values = normals.to_submission_schema(strategy="consensus")
+            >>> print(f"annual_precpt: {schema_values['annual_precpt']} mm")
+            annual_precpt: 907.8 mm
+            >>>
+            >>> # Or get result from specific provider
+            >>> meteostat_result = normals.get_provider_result("meteostat")
+            >>> if meteostat_result:
+            >>>     print(f"Meteostat: {meteostat_result.get_annual_precipitation()} mm/year")
+            Meteostat: 1268.4 mm/year
+            >>>
+            >>> # Query only specific providers or different period
+            >>> normals = service.get_climate_normals(40.7128, -74.0060,
+            ...                                       years_back=20, providers=["nasa_power"])
+        """
+        # Compute requested period dynamically based on current year
+        end_year = datetime.now().year
+        start_year = end_year - years_back
+
+        logger.info(
+            f"Getting climate normals for ({lat}, {lon}) period {start_year}-{end_year} "
+            f"(years_back={years_back})"
+        )
+
+        # Import NASA POWER provider
+        from biosample_enricher.weather.providers.nasa_power import NASAPowerProvider
+
+        # Determine which providers to try
+        available_providers: dict[str, type[ClimateNormalsProvider]] = {
+            "meteostat": MeteostatProvider,
+            "nasa_power": NASAPowerProvider,
+        }
+
+        # Default: query ALL available providers, or use user-specified
+        provider_names = ["meteostat", "nasa_power"] if providers is None else providers
+
+        # Query ALL providers and collect results
+        results: dict[str, ClimateNormalsResult] = {}
+        failed: dict[str, str] = {}
+
+        for provider_name in provider_names:
+            provider_class = available_providers.get(provider_name.lower())
+            if not provider_class:
+                logger.warning(f"Unknown provider: {provider_name}")
+                failed[provider_name] = "Unknown provider"
+                continue
+
+            try:
+                logger.info(f"Querying {provider_name} for climate normals")
+                provider = provider_class()
+                result = provider.get_climate_normals(lat, lon, start_year, end_year)
+
+                logger.info(
+                    f"Successfully retrieved climate normals from {provider_name}"
+                )
+                results[provider_name] = result
+
+            except Exception as e:
+                error_msg = f"{e}"
+                logger.warning(f"{provider_name} failed: {error_msg}")
+                failed[provider_name] = error_msg
+                continue
+
+        # Check if we got any results
+        if not results:
+            error_summary = "; ".join([f"{k}: {v}" for k, v in failed.items()])
+            raise ValueError(
+                f"No climate data available from any provider. Tried: {provider_names}. "
+                f"Errors: {error_summary}"
+            )
+
+        # Return multi-provider results with requested period
+        return MultiProviderClimateNormals(
+            providers=results,
+            location={"lat": lat, "lon": lon},
+            requested_providers=provider_names,
+            successful_providers=list(results.keys()),
+            failed_providers=failed,
+            requested_start_year=start_year,
+            requested_end_year=end_year,
+        )
 
     def _extract_location(self, biosample: dict[str, Any]) -> dict[str, float] | None:
         """Extract latitude and longitude from biosample."""

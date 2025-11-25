@@ -11,12 +11,57 @@ logger = get_logger(__name__)
 
 
 class USDANRCSProvider(SoilProviderBase):
-    """USDA NRCS Soil Data Access provider for US soil taxonomy.
+    """
+    USDA NRCS Web Soil Survey - Ground surveys and lab measurements
 
-    Provides high-quality USDA Soil Taxonomy classification for locations
-    within the continental United States and territories.
+    Technical Characteristics:
+        API Type: SDA_REST
+        Endpoint: https://sdmdataaccess.nrcs.usda.gov/Tabular/SDMTabularService/post.rest
+        Authentication: none
+        Coverage: USA only
+        Resolution: Polygon-based (variable)
 
-    API Documentation: https://sdmdataaccess.sc.egov.usda.gov/
+    Reliability:
+        Stability: HIGH
+        Data Quality: ground_truth
+        Uptime: Good (USDA service)
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited
+        Quotas: None documented
+
+    Strengths:
+        ✓ High-quality ground truth data
+        ✓ Lab-measured soil properties
+        ✓ Detailed soil classification
+        ✓ Free access
+
+    Weaknesses:
+        ✗ USA only coverage
+        ✗ Variable spatial resolution
+        ✗ Complex API (SQL-based queries)
+
+    Best For:
+        • USA locations requiring high accuracy
+        • Agricultural research
+        • Ground truth validation
+
+    Not Suitable For:
+        • International locations
+
+    Complements:
+        • SoilGrids (global coverage)
+
+    NMDC Integration:
+        Schema Slots: ph, soil_text, org_matter
+        Role: primary_for_usa
+        Excellent For: usa
+        Poor For: international
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://sdmdataaccess.nrcs.usda.gov/Tabular/SDMTabularService/post.rest
     """
 
     def __init__(self, timeout: int = 30):

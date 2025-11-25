@@ -23,7 +23,54 @@ logger = get_logger(__name__)
 
 
 class OSMReverseGeocodingProvider(BaseReverseGeocodingProvider):
-    """Provider for OpenStreetMap Nominatim reverse geocoding API."""
+    """
+    OSM Nominatim (Reverse) - OpenStreetMap database
+
+    Technical Characteristics:
+        API Type: REST
+        Endpoint: https://nominatim.openstreetmap.org/reverse
+        Authentication: none
+        Coverage: Global
+        Resolution: Address-level precision
+
+    Reliability:
+        Stability: HIGH
+        Data Quality: community_maintained
+        Uptime: Good
+        Known Issues:
+            - Rate limited to 1 request/second
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited (fair use)
+        Quotas: 1 request/second
+
+    Strengths:
+        ✓ Free access
+        ✓ Global coverage
+
+    Weaknesses:
+        ✗ Rate limited
+        ✗ Variable accuracy
+
+    Best For:
+        • Free reverse geocoding
+
+    Not Suitable For:
+        • High-volume batch
+
+    Complements:
+        • Google Reverse Geocoding
+
+    NMDC Integration:
+        Schema Slots: geo_loc_name
+        Role: primary_free_option
+        Excellent For: global
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://nominatim.openstreetmap.org/reverse
+    """
 
     def __init__(
         self,

@@ -20,7 +20,58 @@ logger = get_logger(__name__)
 
 
 class OSMForwardGeocodingProvider(ForwardGeocodingProvider):
-    """OSM Nominatim forward geocoding provider (place name to coordinates)."""
+    """
+    OSM Nominatim (Forward) - OpenStreetMap database
+
+    Technical Characteristics:
+        API Type: REST
+        Endpoint: https://nominatim.openstreetmap.org/search
+        Authentication: none
+        Coverage: Global
+        Resolution: Address-level precision
+
+    Reliability:
+        Stability: HIGH
+        Data Quality: community_maintained
+        Uptime: Good
+        Known Issues:
+            - Rate limited to 1 request/second
+            - Requires User-Agent header
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited (fair use)
+        Quotas: 1 request/second
+
+    Strengths:
+        ✓ Free access
+        ✓ Global coverage
+        ✓ Community-maintained data
+
+    Weaknesses:
+        ✗ Rate limited (1/second)
+        ✗ Variable accuracy
+        ✗ Requires User-Agent
+
+    Best For:
+        • Free geocoding
+        • Development/testing
+
+    Not Suitable For:
+        • High-volume batch (>1/second)
+
+    Complements:
+        • Google Geocoding
+
+    NMDC Integration:
+        Schema Slots: lat_lon
+        Role: primary_free_option
+        Excellent For: global
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://nominatim.openstreetmap.org/search
+    """
 
     def __init__(self, base_url: str = "https://nominatim.openstreetmap.org"):
         """Initialize OSM provider."""

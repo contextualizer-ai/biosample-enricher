@@ -24,7 +24,56 @@ logger = get_logger(__name__)
 
 
 class NOAAOISSTProvider(MarineProviderBase):
-    """NOAA OISST v2.1 sea surface temperature provider."""
+    """
+    NOAA OISST - Optimally Interpolated SST
+
+    Technical Characteristics:
+        API Type: ERDDAP
+        Endpoint: https://coastwatch.pfeg.noaa.gov/erddap/
+        Authentication: none
+        Coverage: Global oceans
+        Resolution: 0.25 degrees (~25km)
+        Temporal: 1981-present
+
+    Reliability:
+        Stability: MODERATE
+        Data Quality: satellite_interpolated
+        Uptime: Fair
+        Known Issues:
+            - ⚠️ Implementation incomplete
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited
+        Quotas: None documented
+
+    Strengths:
+        ✓ Global sea surface temperature
+        ✓ Long temporal coverage
+        ✓ Free access
+
+    Weaknesses:
+        ✗ ⚠️ Incomplete implementation
+        ✗ Coarse resolution (0.25°)
+
+    Best For:
+        • Sea surface temperature when available
+
+    Not Suitable For:
+        • Production use (incomplete)
+
+    Complements:
+        • Other SST providers
+
+    NMDC Integration:
+        Schema Slots: temp, sst
+        Role: experimental
+        Excellent For: oceans
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://coastwatch.pfeg.noaa.gov/erddap/
+    """
 
     def __init__(self, timeout: int = 30) -> None:
         """Initialize NOAA OISST provider.

@@ -12,10 +12,11 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 import pandas as pd
-from meteostat import Daily, Stations  # type: ignore[import-untyped]
+from meteostat import Daily, Normals, Point, Stations  # type: ignore[import-untyped]
 
 from biosample_enricher.logging_config import get_logger
 from biosample_enricher.weather.models import (
+    ClimateNormalsResult,
     TemporalPrecision,
     TemporalQuality,
     WeatherObservation,
@@ -28,10 +29,67 @@ logger = get_logger(__name__)
 
 class MeteostatProvider(WeatherProviderBase):
     """
-    MeteoStat weather data provider for biosample enrichment.
+    Meteostat - WMO weather stations
 
-    Uses the meteostat Python library for keyless access to station data
-    with station distance tracking and data quality assessment.
+    Technical Characteristics:
+        API Type: Python_Library_CDN
+        Endpoint: https://bulk.meteostat.net/v2/
+        Authentication: none
+        Coverage: Global (120,000+ stations)
+        Resolution: Station-based (point measurements)
+        Temporal: 1973-present (daily), 1991-2020 (normals)
+        Freshness: 7-day lag
+
+    Reliability:
+        Stability: HIGH
+        Data Quality: ground_truth
+        Uptime: Excellent (stable library)
+        Known Issues:
+            - Climate normals only available for WMO standard periods (1961-1990, 1971-2000, 1981-2010, 1991-2020)
+            - Station coverage sparse in remote regions
+            - Requires 10/12 months minimum for normals
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited
+
+    Strengths:
+        ✓ 30-year WMO standard period (1991-2020)
+        ✓ Station-based ground truth measurements
+        ✓ No API key required
+        ✓ Extensive station network (120,000+)
+        ✓ Distance tracking for quality assessment
+        ✓ Pre-computed normals for fast retrieval
+        ✓ High reliability
+
+    Weaknesses:
+        ✗ Sparse coverage in remote regions (deserts, mountains, oceans)
+        ✗ Distance uncertainty (may use station 50-100km away)
+        ✗ Only provides specific WMO standard periods
+        ✗ Station availability varies by region
+        ✗ Data gaps in some stations
+
+    Best For:
+        • Urban/suburban locations with dense station coverage
+        • When WMO-standard 30-year normals required
+        • Scientific research requiring ground-based observations
+
+    Not Suitable For:
+        • Remote desert/mountain/ocean locations
+        • Custom time periods (not WMO standard)
+
+    Complements:
+        • NASA POWER (for remote area coverage)
+
+    NMDC Integration:
+        Schema Slots: annual_precpt, annual_temp, temp, air_temp
+        Role: primary_for_stations
+        Excellent For: urban, suburban, europe, north_america, australia
+        Poor For: deserts, mountains, oceans, remote_regions
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://bulk.meteostat.net/v2/
     """
 
     def __init__(self, timeout: int = 30):
@@ -317,3 +375,173 @@ class MeteostatProvider(WeatherProviderBase):
             "end": "present (7-day lag)",
             "description": "Global weather station network",
         }
+
+    def get_climate_normals(
+        self,
+        lat: float,
+        lon: float,
+        start_year: int = 1991,
+        end_year: int = 2020,
+    ) -> ClimateNormalsResult:
+        """
+        Get 30-year climate averages (normals) for a location.
+
+        Climate normals provide baseline environmental conditions over a standard
+        30-year period, useful for understanding typical climate rather than
+        day-to-day weather variability. Uses Meteostat's climate normals dataset
+        from the nearest weather station.
+
+        **Important**: Meteostat only provides pre-computed normals for specific
+        WMO standard periods. The library enforces these requirements:
+        - Period must be exactly 30 years (end_year - start_year == 29)
+        - End year must be divisible by 10 (1990, 2000, 2010, 2020)
+        - End year must be before current year
+
+        Valid periods: 1961-1990, 1971-2000, 1981-2010, 1991-2020
+
+        If the requested period doesn't match these requirements, this method will
+        automatically select the best matching available period (preferring the most
+        recent) and log a warning with a link to documentation.
+
+        Use this for:
+        - Annual precipitation totals (sum of 12 monthly means)
+        - Annual temperature averages
+        - Long-term climate characterization
+        - Biosample metadata fields like annual_precpt, annual_temp
+
+        For day-specific weather conditions, use get_daily_weather() instead.
+
+        Args:
+            lat: Latitude in decimal degrees
+            lon: Longitude in decimal degrees
+            start_year: Start of normals period (default: 1991)
+            end_year: End of normals period (default: 2020)
+
+        Returns:
+            ClimateNormalsResult with monthly climate averages.
+            The normals_period field shows the actual period returned.
+
+        Raises:
+            ValueError: If no stations found or data unavailable.
+
+        References:
+            - Meteostat Python docs: https://dev.meteostat.net/python/normals.html
+            - Source validation: meteostat/interface/normals.py lines 142-145
+
+        Example:
+            >>> provider = MeteostatProvider()
+            >>> result = provider.get_climate_normals(37.7749, -122.4194)
+            >>> annual_precip_mm = result.get_annual_precipitation()
+            >>> print(f"San Francisco gets {annual_precip_mm}mm/year")
+            San Francisco gets 547.2mm/year
+        """
+        logger.info(
+            f"Fetching climate normals for ({lat}, {lon}) period {start_year}-{end_year}"
+        )
+
+        # Check if requested period matches Meteostat's requirements
+        # Meteostat validation: end - start == 29, end % 10 == 0, end < current_year
+        period_valid = (
+            end_year - start_year == 29
+            and end_year % 10 == 0
+            and end_year < datetime.now().year
+        )
+
+        if not period_valid:
+            # Find best matching period (prefer most recent)
+            # Valid periods end in: 1990, 2000, 2010, 2020
+            current_year = datetime.now().year
+            valid_end_years = [y for y in [1990, 2000, 2010, 2020] if y < current_year]
+
+            if valid_end_years:
+                # Use most recent valid period
+                best_end_year = max(valid_end_years)
+                best_start_year = best_end_year - 29
+
+                logger.warning(
+                    f"Meteostat only provides 30-year climate normals for WMO standard periods. "
+                    f"Requested {start_year}-{end_year} is invalid. "
+                    f"Using {best_start_year}-{best_end_year} instead. "
+                    f"Valid periods: 1961-1990, 1971-2000, 1981-2010, 1991-2020. "
+                    f"See: https://dev.meteostat.net/python/normals.html"
+                )
+
+                start_year = best_start_year
+                end_year = best_end_year
+            else:
+                # No valid periods available (shouldn't happen unless we're before 1990)
+                raise ValueError(
+                    f"No valid Meteostat climate normal periods available. "
+                    f"Current year: {current_year}"
+                )
+
+        try:
+            # Create Point for location
+            location = Point(lat, lon)
+
+            # Get climate normals
+            normals = Normals(location, start=start_year, end=end_year)
+            normals_df = normals.fetch()
+
+            if normals_df.empty:
+                raise ValueError(
+                    f"No climate normals data available for ({lat}, {lon})"
+                )
+
+            # Get station information for distance calculation
+            stations = Stations().nearby(lat, lon)
+            station_df = stations.fetch(1)
+
+            if station_df.empty:
+                raise ValueError(f"No weather stations found near ({lat}, {lon})")
+
+            station_id = station_df.index[0]
+            distance_m = float(station_df["distance"].iloc[0])
+            distance_km = distance_m / 1000.0
+
+            # Extract monthly precipitation (prcp field, in mm)
+            monthly_precip = []
+            for month in range(1, 13):
+                if month in normals_df.index:
+                    value = normals_df.loc[month, "prcp"]
+                    monthly_precip.append(float(value) if not pd.isna(value) else None)
+                else:
+                    monthly_precip.append(None)
+
+            # Extract monthly temperature (tavg field, in °C)
+            monthly_temp = []
+            for month in range(1, 13):
+                if month in normals_df.index:
+                    value = normals_df.loc[month, "tavg"]
+                    monthly_temp.append(float(value) if not pd.isna(value) else None)
+                else:
+                    monthly_temp.append(None)
+
+            # Assess data quality
+            valid_precip = sum(1 for p in monthly_precip if p is not None)
+            valid_temp = sum(1 for t in monthly_temp if t is not None)
+
+            quality_note = None
+            if valid_precip < 10 or valid_temp < 10:
+                quality_note = f"Incomplete data: {valid_precip}/12 months precipitation, {valid_temp}/12 months temperature"
+
+            logger.info(
+                f"Retrieved climate normals from station {station_id} ({distance_km:.1f}km away)"
+            )
+
+            return ClimateNormalsResult(
+                monthly_precipitation=monthly_precip,
+                monthly_temperature=monthly_temp,
+                station_id=str(station_id),
+                station_distance_km=distance_km,
+                location={"lat": lat, "lon": lon},
+                normals_period=(start_year, end_year),
+                provider="meteostat",
+                data_quality=quality_note,
+            )
+
+        except Exception as e:
+            logger.error(f"Failed to fetch climate normals: {e}")
+            raise ValueError(
+                f"Could not retrieve climate normals for ({lat}, {lon}): {e}"
+            ) from e

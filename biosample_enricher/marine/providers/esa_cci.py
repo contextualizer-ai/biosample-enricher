@@ -24,7 +24,58 @@ logger = get_logger(__name__)
 
 
 class ESACCIProvider(MarineProviderBase):
-    """ESA Ocean Colour CCI chlorophyll-a provider."""
+    """
+    ESA Ocean Colour CCI - Satellite ocean color
+
+    Technical Characteristics:
+        API Type: ERDDAP
+        Endpoint: https://www.oceancolour.org/erddap/
+        Authentication: none
+        Coverage: Global oceans
+        Resolution: 1km
+        Temporal: 1997-present
+
+    Reliability:
+        Stability: MODERATE
+        Data Quality: satellite
+        Uptime: Fair
+        Known Issues:
+            - ⚠️ Implementation incomplete
+            - Complex ERDDAP API
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited
+        Quotas: None documented
+
+    Strengths:
+        ✓ Global ocean color data
+        ✓ Long temporal coverage
+        ✓ Free access
+
+    Weaknesses:
+        ✗ ⚠️ Incomplete implementation
+        ✗ Complex ERDDAP queries
+        ✗ Limited documentation
+
+    Best For:
+        • Marine biogeochemistry when available
+
+    Not Suitable For:
+        • Production use (incomplete)
+
+    Complements:
+        • Other marine providers
+
+    NMDC Integration:
+        Schema Slots: chlorophyll
+        Role: experimental
+        Excellent For: oceans
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://www.oceancolour.org/erddap/
+    """
 
     def __init__(self, timeout: int = 30) -> None:
         """Initialize ESA CCI provider.

@@ -24,7 +24,53 @@ logger = get_logger(__name__)
 
 
 class GoogleReverseGeocodingProvider(BaseReverseGeocodingProvider):
-    """Provider for Google Geocoding API reverse geocoding."""
+    """
+    Google Reverse Geocoding - Google Maps database
+
+    Technical Characteristics:
+        API Type: REST
+        Endpoint: https://maps.googleapis.com/maps/api/geocode/json
+        Authentication: api_key_required
+        API Key: GOOGLE_MAIN_API_KEY
+        Coverage: Global
+        Resolution: Address-level precision
+
+    Reliability:
+        Stability: HIGH
+        Data Quality: high
+        Uptime: Excellent
+
+    Cost:
+        Model: paid
+        Free Tier: No
+        Quotas: Based on billing
+
+    Strengths:
+        ✓ High accuracy
+        ✓ Detailed address components
+        ✓ Global coverage
+
+    Weaknesses:
+        ✗ Requires paid API key
+
+    Best For:
+        • Production with budget
+
+    Not Suitable For:
+        • High-volume without budget
+
+    Complements:
+        • OSM Nominatim
+
+    NMDC Integration:
+        Schema Slots: geo_loc_name
+        Role: primary_if_key_available
+        Excellent For: global
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://maps.googleapis.com/maps/api/geocode/json
+    """
 
     # Mapping of Google address component types to our types
     COMPONENT_TYPE_MAPPING = {
