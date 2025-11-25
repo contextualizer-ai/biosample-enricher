@@ -240,3 +240,8 @@ logs/*
 
 # Auto-generated version file by hatch-vcs
 biosample_enricher/_version.py
+
+# MCP server cache files (local development)
+.mcp.json
+.channels_cache_v2.json
+.users_cache.json
