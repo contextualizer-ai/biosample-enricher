@@ -210,6 +210,33 @@ from biosample_enricher.weather.service import WeatherService
 
 logger = get_logger(__name__)
 
+__all__ = [
+    "get_submission_values",
+    "CLIMATE_SLOTS",
+    "WEATHER_SLOTS",
+    "ELEVATION_SLOTS",
+    "MARINE_SLOTS",
+    "SOIL_SLOTS",
+    "ALL_SUPPORTED_SLOTS",
+    "CLIMATE_PROVIDERS",
+]
+
+# Supported submission schema slots
+CLIMATE_SLOTS = frozenset(["annual_precpt", "annual_temp"])
+WEATHER_SLOTS = frozenset(
+    ["temp", "air_temp", "humidity", "wind_speed", "wind_direction", "solar_irradiance"]
+)
+ELEVATION_SLOTS = frozenset(["elev"])
+MARINE_SLOTS = frozenset(["depth"])
+SOIL_SLOTS = frozenset(["ph", "soil_type"])
+
+ALL_SUPPORTED_SLOTS = (
+    CLIMATE_SLOTS | WEATHER_SLOTS | ELEVATION_SLOTS | MARINE_SLOTS | SOIL_SLOTS
+)
+
+# Available providers for climate normals
+CLIMATE_PROVIDERS = frozenset(["meteostat", "nasa_power"])
+
 
 def get_submission_values(
     lat: float,
@@ -231,13 +258,19 @@ def get_submission_values(
         lat: Latitude in decimal degrees (-90 to 90)
         lon: Longitude in decimal degrees (-180 to 180)
         slots: List of submission-schema slot names to retrieve.
-               See module docstring for complete list of supported slots.
+               Must be from ALL_SUPPORTED_SLOTS constant.
+               Supported slots are organized by category:
+               - CLIMATE_SLOTS: annual_precpt, annual_temp
+               - WEATHER_SLOTS: temp, air_temp, humidity, wind_speed, wind_direction, solar_irradiance
+               - ELEVATION_SLOTS: elev
+               - MARINE_SLOTS: depth
+               - SOIL_SLOTS: ph, soil_type
                Examples: ["annual_precpt", "annual_temp", "temp", "elev"]
         datetime_obj: Optional datetime for temporal data (collection date/time).
-                     Required for: temp, air_temp, humidity, wind_speed, wind_direction, solar_irradiance
-                     Not used for: annual_precpt, annual_temp, elev, depth, ph, soil_type
+                     Required for WEATHER_SLOTS (temp, air_temp, humidity, wind_speed, wind_direction, solar_irradiance)
+                     Not used for CLIMATE_SLOTS, ELEVATION_SLOTS, MARINE_SLOTS, SOIL_SLOTS
         providers: Optional list of specific provider names to use (filters available providers).
-                  For climate data (annual_precpt, annual_temp): ["meteostat", "nasa_power"]
+                  For climate data (CLIMATE_SLOTS): Must be from CLIMATE_PROVIDERS ("meteostat", "nasa_power")
                   For other slots: provider names vary by service
                   If None, all available providers are queried.
 
@@ -295,60 +328,35 @@ def get_submission_values(
     if not slots:
         raise ValueError("slots list cannot be empty")
 
-    # Define supported slots
-    SUPPORTED_SLOTS = {
-        # Climate (multi-year averages)
-        "annual_precpt",
-        "annual_temp",
-        # Weather (point-in-time)
-        "temp",
-        "air_temp",
-        "humidity",
-        "wind_speed",
-        "wind_direction",
-        "solar_irradiance",
-        # Elevation
-        "elev",
-        # Marine
-        "depth",
-        # Soil
-        "ph",
-        "soil_type",
-        # Placeholders (not yet implemented)
-        "cur_vegetation",
-        "flooding",
-    }
-
-    # Unsupported slots that require measured data (cannot infer from lat/lon)
-    # alt: altitude of airborne samples (requires measurement from aircraft/balloon)
-    # salinity: requires water sample analysis or oceanographic models (not yet implemented)
-
-    # Check for unsupported slots
-    unsupported = set(slots) - SUPPORTED_SLOTS
-    if unsupported:
+    # Validate slot names
+    invalid_slots = set(slots) - ALL_SUPPORTED_SLOTS
+    if invalid_slots:
         raise ValueError(
-            f"Unsupported slots: {unsupported}. "
-            f"Supported slots: {sorted(SUPPORTED_SLOTS)}"
+            f"Unsupported slot(s): {sorted(invalid_slots)}. "
+            f"Supported slots: {sorted(ALL_SUPPORTED_SLOTS)}"
         )
+
+    # Validate providers if specified
+    if providers is not None:
+        # Check if user is requesting climate slots
+        requesting_climate = bool(set(slots) & CLIMATE_SLOTS)
+        if requesting_climate:
+            invalid_providers = set(providers) - CLIMATE_PROVIDERS
+            if invalid_providers:
+                raise ValueError(
+                    f"Invalid climate provider(s): {sorted(invalid_providers)}. "
+                    f"Available climate providers: {sorted(CLIMATE_PROVIDERS)}"
+                )
 
     logger.info(f"Getting submission values for {len(slots)} slots at ({lat}, {lon})")
 
     result = {}
 
-    # Group slots by the service they require
-    weather_slots = {
-        "annual_precpt",
-        "annual_temp",
-        "temp",
-        "air_temp",
-        "humidity",
-        "wind_speed",
-        "wind_direction",
-        "solar_irradiance",
-    }
-    elevation_slots = {"elev"}
-    marine_slots = {"depth"}
-    soil_slots = {"ph", "soil_type"}
+    # Group slots by the service they require (use module-level constants)
+    weather_slots = CLIMATE_SLOTS | WEATHER_SLOTS
+    elevation_slots = ELEVATION_SLOTS
+    marine_slots = MARINE_SLOTS
+    soil_slots = SOIL_SLOTS
     land_slots = {"cur_vegetation"}
     flooding_slots = {"flooding"}
 
