@@ -175,8 +175,12 @@ def scan_package(
 
     # Find all Python files
     for py_file in package_path.rglob("*.py"):
-        # Skip __pycache__ and test files
-        if "__pycache__" in str(py_file) or "test_" in py_file.name:
+        # Skip archived, __pycache__, and test files
+        if (
+            "archived" in str(py_file)
+            or "__pycache__" in str(py_file)
+            or "test_" in py_file.name
+        ):
             continue
 
         functions, constants = scan_python_file(py_file, package_path)
