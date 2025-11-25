@@ -400,8 +400,131 @@ Error Handling
    if "depth" not in result["values"]:
        print("Depth data not available (probably on land)")
 
+.. _quick-reference:
+
+Quick Reference
+---------------
+
+All Constants at a Glance
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These constants are available for programmatic access:
+
+.. code-block:: python
+
+   from biosample_enricher.submission_values import (
+       # Slot categories
+       ALL_SUPPORTED_SLOTS,   # All slots combined
+       CLIMATE_SLOTS,         # {'annual_precpt', 'annual_temp'}
+       WEATHER_SLOTS,         # {'temp', 'air_temp', 'humidity', 'wind_speed', 'wind_direction', 'solar_irradiance'}
+       ELEVATION_SLOTS,       # {'elev'}
+       MARINE_SLOTS,          # {'depth'}
+       SOIL_SLOTS,            # {'ph', 'soil_type'}
+
+       # Provider names
+       CLIMATE_PROVIDERS,     # {'meteostat', 'nasa_power'}
+       ELEVATION_PROVIDERS,   # {'usgs', 'google', 'open_topo_data', 'osm'}
+
+       # Consensus strategies
+       CONSENSUS_STRATEGIES,  # {'mean', 'median', 'first', 'best_quality'}
+   )
+
+Slots by Category
+~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 40 20 20
+
+   * - Category
+     - Slots
+     - Providers
+     - Datetime Required?
+   * - Climate
+     - ``annual_precpt``, ``annual_temp``
+     - meteostat, nasa_power
+     - No
+   * - Weather
+     - ``temp``, ``air_temp``, ``humidity``, ``wind_speed``, ``wind_direction``, ``solar_irradiance``
+     - meteostat, open_meteo
+     - **Yes**
+   * - Elevation
+     - ``elev``
+     - usgs, google, open_topo_data, osm
+     - No
+   * - Marine
+     - ``depth``
+     - gebco, noaa
+     - No
+   * - Soil
+     - ``ph``, ``soil_type``
+     - soilgrids, usda_nrcs
+     - No
+
+Consensus Strategies
+~~~~~~~~~~~~~~~~~~~~
+
+When multiple providers return data, values are combined using a consensus strategy:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 60 25
+
+   * - Strategy
+     - Description
+     - When to Use
+   * - ``mean``
+     - Arithmetic average across all providers (default)
+     - General use, most reliable
+   * - ``median``
+     - Middle value when sorted
+     - When outliers are possible
+   * - ``first``
+     - Use first successful provider
+     - When speed matters
+   * - ``best_quality``
+     - Use provider with best quality metric
+     - Advanced use with quality scores
+
+Slot Status (Reliability)
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 35 50
+
+   * - Status
+     - Slots
+     - Notes
+   * - **Ready**
+     - ``annual_precpt``, ``annual_temp``, ``elev``
+     - Production-ready, reliable data
+   * - **Caution**
+     - ``temp``, ``ph``, ``depth``
+     - May have gaps or provider issues
+   * - **Experimental**
+     - ``air_temp``, ``humidity``, ``wind_speed``, ``wind_direction``, ``solar_irradiance``, ``soil_type``
+     - Limited testing, may change
+
+Copy-Paste Slot Lists
+~~~~~~~~~~~~~~~~~~~~~
+
+For convenience, here are the slot names ready to copy:
+
+**All slots (comma-separated)**::
+
+   annual_precpt, annual_temp, elev, temp, air_temp, humidity, wind_speed, wind_direction, solar_irradiance, depth, ph, soil_type
+
+**Production-ready slots only**::
+
+   annual_precpt, annual_temp, elev
+
+**Climate + Elevation (most common)**::
+
+   annual_precpt, annual_temp, elev
+
 Checking Available Slots and Providers
----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -412,7 +535,9 @@ Checking Available Slots and Providers
        ELEVATION_SLOTS,
        MARINE_SLOTS,
        SOIL_SLOTS,
-       CLIMATE_PROVIDERS
+       CLIMATE_PROVIDERS,
+       ELEVATION_PROVIDERS,
+       CONSENSUS_STRATEGIES,
    )
 
    # See all supported slots
@@ -425,8 +550,12 @@ Checking Available Slots and Providers
    print("Marine:", sorted(MARINE_SLOTS))
    print("Soil:", sorted(SOIL_SLOTS))
 
-   # See available providers for climate
+   # See available providers
    print("Climate providers:", sorted(CLIMATE_PROVIDERS))
+   print("Elevation providers:", sorted(ELEVATION_PROVIDERS))
+
+   # See consensus strategies
+   print("Strategies:", sorted(CONSENSUS_STRATEGIES))
 
 Limitations and Known Issues
 -----------------------------

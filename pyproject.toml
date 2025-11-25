@@ -110,32 +110,16 @@ all = [
 
 
 [project.scripts]
+# Primary CLI - wraps get_submission_values() for NMDC metadata suggestions
 biosample-enricher = "biosample_enricher.cli:main"
-# Service CLIs
-elevation-lookup = "biosample_enricher.cli_elevation:elevation_cli"
-elevation-demos = "biosample_enricher.elevation_demos:cli"
-biosample-elevation = "biosample_enricher.cli_biosample_elevation:cli"
-soil-enricher = "biosample_enricher.cli_soil:soil"
-weather-enricher = "biosample_enricher.cli_weather:weather"
-marine-enricher = "biosample_enricher.cli_marine:marine"
-land-enricher = "biosample_enricher.cli_land:land"
 # Cache management
 http-cache-manager = "biosample_enricher.cache_management:cli"
-# Schema analysis tools
-schema-inference = "biosample_enricher.schema_inference:main"
-schema-statistics = "biosample_enricher.schema_statistics:main"
-# Utility commands
-biosample-version = "biosample_enricher.cli:show_version"
-# Documentation generation
+# Documentation generation (development tools)
 generate-api-index = "scripts.generate_api_index:main"
 generate-provider-docstrings = "scripts.generate_provider_docstrings:main"
 generate-provider-docs = "scripts.generate_provider_docs:main"
-# Metrics evaluation (requires optional dependencies: pip install biosample-enricher[metrics])
-biosample-enricher-metrics = "biosample_enricher.cli_metrics:metrics"
-elevation-mapper-demo = "biosample_enricher.biosample_elevation_mapper:demonstrate_field_mapping"
-# Note: Demo scripts moved to examples/ directory and excluded from package.
-# Run demos using: make demo-weather, make demo-geocoding, etc.
-# Or directly: uv run python examples/weather_demo.py
+# Note: Service-specific CLIs (elevation, soil, weather, etc.) have been archived.
+# Use the main `biosample-enricher get` command instead.
 
 [project.urls]
 Homepage = "https://github.com/contextualizer-ai/biosample-enricher"

@@ -1,6 +1,6 @@
 # Biosample Enricher
 
-Infer AI-friendly environmental and geographic metadata about biosamples from multiple sources.
+Get NMDC submission-schema values from geographic coordinates.
 
 [![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -9,17 +9,16 @@ Infer AI-friendly environmental and geographic metadata about biosamples from mu
 
 ## Overview
 
-Biosample Enricher provides 8 specialized services for enriching biosample metadata with environmental and geographic information from authoritative data sources. Each service focuses on a specific domain (elevation, weather, soil, marine, land cover, geocoding, geographic features) and returns structured, type-safe data ready for analysis or AI applications.
+Biosample Enricher retrieves environmental metadata from authoritative data sources and returns it in the format needed for NMDC submissions. Give it GPS coordinates, get back submission-ready values with units and provenance.
 
 ## Features
 
-- **8 Specialized Services**: Elevation, soil, weather, marine, land cover, forward/reverse geocoding, geographic features
-- **Service-Based Architecture**: Independent services with focused responsibilities
+- **Simple API**: One function - `get_submission_values(lat, lon, slots)`
+- **Multiple Data Sources**: Climate normals, elevation, weather, soil, marine data
+- **Multi-Provider Consensus**: Queries multiple providers and returns consensus values
 - **Type Safety**: Full type hints with Pydantic validation and mypy checking
 - **Smart Caching**: HTTP caching with coordinate canonicalization for efficiency
-- **Multiple Providers**: Automatic fallback between data providers (USGS, Google, OSM, etc.)
-- **Click-Based CLIs**: User-friendly command-line tools for each service
-- **Flexible Installation**: Core services only, or add optional mongodb/metrics/schema extras
+- **CLI Tool**: Get values without writing code
 
 ## Installation
 
@@ -28,426 +27,121 @@ Biosample Enricher provides 8 specialized services for enriching biosample metad
 - Python 3.11 or higher
 - [UV package manager](https://github.com/astral-sh/uv) (recommended)
 
-### Add to Your Project (Recommended)
+### Add to Your Project
 
 ```bash
-# Basic installation - all 8 enrichment services
+# Basic installation
 uv add biosample-enricher
 
-# With optional dependencies
+# Or with pip
+pip install biosample-enricher
+
+# Optional dependencies
 uv add biosample-enricher --extra metrics   # Metrics and visualization
 uv add biosample-enricher --extra mongodb   # MongoDB support for NMDC/GOLD
-uv add biosample-enricher --extra schema    # Schema analysis tools
 uv add biosample-enricher --extra all       # All optional features
 ```
 
 ### From Source (Development)
 
 ```bash
-# Clone and install
 git clone https://github.com/contextualizer-ai/biosample-enricher.git
 cd biosample-enricher
 uv sync
-
-# With optional extras
-uv sync --extra mongodb    # MongoDB support
-uv sync --extra metrics    # Metrics and visualization
-uv sync --extra schema     # Schema analysis tools
-uv sync --extra all        # Everything
 ```
 
 ## Quick Start
 
 ### Python API
 
-The package exports 8 services from the top level:
-
 ```python
-from biosample_enricher import (
-    ElevationService,
-    ElevationRequest,
-    SoilService,
-    WeatherService,
-    MarineService,
-    LandService,
-    ReverseGeocodingService,
-    ForwardGeocodingService,
-    OSMFeaturesService,
-)
-from datetime import date
+from biosample_enricher.submission_values import get_submission_values
 
-# Get elevation for a location
-elevation_service = ElevationService()
-request = ElevationRequest(latitude=40.7128, longitude=-74.0060)
-observations = elevation_service.get_elevation(request)
-
-for obs in observations:
-    if obs.value_numeric is not None:
-        print(f"{obs.provider.name}: {obs.value_numeric}m")
-# Output:
-# usgs_3dep: 13.15m
-# google_elevation: 13.26m
-# open_topo_data: 25.0m
-# osm_elevation: 51.0m
-
-# Get weather data for a location and date
-weather_service = WeatherService()
-weather_result = weather_service.get_daily_weather(
-    lat=37.7749,
+# Get NMDC submission values for a location
+result = get_submission_values(
+    lat=37.7749,   # San Francisco
     lon=-122.4194,
-    target_date=date(2024, 1, 15)
+    slots=["annual_precpt", "annual_temp", "elev"]
 )
-print(f"Temperature: {weather_result.temperature.value}°C")
-print(f"Precipitation: {weather_result.precipitation.value}mm")
 
-# Get soil properties
-soil_service = SoilService()
-soil_result = soil_service.enrich_location(
-    latitude=40.7128,
-    longitude=-74.0060,
-    depth_cm="0-5cm"
-)
-print(f"Provider: {soil_result.provider}")
-print(f"Quality score: {soil_result.quality_score}")
+# Use the values in your NMDC submission
+print(result["values"])
+# {'annual_precpt': 519.3, 'annual_temp': 14.1, 'elev': 10.2}
 
-# Get marine data (SST, bathymetry, chlorophyll)
-marine_service = MarineService()
-marine_result = marine_service.get_comprehensive_marine_data(
-    latitude=36.6,
-    longitude=-121.9,
-    target_date=date(2024, 1, 15)
-)
-if marine_result.sea_surface_temperature:
-    print(f"Sea surface temp: {marine_result.sea_surface_temperature.value}°C")
-if marine_result.bathymetry:
-    print(f"Water depth: {marine_result.bathymetry.value}m")
-
-# Reverse geocoding (coordinates -> place names)
-geocoding_service = ReverseGeocodingService()
-result = geocoding_service.reverse_geocode(lat=40.7128, lon=-74.0060)
-if result:
-    print(f"Location: {result.get_formatted_address()}")
-
-# Get nearby geographic features
-osm_service = OSMFeaturesService()
-features = osm_service.get_features_for_location(
-    latitude=37.7749,
-    longitude=-122.4194,
-    radius_m=1000
-)
-if features and features.named_features:
-    for feature in features.named_features[:5]:
-        print(f"{feature.name} ({feature.category}): {feature.distance_km:.2f}km")
+# Check which data sources were used
+print(result["metadata"]["climate_normals"]["providers_used"])
+# ['meteostat', 'nasa_power']
 ```
 
 ### CLI Usage
 
-Each service has its own CLI command:
-
 ```bash
-# Elevation lookup
-uv run elevation-lookup lookup --lat 40.7128 --lon -74.0060
+# Get climate and elevation data
+uv run biosample-enricher get \
+    --lat 37.7749 \
+    --lon -122.4194 \
+    --slots annual_precpt,annual_temp,elev
 
-# Soil data
-uv run soil-enricher lookup --lat 40.7128 --lon -74.0060 --depth 10
+# Get all supported slots
+uv run biosample-enricher get --lat 37.7749 --lon -122.4194 --slots all
 
-# Weather data
-uv run weather-enricher lookup --lat 37.7749 --lon -122.4194 --date 2024-01-15
+# Show available slots and providers
+uv run biosample-enricher info
 
-# Marine data
-uv run marine-enricher lookup --lat 36.6 --lon -121.9 --date 2024-01-15
-
-# Land cover
-uv run land-enricher lookup --lat 40.7128 --lon -74.0060
-
-# Batch processing from CSV
-uv run elevation-lookup batch --input samples.csv --lat-col latitude --lon-col longitude
-
-# Version info
-uv run biosample-version
+# List slot names (for scripting)
+uv run biosample-enricher slots
 ```
 
-## Services
+## Supported Slots
 
-### 1. Elevation Service
+| Category | Slots | Datetime Required? |
+|----------|-------|-------------------|
+| Climate | `annual_precpt`, `annual_temp` | No |
+| Elevation | `elev` | No |
+| Weather | `temp`, `air_temp`, `humidity`, `wind_speed`, `wind_direction`, `solar_irradiance` | Yes |
+| Marine | `depth` | No |
+| Soil | `ph`, `soil_type` | No |
 
-Get elevation data from multiple providers (USGS, Google, Open Topo Data).
+**Production-ready slots**: `annual_precpt`, `annual_temp`, `elev`
 
-**Providers**: USGS (US only, free), Google (global, requires API key), Open Topo Data (global, free)
-
-**Python**:
-```python
-from biosample_enricher import ElevationService, ElevationRequest
-
-service = ElevationService()
-request = ElevationRequest(latitude=40.7128, longitude=-74.0060)
-observations = service.get_elevation(request)
-```
-
-**CLI**:
-```bash
-uv run elevation-lookup lookup --lat 40.7128 --lon -74.0060
-```
-
-### 2. Soil Service
-
-Get soil properties (texture, pH, organic carbon, etc.).
-
-**Providers**: SoilGrids (global coverage), USDA NRCS (US only)
-
-**Python**:
-```python
-from biosample_enricher import SoilService
-
-service = SoilService()
-soil_result = service.enrich_location(
-    latitude=40.7128,
-    longitude=-74.0060,
-    depth_cm="0-5cm"
-)
-```
-
-**CLI**:
-```bash
-uv run soil-enricher lookup --lat 40.7128 --lon -74.0060 --depth 10
-```
-
-### 3. Weather Service
-
-Get historical weather data (temperature, precipitation, humidity, etc.).
-
-**Providers**: Open-Meteo (free, global), Meteostat (free, global)
-
-**Python**:
-```python
-from biosample_enricher import WeatherService
-from datetime import date
-
-service = WeatherService()
-weather_result = service.get_daily_weather(
-    lat=37.7749,
-    lon=-122.4194,
-    target_date=date(2024, 1, 15)
-)
-```
-
-**CLI**:
-```bash
-uv run weather-enricher lookup --lat 37.7749 --lon -122.4194 --date 2024-01-15
-```
-
-### 4. Marine Service
-
-Get marine data (sea surface temperature, bathymetry, chlorophyll).
-
-**Providers**: NOAA OISST (SST), GEBCO (bathymetry), ESA CCI (chlorophyll)
-
-**Python**:
-```python
-from biosample_enricher import MarineService
-from datetime import date
-
-service = MarineService()
-marine_result = service.get_comprehensive_marine_data(
-    latitude=36.6,
-    longitude=-121.9,
-    target_date=date(2024, 1, 15)
-)
-```
-
-**CLI**:
-```bash
-uv run marine-enricher lookup --lat 36.6 --lon -121.9 --date 2024-01-15
-```
-
-### 5. Land Service
-
-Get land cover classification.
-
-**Providers**: ESA WorldCover, MODIS, NLCD (US only)
-
-**Python**:
-```python
-from biosample_enricher import LandService
-
-service = LandService()
-land_result = service.enrich_location(
-    latitude=40.7128,
-    longitude=-74.0060
-)
-```
-
-**CLI**:
-```bash
-uv run land-enricher lookup --lat 40.7128 --lon -74.0060
-```
-
-### 6. Reverse Geocoding Service
-
-Convert coordinates to human-readable addresses.
-
-**Providers**: OSM Nominatim (free), Google Geocoding (requires API key)
-
-**Python**:
-```python
-from biosample_enricher import ReverseGeocodingService
-
-service = ReverseGeocodingService()
-result = service.reverse_geocode(lat=40.7128, lon=-74.0060)
-if result:
-    print(result.get_formatted_address())
-```
-
-### 7. Forward Geocoding Service
-
-Convert addresses/place names to coordinates.
-
-**Providers**: OSM Nominatim (free), Google Geocoding (requires API key)
-
-**Python**:
-```python
-from biosample_enricher import ForwardGeocodingService
-
-service = ForwardGeocodingService()
-result = service.geocode("New York City")
-if result and result.locations:
-    for location in result.locations[:3]:
-        print(f"{location.formatted_address}: {location.latitude}, {location.longitude}")
-```
-
-### 8. OSM Features Service
-
-Get nearby geographic features (parks, water bodies, landmarks).
-
-**Providers**: OpenStreetMap Overpass API (free), Google Places (requires API key)
-
-**Python**:
-```python
-from biosample_enricher import OSMFeaturesService
-
-service = OSMFeaturesService()
-features = service.get_features_for_location(
-    latitude=37.7749,
-    longitude=-122.4194,
-    radius_m=1000
-)
-if features and features.named_features:
-    for feature in features.named_features[:5]:
-        print(f"{feature.name} ({feature.category})")
-```
+See the [full documentation](https://microbiomedata.github.io/biosample-enricher/) for complete details.
 
 ## API Keys
 
-Only required for Google services (optional - OSM alternatives available for everything):
+Only required for Google services (optional - alternatives available):
 
 ```bash
-# Single API key for all Google services
 export GOOGLE_MAIN_API_KEY="your-key-here"
 ```
 
 All other services are free and require no authentication.
 
+## Documentation
+
+- [Full Documentation](https://microbiomedata.github.io/biosample-enricher/)
+- [API Reference](https://microbiomedata.github.io/biosample-enricher/submission_values.html)
+- [CLI Reference](https://microbiomedata.github.io/biosample-enricher/cli.html)
+
 ## Development
 
-### Setup
-
 ```bash
-# Clone repository
+# Clone and setup
 git clone https://github.com/contextualizer-ai/biosample-enricher.git
 cd biosample-enricher
-
-# Complete development setup
 make dev-setup
-```
 
-### Testing
-
-```bash
-# Run fast tests (excludes network/slow tests)
+# Run tests
 make test-fast
-
-# Run all tests with coverage
-make test-cov
-
-# Run specific test categories
-make test-unit          # Unit tests only
-make test-integration   # Integration tests
-```
-
-### Code Quality
-
-```bash
-# Format, lint, type-check, test
-make dev-check
 
 # Full CI validation
 make check-ci
-
-# Individual checks
-make format       # Format with ruff
-make lint         # Lint with ruff
-make type-check   # Type check with mypy
-make dep-check    # Check dependencies with deptry
 ```
-
-## Project Structure
-
-```
-biosample-enricher/
-├── biosample_enricher/
-│   ├── __init__.py           # Public API exports
-│   ├── elevation/            # Elevation service
-│   ├── soil/                 # Soil service
-│   ├── weather/              # Weather service
-│   ├── marine/               # Marine service
-│   ├── land/                 # Land cover service
-│   ├── reverse_geocoding/    # Reverse geocoding
-│   ├── forward_geocoding/    # Forward geocoding
-│   ├── osm_features/         # Geographic features
-│   ├── models.py             # Core data models
-│   ├── http_cache.py         # HTTP caching
-│   └── cli*.py               # CLI commands
-├── tests/                    # Test suite
-├── pyproject.toml           # Project configuration
-└── Makefile                 # Development automation
-```
-
-## Dependencies
-
-### Core Dependencies
-- **Always installed**: pandas, rasterio, meteostat (required for weather aggregation and global soil coverage)
-- CLI and data validation: click, pydantic, requests, rich, pyyaml
-
-### Optional Dependencies
-- **mongodb**: `pymongo` for fetching from NMDC/GOLD databases (evaluation/demo only)
-- **metrics**: `matplotlib`, `seaborn` for visualization
-- **schema**: `genson` for schema analysis
-
-Install with: `uv sync --extra mongodb` or `uv sync --extra all`
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Run checks (`make dev-check`)
-5. Commit (`git commit -m 'Add amazing feature'`)
-6. Push (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
 
 See [CLAUDE.md](CLAUDE.md) for detailed development guidelines.
 
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Built with [UV](https://github.com/astral-sh/uv) for fast package management
-- CLI powered by [Click](https://click.palletsprojects.com/)
-- Data validation with [Pydantic](https://pydantic.dev/)
-- Console output with [Rich](https://github.com/Textualize/rich)
-- Caching with [requests-cache](https://github.com/requests-cache/requests-cache)
 
 ## Support
 
