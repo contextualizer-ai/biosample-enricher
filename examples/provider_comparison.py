@@ -40,7 +40,6 @@ def main():
         print(f"  {provider_name}:")
         print(f"    annual_precpt: {provider_data['annual_precpt']:.1f} mm/year")
         print(f"    annual_temp: {provider_data['annual_temp']:.1f} °C")
-        print(f"    period: {provider_data['period']}")
 
         if "station_distance_km" in provider_data:
             print(

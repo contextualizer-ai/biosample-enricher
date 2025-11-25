@@ -241,6 +241,9 @@ exclude_lines = [
     "if TYPE_CHECKING:",
 ]
 
+[tool.deptry]
+exclude = ["archived", ".venv", "tests"]
+
 [dependency-groups]
 dev = [
     "mypy>=1.17.1",
