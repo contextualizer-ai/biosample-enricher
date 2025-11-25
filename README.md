@@ -104,7 +104,7 @@ uv run biosample-enricher slots
 
 **Production-ready slots**: `annual_precpt`, `annual_temp`, `elev`
 
-See the [full documentation](https://microbiomedata.github.io/biosample-enricher/) for complete details.
+See the [full documentation](https://contextualizer-ai.github.io/biosample-enricher/) for complete details.
 
 ## API Keys
 
@@ -118,9 +118,9 @@ All other services are free and require no authentication.
 
 ## Documentation
 
-- [Full Documentation](https://microbiomedata.github.io/biosample-enricher/)
-- [API Reference](https://microbiomedata.github.io/biosample-enricher/submission_values.html)
-- [CLI Reference](https://microbiomedata.github.io/biosample-enricher/cli.html)
+- [Full Documentation](https://contextualizer-ai.github.io/biosample-enricher/)
+- [API Reference](https://contextualizer-ai.github.io/biosample-enricher/submission_values.html)
+- [CLI Reference](https://contextualizer-ai.github.io/biosample-enricher/cli.html)
 
 ## Development
 

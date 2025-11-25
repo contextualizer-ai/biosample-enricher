@@ -87,7 +87,8 @@ class TestCoordinateClassifier:
 
         assert result.is_us_territory is False
         assert result.region is None
-        assert result.confidence >= 0.9
+        # Confidence varies: 0.95 with OSM Nominatim, 0.7 with heuristic fallback
+        assert result.confidence >= 0.7
 
     def test_classify_boundary_cases(self):
         """Test coordinates near US boundaries."""

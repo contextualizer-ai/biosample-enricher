@@ -78,6 +78,6 @@ uv run biosample-enricher get --lat 46.8523 --lon -121.7603 --slots elev --strat
 
 ## Need More Help?
 
-- **Full documentation**: [NMDC Submission Values Guide](https://microbiomedata.github.io/biosample-enricher/submission_values.html)
-- **CLI reference**: [CLI Documentation](https://microbiomedata.github.io/biosample-enricher/cli.html)
-- **Issues?** [Report on GitHub](https://github.com/microbiomedata/biosample-enricher/issues)
+- **Full documentation**: [NMDC Submission Values Guide](https://contextualizer-ai.github.io/biosample-enricher/submission_values.html)
+- **CLI reference**: [CLI Documentation](https://contextualizer-ai.github.io/biosample-enricher/cli.html)
+- **Issues?** [Report on GitHub](https://github.com/contextualizer-ai/biosample-enricher/issues)

@@ -68,7 +68,7 @@ def submission_values_cli() -> None:
 
     \b
     For full documentation:
-        https://microbiomedata.github.io/biosample-enricher/
+        https://contextualizer-ai.github.io/biosample-enricher/
     """
 
 

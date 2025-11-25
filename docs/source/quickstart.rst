@@ -8,7 +8,7 @@ Get NMDC submission values in 3 steps
 
 .. code-block:: bash
 
-   uv pip install biosample-enricher
+   uv add biosample-enricher
 
 **Step 2: Get values**
 
