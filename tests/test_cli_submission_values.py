@@ -31,7 +31,7 @@ class TestCLIHelp:
         """Test main CLI help."""
         result = runner.invoke(main, ["--help"])
         assert result.exit_code == 0
-        assert "Get NMDC submission-schema values" in result.output
+        assert "Get environmental metadata" in result.output
         assert "get" in result.output
         assert "info" in result.output
 
