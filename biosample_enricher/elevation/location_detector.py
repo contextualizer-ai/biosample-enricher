@@ -127,7 +127,6 @@ class LocationDetector:
                     "country_code": country_code,
                     "country_name": country_name,
                     "method": "osm_nominatim",
-                    "confidence": 0.95,
                     "region": region,
                     "routing_hint": "us_land"
                     if country_code == "US"
@@ -144,7 +143,6 @@ class LocationDetector:
                     "country_code": None,
                     "country_name": "Ocean",
                     "method": "osm_nominatim",
-                    "confidence": 0.9,
                     "region": None,
                     "routing_hint": "ocean",
                 }
@@ -157,7 +155,6 @@ class LocationDetector:
                 "country_code": "ERROR",
                 "country_name": f"Error: {str(e)}",
                 "method": "error",
-                "confidence": 0.0,
                 "region": None,
                 "routing_hint": "unknown",
             }
@@ -192,7 +189,6 @@ class LocationDetector:
             "country_code": "US" if is_us and not is_ocean else None,
             "country_name": country_name,
             "method": "heuristic",
-            "confidence": 0.7,  # Lower confidence for heuristics
             "region": region,
             "routing_hint": routing_hint,
         }

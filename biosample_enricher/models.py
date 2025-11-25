@@ -265,9 +265,6 @@ class CoordinateClassification(BaseModel):
     region: str | None = Field(
         default=None, description="Region code (CONUS, AK, HI, PR, GU, etc.)"
     )
-    confidence: float = Field(
-        default=1.0, ge=0.0, le=1.0, description="Confidence score for classification"
-    )
 
 
 class ElevationRequest(BaseModel):
