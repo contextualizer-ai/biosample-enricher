@@ -33,8 +33,8 @@ Next Steps
 ----------
 
 - **Full guide**: :doc:`submission_values` - Complete documentation with all supported slots
-- **Examples**: `examples/ directory <https://github.com/contextualizer-ai/biosample-enricher/tree/main/examples>`_ - Copy-paste ready code
-- **Available slots**: See :ref:`what-values-can-you-get` for the complete list
+- **CLI**: :doc:`cli` - Command-line interface
+- **Quick reference**: See :ref:`quick-reference` for all supported slots and constants
 
 Common Use Cases
 ----------------
@@ -91,5 +91,5 @@ Need Help?
 ----------
 
 - **Questions?** See the :doc:`submission_values` guide
+- **CLI?** See the :doc:`cli` reference
 - **Issues?** `Report on GitHub <https://github.com/contextualizer-ai/biosample-enricher/issues>`_
-- **Examples not working?** Check the `examples/ README <https://github.com/contextualizer-ai/biosample-enricher/blob/main/examples/README.md>`_
