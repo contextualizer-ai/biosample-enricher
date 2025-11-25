@@ -12,11 +12,65 @@ logger = get_logger(__name__)
 
 
 class USGSElevationProvider(BaseElevationProvider):
-    """Provider for USGS 3DEP Elevation Service.
+    """
+    USGS 3DEP Elevation - 3D Elevation Program
 
-    Note: USGS elevation services have experienced multiple migrations and can be
-    unreliable. This provider has been updated from the deprecated EPQS endpoint
-    to the 3DEP ArcGIS REST service. Service availability may vary.
+    Technical Characteristics:
+        API Type: ArcGIS_REST
+        Endpoint: https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/getSamples
+        Authentication: none
+        Coverage: Global (best in USA)
+        Resolution: 10-30m (varies by region)
+
+    Reliability:
+        Stability: LOW
+        Data Quality: ground_truth
+        Uptime: Unreliable - multiple migrations
+        Known Issues:
+            - Service has migrated multiple times (EPQS → 3DEP)
+            - Endpoint URLs change without notice
+            - No-data sentinel values (-1000000, -9999) complicate parsing
+            - Intermittent availability
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited
+        Quotas: None documented
+
+    Strengths:
+        ✓ Free access, no API key required
+        ✓ High resolution data in USA (10m)
+        ✓ Proper vertical datum (NAVD88)
+        ✓ Government-maintained dataset
+
+    Weaknesses:
+        ✗ ⚠️ KNOWN MIGRATION ISSUES - service frequently changes
+        ✗ Unreliable availability
+        ✗ Complex no-data handling required
+        ✗ Endpoint may change without warning
+        ✗ Limited documentation on current API
+
+    Best For:
+        • US locations when available
+        • Development/testing (free)
+
+    Not Suitable For:
+        • Production systems requiring high reliability
+        • International locations (lower priority/quality)
+        • Time-critical applications
+
+    Complements:
+        • Should be used WITH fallback providers
+
+    NMDC Integration:
+        Schema Slots: elev
+        Role: fallback_with_caution
+        Excellent For: usa_conus
+        Poor For: international, oceans
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/getSamples
     """
 
     def __init__(self) -> None:

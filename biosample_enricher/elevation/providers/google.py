@@ -12,7 +12,62 @@ logger = get_logger(__name__)
 
 
 class GoogleElevationProvider(BaseElevationProvider):
-    """Provider for Google Elevation API."""
+    """
+    Google Elevation API - Google Earth elevation database
+
+    Technical Characteristics:
+        API Type: REST
+        Endpoint: https://maps.googleapis.com/maps/api/elevation/json
+        Authentication: api_key_required
+        API Key: GOOGLE_MAIN_API_KEY
+        Coverage: Global
+        Resolution: 30m (varies by region)
+
+    Reliability:
+        Stability: HIGH
+        Data Quality: ground_truth
+        Uptime: Excellent (major provider)
+
+    Cost:
+        Model: paid
+        Free Tier: No free tier
+        Quotas: Based on billing account
+
+    Strengths:
+        ✓ Comprehensive global coverage
+        ✓ Accurate rooftop-level elevation data
+        ✓ Robust error handling with detailed status codes
+        ✓ Well-documented API
+        ✓ High reliability and uptime
+
+    Weaknesses:
+        ✗ Requires paid API key (no free tier)
+        ✗ Cost accumulates with high-volume use
+        ✗ Quota exhaustion possible (OVER_QUERY_LIMIT)
+        ✗ No fallback mechanisms if quota exceeded
+
+    Best For:
+        • Production systems with API budget
+        • High-accuracy requirements
+        • Urban/suburban locations
+
+    Not Suitable For:
+        • High-volume batch processing without budget
+        • Development/testing without API key
+
+    Complements:
+        • Open Topo Data (free fallback)
+        • USGS 3DEP (US-specific validation)
+
+    NMDC Integration:
+        Schema Slots: elev
+        Role: primary_if_key_available
+        Excellent For: urban, suburban, developed_areas
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://maps.googleapis.com/maps/api/elevation/json
+    """
 
     def __init__(self, api_key: str | None = None) -> None:
         """

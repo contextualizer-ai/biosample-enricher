@@ -14,14 +14,60 @@ logger = get_logger(__name__)
 
 
 class SoilGridsProvider(SoilProviderBase):
-    """ISRIC SoilGrids provider for global soil properties and WRB classification.
+    """
+    ISRIC SoilGrids - Machine learning predictions from soil profiles
 
-    Provides global soil data at 250m resolution including:
-    - WRB soil classification
-    - Soil properties (pH, organic carbon, texture, bulk density)
-    - Derived texture classification using USDA triangle
+    Technical Characteristics:
+        API Type: WCS_REST
+        Endpoint: https://rest.isric.org/soilgrids/v2.0
+        Authentication: none
+        Coverage: Global
+        Resolution: 250m
 
-    API Documentation: https://www.isric.org/web-coverage-services-wcs
+    Reliability:
+        Stability: HIGH
+        Data Quality: modeled
+        Uptime: Good (ISRIC institutional service)
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited
+        Quotas: None documented
+
+    Strengths:
+        ✓ Global coverage at 250m resolution
+        ✓ Multiple soil properties (pH, texture, carbon, etc.)
+        ✓ Depth-specific layers
+        ✓ No API key required
+        ✓ Well-documented API
+        ✓ Regular updates
+
+    Weaknesses:
+        ✗ Modeled data (not direct measurements)
+        ✗ Accuracy varies by region
+        ✗ May not reflect recent land use changes
+
+    Best For:
+        • Global soil property estimates
+        • Locations without local soil surveys
+        • Comparative studies across regions
+
+    Not Suitable For:
+        • High-precision agriculture requiring ground truth
+        • Recent land disturbance areas
+
+    Complements:
+        • USDA NRCS (for US validation)
+
+    NMDC Integration:
+        Schema Slots: ph, soil_text, org_matter, oc
+        Role: primary_global
+        Excellent For: global
+        Poor For: recently_disturbed
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://rest.isric.org/soilgrids/v2.0
     """
 
     def __init__(self, timeout: int = 30):

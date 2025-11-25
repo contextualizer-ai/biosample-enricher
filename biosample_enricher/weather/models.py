@@ -233,3 +233,272 @@ class WeatherResult(BaseModel):
             "successful_providers": self.successful_providers,
             "provider_count": len(self.successful_providers),
         }
+
+
+class MultiProviderClimateNormals(BaseModel):
+    """
+    Climate normals from multiple providers for comparison and validation.
+
+    Returns results from all requested providers, allowing users to:
+    - Compare values across different data sources
+    - Detect provider outages/failures
+    - Validate data quality by cross-checking
+    - Choose which provider to trust for their use case
+
+    This is the default return type when multiple providers are queried.
+    """
+
+    # Results from each provider (keyed by provider name)
+    providers: dict[
+        str, "ClimateNormalsResult"
+    ]  # e.g., {"meteostat": <result>, "nasa_power": <result>}
+
+    # Summary statistics across providers
+    location: dict[str, float]  # {"lat": 42.5, "lon": -85.4}
+    requested_providers: list[str]  # Providers that were attempted
+    successful_providers: list[str]  # Providers that returned data
+    failed_providers: dict[str, str]  # Provider name -> error message
+    requested_start_year: int  # Requested start year (computed from years_back)
+    requested_end_year: int  # Requested end year (current year)
+
+    def get_provider_result(self, provider_name: str) -> "ClimateNormalsResult | None":
+        """Get result from a specific provider."""
+        return self.providers.get(provider_name)
+
+    def get_consensus_precipitation(self) -> float | None:
+        """
+        Calculate consensus annual precipitation across all successful providers.
+
+        Returns the mean precipitation if multiple providers available,
+        otherwise returns the single provider's value.
+        """
+        precip_values = []
+        for result in self.providers.values():
+            value = result.get_annual_precipitation()
+            if value is not None:
+                precip_values.append(value)
+
+        if not precip_values:
+            return None
+
+        return sum(precip_values) / len(precip_values)
+
+    def get_consensus_temperature(self) -> float | None:
+        """
+        Calculate consensus annual temperature across all successful providers.
+
+        Returns the mean temperature if multiple providers available,
+        otherwise returns the single provider's value.
+        """
+        temp_values = []
+        for result in self.providers.values():
+            value = result.get_annual_temperature()
+            if value is not None:
+                temp_values.append(value)
+
+        if not temp_values:
+            return None
+
+        return sum(temp_values) / len(temp_values)
+
+    def get_value_ranges(self) -> dict[str, tuple[float, float] | None]:
+        """
+        Get min/max range of values across providers.
+
+        Useful for detecting large discrepancies and data quality issues.
+
+        Returns:
+            Dict with keys:
+            - annual_precpt_range: (min, max) in mm/year or None
+            - annual_temp_range: (min, max) in °C or None
+        """
+        precip_values: list[float] = [
+            p
+            for result in self.providers.values()
+            if (p := result.get_annual_precipitation()) is not None
+        ]
+        temp_values: list[float] = [
+            t
+            for result in self.providers.values()
+            if (t := result.get_annual_temperature()) is not None
+        ]
+
+        return {
+            "annual_precpt_range": (min(precip_values), max(precip_values))
+            if precip_values
+            else None,
+            "annual_temp_range": (min(temp_values), max(temp_values))
+            if temp_values
+            else None,
+        }
+
+    def to_submission_schema(
+        self, provider: str | None = None, strategy: str = "consensus"
+    ) -> dict[str, Any]:
+        """
+        Extract values in submission-schema compatible format.
+
+        Args:
+            provider: Specific provider to use (e.g., "meteostat"). If None, uses strategy.
+            strategy: How to combine multiple providers:
+                     - "consensus": Average across all successful providers (default)
+                     - "first": Use first successful provider
+                     - "best_quality": Use provider with lowest station_distance_km
+
+        Returns:
+            Dict with submission-schema values plus metadata about provider selection
+        """
+        if provider:
+            # Use specific provider
+            result = self.providers.get(provider)
+            if not result:
+                raise ValueError(f"Provider {provider} not available in results")
+            return result.to_submission_schema()
+
+        if strategy == "consensus":
+            return {
+                "annual_precpt": self.get_consensus_precipitation(),
+                "annual_temp": self.get_consensus_temperature(),
+                "data_strategy": "consensus",
+                "providers_used": self.successful_providers,
+            }
+        elif strategy == "first":
+            # Use first successful provider
+            first_provider = (
+                self.successful_providers[0] if self.successful_providers else None
+            )
+            if not first_provider:
+                return {
+                    "annual_precpt": None,
+                    "annual_temp": None,
+                    "error": "No successful providers",
+                }
+            return self.providers[first_provider].to_submission_schema()
+        elif strategy == "best_quality":
+            # Use provider with lowest station distance (for station-based providers)
+            best_provider = min(
+                self.providers.items(),
+                key=lambda x: x[1].station_distance_km
+                if x[1].station_distance_km
+                else float("inf"),
+            )
+            return best_provider[1].to_submission_schema()
+        else:
+            raise ValueError(f"Unknown strategy: {strategy}")
+
+
+class ClimateNormalsResult(BaseModel):
+    """
+    30-year climate averages (normals) from a single provider.
+
+    Climate normals provide baseline environmental conditions over a standard
+    30-year period (typically 1991-2020), representing typical climate rather
+    than day-to-day weather variability.
+
+    Use this for:
+    - Annual precipitation totals (sum of 12 monthly means)
+    - Annual temperature averages
+    - Long-term climate characterization
+    - Biosample metadata fields like annual_precpt, annual_temp
+
+    For day-specific weather conditions, use WeatherResult instead.
+    For multi-provider comparisons, see MultiProviderClimateNormals.
+    """
+
+    # Monthly climate normals (mm for precipitation, °C for temperature)
+    monthly_precipitation: list[float | None]  # 12 values, one per month (mm)
+    monthly_temperature: list[float | None]  # 12 values, one per month (°C)
+
+    # Station metadata
+    station_id: str
+    station_distance_km: float  # Distance from requested location
+    location: dict[str, float]  # {"lat": 42.5, "lon": -85.4}
+    normals_period: tuple[int, int]  # (start_year, end_year), e.g., (1991, 2020)
+
+    # Provider info
+    provider: str = "meteostat"
+    data_quality: str | None = None  # Quality assessment notes
+
+    def get_annual_precipitation(self) -> float | None:
+        """
+        Calculate annual precipitation by summing 12 monthly normals.
+
+        Returns total in millimeters, suitable for submission-schema
+        annual_precpt slot.
+
+        Returns:
+            float: Annual precipitation in millimeters (mm/year), or None if
+                data incomplete (requires at least 10 months of valid data).
+
+        Example:
+            >>> result.get_annual_precipitation()
+            547.2  # mm/year
+        """
+        if not self.monthly_precipitation:
+            return None
+
+        # Filter out None values and sum
+        valid_months = [p for p in self.monthly_precipitation if p is not None]
+
+        # Require at least 10 months of data for reasonable estimate
+        if len(valid_months) < 10:
+            return None
+
+        return sum(valid_months)
+
+    def get_annual_temperature(self) -> float | None:
+        """
+        Calculate annual average temperature from 12 monthly normals.
+
+        Returns average in degrees Celsius, suitable for submission-schema
+        annual_temp slot.
+
+        Returns:
+            Annual average temperature in °C, or None if data incomplete.
+
+        Example:
+            >>> result.get_annual_temperature()
+            12.5  # °C
+        """
+        if not self.monthly_temperature:
+            return None
+
+        # Filter out None values and average
+        valid_months = [t for t in self.monthly_temperature if t is not None]
+
+        # Require at least 10 months of data for reasonable estimate
+        if len(valid_months) < 10:
+            return None
+
+        return sum(valid_months) / len(valid_months)
+
+    def to_submission_schema(self) -> dict[str, Any]:
+        """
+        Extract values in submission-schema compatible format.
+
+        Provides simple scalar values suitable for NMDC submission-schema
+        slots, following general-purpose design pattern (Issue #193).
+
+        Returns:
+            Dict with keys:
+            - annual_precpt: float | None - Annual precipitation in millimeters
+              (mm/year). Sum of 12 monthly normals. None if <10 months available.
+            - annual_temp: float | None - Annual average temperature in degrees
+              Celsius (°C). Average of 12 monthly normals. None if <10 months.
+            - climate_normals_period: str - Period as "YYYY-YYYY" (e.g. "1991-2020")
+            - station_distance_km: float - Distance to weather station in kilometers
+            - data_source: str - Provider name (e.g. "meteostat")
+
+        Example:
+            >>> normals = service.get_climate_normals(37.7749, -122.4194)
+            >>> values = normals.to_submission_schema()
+            >>> print(f"Annual rainfall: {values['annual_precpt']} mm")
+            Annual rainfall: 547.2 mm
+        """
+        return {
+            "annual_precpt": self.get_annual_precipitation(),
+            "annual_temp": self.get_annual_temperature(),
+            "climate_normals_period": f"{self.normals_period[0]}-{self.normals_period[1]}",
+            "station_distance_km": self.station_distance_km,
+            "data_source": self.provider,
+        }

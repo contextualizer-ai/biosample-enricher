@@ -11,7 +11,60 @@ logger = get_logger(__name__)
 
 
 class OpenTopoDataProvider(BaseElevationProvider):
-    """Provider for Open Topo Data API with multiple global datasets."""
+    """
+    Open Topo Data - ASTER GDEM, SRTM, ETOPO1
+
+    Technical Characteristics:
+        API Type: REST
+        Endpoint: https://api.opentopodata.org/v1/aster30m
+        Authentication: none
+        Coverage: Global
+        Resolution: 250m-1km (dataset dependent)
+
+    Reliability:
+        Stability: HIGH
+        Data Quality: satellite
+        Uptime: Good (community-maintained)
+
+    Cost:
+        Model: free
+        Free Tier: 1000 requests/day
+        Quotas: 100/min, 1000/day
+
+    Strengths:
+        ✓ Free access, no API key
+        ✓ Global coverage
+        ✓ Multiple dataset options (ASTER, SRTM, ETOPO1)
+        ✓ Stable service
+        ✓ Good documentation
+
+    Weaknesses:
+        ✗ Rate limited (100/min, 1000/day)
+        ✗ Coarser resolution than Google (250m-1km)
+        ✗ Community-maintained (not enterprise SLA)
+
+    Best For:
+        • Development and testing
+        • Batch processing within rate limits
+        • Budget-constrained projects
+
+    Not Suitable For:
+        • Very high-volume applications (>1000/day)
+        • Sub-100m precision requirements
+
+    Complements:
+        • Google Elevation (for higher accuracy)
+
+    NMDC Integration:
+        Schema Slots: elev
+        Role: primary_free_option
+        Excellent For: global
+        Poor For: requires_sub_100m_accuracy
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://api.opentopodata.org/v1/aster30m
+    """
 
     def __init__(
         self,

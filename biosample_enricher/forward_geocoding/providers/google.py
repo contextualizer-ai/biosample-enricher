@@ -21,7 +21,56 @@ logger = get_logger(__name__)
 
 
 class GoogleForwardGeocodingProvider(ForwardGeocodingProvider):
-    """Google Maps forward geocoding provider (place name to coordinates)."""
+    """
+    Google Geocoding (Forward) - Google Maps database
+
+    Technical Characteristics:
+        API Type: REST
+        Endpoint: https://maps.googleapis.com/maps/api/geocode/json
+        Authentication: api_key_required
+        API Key: GOOGLE_MAIN_API_KEY
+        Coverage: Global
+        Resolution: Address-level precision
+
+    Reliability:
+        Stability: HIGH
+        Data Quality: high
+        Uptime: Excellent
+
+    Cost:
+        Model: paid
+        Free Tier: No
+        Quotas: Based on billing
+
+    Strengths:
+        ✓ High accuracy
+        ✓ Global coverage
+        ✓ Excellent address parsing
+        ✓ Robust error handling
+
+    Weaknesses:
+        ✗ Requires paid API key
+        ✗ Cost per request
+
+    Best For:
+        • Production with budget
+        • High accuracy needs
+
+    Not Suitable For:
+        • High-volume without budget
+
+    Complements:
+        • OSM Nominatim (free fallback)
+
+    NMDC Integration:
+        Schema Slots: lat_lon
+        Role: primary_if_key_available
+        Excellent For: global
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://maps.googleapis.com/maps/api/geocode/json
+    """
 
     def __init__(self, api_key: str | None = None):
         """Initialize Google provider."""

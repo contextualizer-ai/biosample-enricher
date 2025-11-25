@@ -11,13 +11,57 @@ logger = get_logger(__name__)
 
 
 class MODISVegetationProvider(VegetationProviderBase):
-    """MODIS vegetation indices provider.
+    """
+    MODIS Vegetation Indices - MODIS satellite
 
-    Provides NDVI, EVI, and other vegetation indices from MODIS products:
-    - MOD13Q1: Terra MODIS 250m 16-day NDVI/EVI
-    - MCD15A3H: Combined MODIS 500m 4-day LAI/FPAR
+    Technical Characteristics:
+        API Type: APPEEARS
+        Endpoint: https://appeears.earthdatacloud.nasa.gov/api/
+        Authentication: earthdata_login
+        Coverage: Global
+        Resolution: 250-500m
+        Temporal: 2000-present
 
-    Uses NASA APPEEARS API for data access.
+    Reliability:
+        Stability: LOW
+        Data Quality: satellite
+        Uptime: Unknown
+        Known Issues:
+            - ⚠️ MOCK IMPLEMENTATION ONLY
+            - Not fully implemented
+            - Requires NASA Earthdata authentication
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited (with NASA account)
+        Quotas: Unknown
+
+    Strengths:
+        ✓ Global NDVI/EVI data
+        ✓ Long temporal coverage
+        ✓ Free with NASA account
+
+    Weaknesses:
+        ✗ ⚠️ NOT IMPLEMENTED - mock only
+        ✗ Requires authentication setup
+        ✗ Complex API
+
+    Best For:
+        • Future implementation
+
+    Not Suitable For:
+        • Current use (not implemented)
+
+    Complements:
+        • N/A
+
+    NMDC Integration:
+        Schema Slots: ndvi, evi
+        Role: not_implemented
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://appeears.earthdatacloud.nasa.gov/api/
     """
 
     def __init__(self, timeout: int = 60):

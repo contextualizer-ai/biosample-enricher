@@ -11,12 +11,55 @@ logger = get_logger(__name__)
 
 
 class NLCDProvider(LandCoverProviderBase):
-    """NLCD (National Land Cover Database) provider.
+    """
+    USGS NLCD - Landsat satellite classification
 
-    Provides US land cover classification at 30m resolution.
-    Uses USGS NLCD data via WMS/COG access.
+    Technical Characteristics:
+        API Type: WMS
+        Endpoint: https://www.mrlc.gov/geoserver/mrlc_display/NLCD_*/wms
+        Authentication: none
+        Coverage: USA only
+        Resolution: 30m
+        Temporal: Multiple years (2001, 2004, 2006, 2008, 2011, 2013, 2016, 2019)
 
-    Data source: https://www.usgs.gov/centers/eros/science/national-land-cover-database
+    Reliability:
+        Stability: HIGH
+        Data Quality: satellite_classified
+        Uptime: Good (USGS service)
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited
+
+    Strengths:
+        ✓ High resolution (30m)
+        ✓ USA-specific classification scheme
+        ✓ Multiple time periods
+        ✓ Free access
+
+    Weaknesses:
+        ✗ USA only coverage
+        ✗ Limited to available years
+
+    Best For:
+        • USA land cover classification
+        • Temporal land use change studies
+
+    Not Suitable For:
+        • International locations
+
+    Complements:
+        • ESA WorldCover (global)
+
+    NMDC Integration:
+        Schema Slots: cur_land_use
+        Role: primary_for_usa
+        Excellent For: usa
+        Poor For: international
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://www.mrlc.gov/geoserver/mrlc_display/NLCD_*/wms
     """
 
     def __init__(self, timeout: int = 30):

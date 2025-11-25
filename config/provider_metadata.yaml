@@ -1,0 +1,1200 @@
+# Provider Metadata for biosample-enricher
+# This file defines strengths, weaknesses, and characteristics for all data providers
+# Used to auto-generate Python docstrings and documentation
+
+# Schema version for compatibility checking
+schema_version: "1.0"
+
+providers:
+  # ============================================================================
+  # ELEVATION PROVIDERS
+  # ============================================================================
+
+  elevation.google:
+    name: "Google Elevation API"
+    class: "GoogleElevationProvider"
+    module: "biosample_enricher.elevation.providers.google"
+
+    technical:
+      api_type: "REST"
+      api_endpoint: "https://maps.googleapis.com/maps/api/elevation/json"
+      authentication: "api_key_required"
+      api_key_env_var: "GOOGLE_MAIN_API_KEY"
+      rate_limit: "50 QPS (with API key)"
+      timeout_default: 20
+      coverage: "Global"
+      resolution: "30m (varies by region)"
+      data_source: "Google Earth elevation database"
+      vertical_datum: "EGM96 (geoid)"
+
+    reliability:
+      stability: "high"
+      data_quality: "ground_truth"
+      uptime_history: "Excellent (major provider)"
+      known_issues: []
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "paid"
+      free_tier: "No free tier"
+      quota_limits: "Based on billing account"
+      cost_per_request: "$0.005 per request (1000 locations)"
+
+    strengths:
+      - "Comprehensive global coverage"
+      - "Accurate rooftop-level elevation data"
+      - "Robust error handling with detailed status codes"
+      - "Well-documented API"
+      - "High reliability and uptime"
+
+    weaknesses:
+      - "Requires paid API key (no free tier)"
+      - "Cost accumulates with high-volume use"
+      - "Quota exhaustion possible (OVER_QUERY_LIMIT)"
+      - "No fallback mechanisms if quota exceeded"
+
+    use_cases:
+      best_for:
+        - "Production systems with API budget"
+        - "High-accuracy requirements"
+        - "Urban/suburban locations"
+      not_suitable_for:
+        - "High-volume batch processing without budget"
+        - "Development/testing without API key"
+      complements:
+        - "Open Topo Data (free fallback)"
+        - "USGS 3DEP (US-specific validation)"
+
+    nmdc_integration:
+      schema_slots:
+        - "elev"
+      multi_provider_role: "primary_if_key_available"
+      geographic_preferences:
+        excellent: ["urban", "suburban", "developed_areas"]
+        good: ["global"]
+        poor: []
+
+  elevation.usgs:
+    name: "USGS 3DEP Elevation"
+    class: "USGSElevationProvider"
+    module: "biosample_enricher.elevation.providers.usgs"
+
+    technical:
+      api_type: "ArcGIS_REST"
+      api_endpoint: "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/getSamples"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "Unknown (public service)"
+      timeout_default: 20
+      coverage: "Global (best in USA)"
+      resolution: "10-30m (varies by region)"
+      data_source: "3D Elevation Program"
+      vertical_datum: "NAVD88"
+
+    reliability:
+      stability: "low"
+      data_quality: "ground_truth"
+      uptime_history: "Unreliable - multiple migrations"
+      known_issues:
+        - "Service has migrated multiple times (EPQS → 3DEP)"
+        - "Endpoint URLs change without notice"
+        - "No-data sentinel values (-1000000, -9999) complicate parsing"
+        - "Intermittent availability"
+      error_handling: "partial"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited"
+      quota_limits: "None documented"
+      cost_per_request: "$0"
+
+    strengths:
+      - "Free access, no API key required"
+      - "High resolution data in USA (10m)"
+      - "Proper vertical datum (NAVD88)"
+      - "Government-maintained dataset"
+
+    weaknesses:
+      - "⚠️ KNOWN MIGRATION ISSUES - service frequently changes"
+      - "Unreliable availability"
+      - "Complex no-data handling required"
+      - "Endpoint may change without warning"
+      - "Limited documentation on current API"
+
+    use_cases:
+      best_for:
+        - "US locations when available"
+        - "Development/testing (free)"
+      not_suitable_for:
+        - "Production systems requiring high reliability"
+        - "International locations (lower priority/quality)"
+        - "Time-critical applications"
+      complements:
+        - "Should be used WITH fallback providers"
+
+    nmdc_integration:
+      schema_slots:
+        - "elev"
+      multi_provider_role: "fallback_with_caution"
+      geographic_preferences:
+        excellent: ["usa_conus"]
+        good: []
+        poor: ["international", "oceans"]
+
+  elevation.open_topo_data:
+    name: "Open Topo Data"
+    class: "OpenTopoDataProvider"
+    module: "biosample_enricher.elevation.providers.open_topo_data"
+
+    technical:
+      api_type: "REST"
+      api_endpoint: "https://api.opentopodata.org/v1/aster30m"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "100 requests/minute, 1000/day"
+      timeout_default: 20
+      coverage: "Global"
+      resolution: "250m-1km (dataset dependent)"
+      data_source: "ASTER GDEM, SRTM, ETOPO1"
+      vertical_datum: "EGM96"
+
+    reliability:
+      stability: "high"
+      data_quality: "satellite"
+      uptime_history: "Good (community-maintained)"
+      known_issues: []
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "1000 requests/day"
+      quota_limits: "100/min, 1000/day"
+      cost_per_request: "$0"
+
+    strengths:
+      - "Free access, no API key"
+      - "Global coverage"
+      - "Multiple dataset options (ASTER, SRTM, ETOPO1)"
+      - "Stable service"
+      - "Good documentation"
+
+    weaknesses:
+      - "Rate limited (100/min, 1000/day)"
+      - "Coarser resolution than Google (250m-1km)"
+      - "Community-maintained (not enterprise SLA)"
+
+    use_cases:
+      best_for:
+        - "Development and testing"
+        - "Batch processing within rate limits"
+        - "Budget-constrained projects"
+      not_suitable_for:
+        - "Very high-volume applications (>1000/day)"
+        - "Sub-100m precision requirements"
+      complements:
+        - "Google Elevation (for higher accuracy)"
+
+    nmdc_integration:
+      schema_slots:
+        - "elev"
+      multi_provider_role: "primary_free_option"
+      geographic_preferences:
+        excellent: ["global"]
+        good: []
+        poor: ["requires_sub_100m_accuracy"]
+
+  elevation.osm:
+    name: "OSM Elevation (open-elevation.com)"
+    class: "OSMElevationProvider"
+    module: "biosample_enricher.elevation.providers.osm"
+
+    technical:
+      api_type: "REST"
+      api_endpoint: "https://api.open-elevation.com/api/v1/lookup"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "Unknown (public service)"
+      timeout_default: 20
+      coverage: "Global"
+      resolution: "90m (SRTM-based)"
+      data_source: "SRTM, ASTER GDEM"
+      vertical_datum: "EGM96"
+
+    reliability:
+      stability: "high"
+      data_quality: "satellite"
+      uptime_history: "Good"
+      known_issues: []
+      error_handling: "basic"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited (fair use)"
+      quota_limits: "None documented"
+      cost_per_request: "$0"
+
+    strengths:
+      - "Free, no API key"
+      - "Global coverage"
+      - "90m resolution (better than Open Topo Data)"
+      - "No documented rate limits"
+
+    weaknesses:
+      - "Less mature than other services"
+      - "Limited documentation"
+      - "Unknown reliability guarantees"
+
+    use_cases:
+      best_for:
+        - "Free alternative with decent resolution"
+        - "Development/testing"
+      not_suitable_for:
+        - "Production systems requiring SLA"
+      complements:
+        - "Other free elevation providers"
+
+    nmdc_integration:
+      schema_slots:
+        - "elev"
+      multi_provider_role: "fallback_free_option"
+      geographic_preferences:
+        excellent: ["global"]
+        good: []
+        poor: []
+
+  # ============================================================================
+  # WEATHER PROVIDERS
+  # ============================================================================
+
+  weather.meteostat:
+    name: "Meteostat"
+    class: "MeteostatProvider"
+    module: "biosample_enricher.weather.providers.meteostat"
+
+    technical:
+      api_type: "Python_Library_CDN"
+      api_endpoint: "https://bulk.meteostat.net/v2/"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "None documented"
+      timeout_default: 30
+      coverage: "Global (120,000+ stations)"
+      resolution: "Station-based (point measurements)"
+      data_source: "WMO weather stations"
+      temporal_coverage: "1973-present (daily), 1991-2020 (normals)"
+      data_freshness: "7-day lag"
+
+    reliability:
+      stability: "high"
+      data_quality: "ground_truth"
+      uptime_history: "Excellent (stable library)"
+      known_issues:
+        - "Climate normals only available for WMO standard periods (1961-1990, 1971-2000, 1981-2010, 1991-2020)"
+        - "Station coverage sparse in remote regions"
+        - "Requires 10/12 months minimum for normals"
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited"
+      quota_limits: "None"
+      cost_per_request: "$0"
+
+    strengths:
+      - "30-year WMO standard period (1991-2020)"
+      - "Station-based ground truth measurements"
+      - "No API key required"
+      - "Extensive station network (120,000+)"
+      - "Distance tracking for quality assessment"
+      - "Pre-computed normals for fast retrieval"
+      - "High reliability"
+
+    weaknesses:
+      - "Sparse coverage in remote regions (deserts, mountains, oceans)"
+      - "Distance uncertainty (may use station 50-100km away)"
+      - "Only provides specific WMO standard periods"
+      - "Station availability varies by region"
+      - "Data gaps in some stations"
+
+    use_cases:
+      best_for:
+        - "Urban/suburban locations with dense station coverage"
+        - "When WMO-standard 30-year normals required"
+        - "Scientific research requiring ground-based observations"
+      not_suitable_for:
+        - "Remote desert/mountain/ocean locations"
+        - "Custom time periods (not WMO standard)"
+      complements:
+        - "NASA POWER (for remote area coverage)"
+
+    nmdc_integration:
+      schema_slots:
+        - "annual_precpt"
+        - "annual_temp"
+        - "temp"
+        - "air_temp"
+      multi_provider_role: "primary_for_stations"
+      geographic_preferences:
+        excellent: ["urban", "suburban", "europe", "north_america", "australia"]
+        good: ["populated_areas"]
+        poor: ["deserts", "mountains", "oceans", "remote_regions"]
+
+  weather.nasa_power:
+    name: "NASA POWER"
+    class: "NASAPowerProvider"
+    module: "biosample_enricher.weather.providers.nasa_power"
+
+    technical:
+      api_type: "REST"
+      api_endpoint: "https://power.larc.nasa.gov/api/temporal/climatology/point"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "None documented"
+      timeout_default: 30
+      coverage: "Global"
+      resolution: "0.5° x 0.625° (~50-60km grid)"
+      data_source: "MERRA-2 satellite reanalysis"
+      temporal_coverage: "2001-2020 (climatologies)"
+      data_freshness: "Static climatologies"
+
+    reliability:
+      stability: "high"
+      data_quality: "satellite_reanalysis"
+      uptime_history: "Excellent (NASA operational service)"
+      known_issues:
+        - "Only provides 2001-2020 period (not WMO standard 1991-2020)"
+        - "Coarser spatial resolution than station data"
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited"
+      quota_limits: "None documented"
+      cost_per_request: "$0"
+
+    strengths:
+      - "True global coverage (satellite-based)"
+      - "No API key required"
+      - "Works anywhere on Earth (deserts, mountains, oceans)"
+      - "Consistent methodology globally"
+      - "High stability (NASA/GMAO service)"
+      - "Fast response (pre-computed)"
+
+    weaknesses:
+      - "Shorter period (20 years: 2001-2020 vs standard 30 years)"
+      - "Coarser resolution (0.5° × 0.625° vs station point data)"
+      - "Satellite bias in complex terrain"
+      - "Not WMO standard period"
+      - "Model-based (not direct measurements)"
+
+    use_cases:
+      best_for:
+        - "Remote locations far from weather stations"
+        - "Ocean/marine samples"
+        - "Global-scale studies requiring consistent methodology"
+        - "Validation/comparison against station data"
+      not_suitable_for:
+        - "Urban areas with local station (prefer Meteostat)"
+        - "Studies requiring WMO standard 1991-2020 period"
+      complements:
+        - "Meteostat (for station-rich areas)"
+
+    nmdc_integration:
+      schema_slots:
+        - "annual_precpt"
+        - "annual_temp"
+      multi_provider_role: "fallback_for_remote_areas"
+      geographic_preferences:
+        excellent: ["oceans", "deserts", "mountains", "antarctica", "remote_regions"]
+        good: ["global"]
+        poor: []
+
+  weather.open_meteo:
+    name: "Open-Meteo"
+    class: "OpenMeteoProvider"
+    module: "biosample_enricher.weather.providers.open_meteo"
+
+    technical:
+      api_type: "REST"
+      api_endpoint: "https://archive-api.open-meteo.com/v1/era5"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "10,000 requests/day"
+      timeout_default: 30
+      coverage: "Global"
+      resolution: "11km (ERA5-Land)"
+      data_source: "ERA5/ERA5-Land reanalysis"
+      temporal_coverage: "1959-present (daily)"
+      data_freshness: "5-day lag"
+
+    reliability:
+      stability: "high"
+      data_quality: "satellite_reanalysis"
+      uptime_history: "Good"
+      known_issues:
+        - "Does not provide pre-computed climate normals"
+        - "Would require 30-360 API calls to compute normals"
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "10,000 requests/day"
+      quota_limits: "10,000/day"
+      cost_per_request: "$0"
+
+    strengths:
+      - "ERA5 reanalysis (high quality)"
+      - "11km resolution (better than NASA POWER)"
+      - "No API key required"
+      - "Long temporal coverage (1959-present)"
+      - "Good for daily weather"
+
+    weaknesses:
+      - "Not used for climate normals (too many API calls)"
+      - "Rate limited (10,000/day)"
+      - "Hourly aggregation required for daily values"
+
+    use_cases:
+      best_for:
+        - "Day-specific weather (collection date)"
+        - "Historical daily data"
+      not_suitable_for:
+        - "Climate normals (use Meteostat/NASA POWER)"
+      complements:
+        - "Meteostat (for daily weather)"
+
+    nmdc_integration:
+      schema_slots:
+        - "temp"
+        - "air_temp"
+        - "humidity"
+        - "wind_speed"
+        - "wind_direction"
+      multi_provider_role: "fallback_daily_weather"
+      geographic_preferences:
+        excellent: ["global"]
+        good: []
+        poor: []
+
+  # ============================================================================
+  # SOIL PROVIDERS
+  # ============================================================================
+
+  soil.soilgrids:
+    name: "ISRIC SoilGrids"
+    class: "SoilGridsProvider"
+    module: "biosample_enricher.soil.providers.soilgrids"
+
+    technical:
+      api_type: "WCS_REST"
+      api_endpoint: "https://rest.isric.org/soilgrids/v2.0"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "Unknown"
+      timeout_default: 30
+      coverage: "Global"
+      resolution: "250m"
+      data_source: "Machine learning predictions from soil profiles"
+      vertical_coverage: "Multiple depth layers (0-5cm, 5-15cm, etc.)"
+
+    reliability:
+      stability: "high"
+      data_quality: "modeled"
+      uptime_history: "Good (ISRIC institutional service)"
+      known_issues: []
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited"
+      quota_limits: "None documented"
+      cost_per_request: "$0"
+
+    strengths:
+      - "Global coverage at 250m resolution"
+      - "Multiple soil properties (pH, texture, carbon, etc.)"
+      - "Depth-specific layers"
+      - "No API key required"
+      - "Well-documented API"
+      - "Regular updates"
+
+    weaknesses:
+      - "Modeled data (not direct measurements)"
+      - "Accuracy varies by region"
+      - "May not reflect recent land use changes"
+
+    use_cases:
+      best_for:
+        - "Global soil property estimates"
+        - "Locations without local soil surveys"
+        - "Comparative studies across regions"
+      not_suitable_for:
+        - "High-precision agriculture requiring ground truth"
+        - "Recent land disturbance areas"
+      complements:
+        - "USDA NRCS (for US validation)"
+
+    nmdc_integration:
+      schema_slots:
+        - "ph"
+        - "soil_text"
+        - "org_matter"
+        - "oc"
+      multi_provider_role: "primary_global"
+      geographic_preferences:
+        excellent: ["global"]
+        good: []
+        poor: ["recently_disturbed"]
+
+  soil.usda_nrcs:
+    name: "USDA NRCS Web Soil Survey"
+    class: "USDANRCSProvider"
+    module: "biosample_enricher.soil.providers.usda_nrcs"
+
+    technical:
+      api_type: "SDA_REST"
+      api_endpoint: "https://sdmdataaccess.nrcs.usda.gov/Tabular/SDMTabularService/post.rest"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "Unknown"
+      timeout_default: 30
+      coverage: "USA only"
+      resolution: "Polygon-based (variable)"
+      data_source: "Ground surveys and lab measurements"
+
+    reliability:
+      stability: "high"
+      data_quality: "ground_truth"
+      uptime_history: "Good (USDA service)"
+      known_issues: []
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited"
+      quota_limits: "None documented"
+      cost_per_request: "$0"
+
+    strengths:
+      - "High-quality ground truth data"
+      - "Lab-measured soil properties"
+      - "Detailed soil classification"
+      - "Free access"
+
+    weaknesses:
+      - "USA only coverage"
+      - "Variable spatial resolution"
+      - "Complex API (SQL-based queries)"
+
+    use_cases:
+      best_for:
+        - "USA locations requiring high accuracy"
+        - "Agricultural research"
+        - "Ground truth validation"
+      not_suitable_for:
+        - "International locations"
+      complements:
+        - "SoilGrids (global coverage)"
+
+    nmdc_integration:
+      schema_slots:
+        - "ph"
+        - "soil_text"
+        - "org_matter"
+      multi_provider_role: "primary_for_usa"
+      geographic_preferences:
+        excellent: ["usa"]
+        good: []
+        poor: ["international"]
+
+  # ============================================================================
+  # MARINE PROVIDERS
+  # ============================================================================
+
+  marine.gebco:
+    name: "GEBCO Bathymetry"
+    class: "GEBCOProvider"
+    module: "biosample_enricher.marine.providers.gebco"
+
+    technical:
+      api_type: "WCS"
+      api_endpoint: "https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "Unknown"
+      timeout_default: 30
+      coverage: "Global oceans"
+      resolution: "15 arc-seconds (~450m)"
+      data_source: "Compiled bathymetric surveys"
+
+    reliability:
+      stability: "moderate"
+      data_quality: "survey_compilation"
+      uptime_history: "Fair"
+      known_issues:
+        - "⚠️ WCS implementation incomplete"
+        - "Service reliability issues"
+      error_handling: "partial"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited"
+      quota_limits: "None"
+      cost_per_request: "$0"
+
+    strengths:
+      - "Global ocean coverage"
+      - "High resolution (15 arc-seconds)"
+      - "Free access"
+
+    weaknesses:
+      - "⚠️ Incomplete WCS implementation"
+      - "Service stability concerns"
+      - "Limited error handling"
+
+    use_cases:
+      best_for:
+        - "Ocean depth estimates when working"
+      not_suitable_for:
+        - "Production systems requiring reliability"
+      complements:
+        - "Other bathymetry providers needed"
+
+    nmdc_integration:
+      schema_slots:
+        - "depth"
+      multi_provider_role: "experimental"
+      geographic_preferences:
+        excellent: ["oceans"]
+        good: []
+        poor: []
+
+  marine.esa_cci:
+    name: "ESA Ocean Colour CCI"
+    class: "ESACCIProvider"
+    module: "biosample_enricher.marine.providers.esa_cci"
+
+    technical:
+      api_type: "ERDDAP"
+      api_endpoint: "https://www.oceancolour.org/erddap/"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "Unknown"
+      timeout_default: 30
+      coverage: "Global oceans"
+      resolution: "1km"
+      data_source: "Satellite ocean color"
+      temporal_coverage: "1997-present"
+
+    reliability:
+      stability: "moderate"
+      data_quality: "satellite"
+      uptime_history: "Fair"
+      known_issues:
+        - "⚠️ Implementation incomplete"
+        - "Complex ERDDAP API"
+      error_handling: "partial"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited"
+      quota_limits: "None documented"
+      cost_per_request: "$0"
+
+    strengths:
+      - "Global ocean color data"
+      - "Long temporal coverage"
+      - "Free access"
+
+    weaknesses:
+      - "⚠️ Incomplete implementation"
+      - "Complex ERDDAP queries"
+      - "Limited documentation"
+
+    use_cases:
+      best_for:
+        - "Marine biogeochemistry when available"
+      not_suitable_for:
+        - "Production use (incomplete)"
+      complements:
+        - "Other marine providers"
+
+    nmdc_integration:
+      schema_slots:
+        - "chlorophyll"
+      multi_provider_role: "experimental"
+      geographic_preferences:
+        excellent: ["oceans"]
+        good: []
+        poor: []
+
+  marine.noaa_oisst:
+    name: "NOAA OISST"
+    class: "NOAAOISSTProvider"
+    module: "biosample_enricher.marine.providers.noaa_oisst"
+
+    technical:
+      api_type: "ERDDAP"
+      api_endpoint: "https://coastwatch.pfeg.noaa.gov/erddap/"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "Unknown"
+      timeout_default: 30
+      coverage: "Global oceans"
+      resolution: "0.25 degrees (~25km)"
+      data_source: "Optimally Interpolated SST"
+      temporal_coverage: "1981-present"
+
+    reliability:
+      stability: "moderate"
+      data_quality: "satellite_interpolated"
+      uptime_history: "Fair"
+      known_issues:
+        - "⚠️ Implementation incomplete"
+      error_handling: "partial"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited"
+      quota_limits: "None documented"
+      cost_per_request: "$0"
+
+    strengths:
+      - "Global sea surface temperature"
+      - "Long temporal coverage"
+      - "Free access"
+
+    weaknesses:
+      - "⚠️ Incomplete implementation"
+      - "Coarse resolution (0.25°)"
+
+    use_cases:
+      best_for:
+        - "Sea surface temperature when available"
+      not_suitable_for:
+        - "Production use (incomplete)"
+      complements:
+        - "Other SST providers"
+
+    nmdc_integration:
+      schema_slots:
+        - "temp"
+        - "sst"
+      multi_provider_role: "experimental"
+      geographic_preferences:
+        excellent: ["oceans"]
+        good: []
+        poor: []
+
+  # ============================================================================
+  # LAND COVER PROVIDERS
+  # ============================================================================
+
+  land.nlcd:
+    name: "USGS NLCD"
+    class: "NLCDProvider"
+    module: "biosample_enricher.land.providers.nlcd"
+
+    technical:
+      api_type: "WMS"
+      api_endpoint: "https://www.mrlc.gov/geoserver/mrlc_display/NLCD_*/wms"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "Unknown"
+      timeout_default: 30
+      coverage: "USA only"
+      resolution: "30m"
+      data_source: "Landsat satellite classification"
+      temporal_coverage: "Multiple years (2001, 2004, 2006, 2008, 2011, 2013, 2016, 2019)"
+
+    reliability:
+      stability: "high"
+      data_quality: "satellite_classified"
+      uptime_history: "Good (USGS service)"
+      known_issues: []
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited"
+      quota_limits: "None"
+      cost_per_request: "$0"
+
+    strengths:
+      - "High resolution (30m)"
+      - "USA-specific classification scheme"
+      - "Multiple time periods"
+      - "Free access"
+
+    weaknesses:
+      - "USA only coverage"
+      - "Limited to available years"
+
+    use_cases:
+      best_for:
+        - "USA land cover classification"
+        - "Temporal land use change studies"
+      not_suitable_for:
+        - "International locations"
+      complements:
+        - "ESA WorldCover (global)"
+
+    nmdc_integration:
+      schema_slots:
+        - "cur_land_use"
+      multi_provider_role: "primary_for_usa"
+      geographic_preferences:
+        excellent: ["usa"]
+        good: []
+        poor: ["international"]
+
+  land.esa_worldcover:
+    name: "ESA WorldCover"
+    class: "ESAWorldCoverProvider"
+    module: "biosample_enricher.land.providers.esa_worldcover"
+
+    technical:
+      api_type: "WMS"
+      api_endpoint: "https://services.terrascope.be/wms/v2"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "Unknown"
+      timeout_default: 30
+      coverage: "Global"
+      resolution: "10m"
+      data_source: "Sentinel-1 & Sentinel-2"
+      temporal_coverage: "2020, 2021"
+
+    reliability:
+      stability: "high"
+      data_quality: "satellite_classified"
+      uptime_history: "Good (ESA service)"
+      known_issues: []
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited"
+      quota_limits: "None documented"
+      cost_per_request: "$0"
+
+    strengths:
+      - "Global coverage"
+      - "High resolution (10m - best available)"
+      - "Recent data (2020, 2021)"
+      - "Free access"
+      - "Sentinel satellite quality"
+
+    weaknesses:
+      - "Limited temporal coverage (only 2020, 2021)"
+      - "Simplified classification scheme"
+
+    use_cases:
+      best_for:
+        - "Global land cover classification"
+        - "International locations"
+        - "Recent land cover needed"
+      not_suitable_for:
+        - "Historical land cover (pre-2020)"
+        - "Detailed US classification (use NLCD)"
+      complements:
+        - "NLCD (for USA detail)"
+
+    nmdc_integration:
+      schema_slots:
+        - "cur_land_use"
+      multi_provider_role: "primary_global"
+      geographic_preferences:
+        excellent: ["global", "international"]
+        good: []
+        poor: []
+
+  land.modis_vegetation:
+    name: "MODIS Vegetation Indices"
+    class: "MODISVegetationProvider"
+    module: "biosample_enricher.land.providers.modis_vegetation"
+
+    technical:
+      api_type: "APPEEARS"
+      api_endpoint: "https://appeears.earthdatacloud.nasa.gov/api/"
+      authentication: "earthdata_login"
+      api_key_env_var: null
+      rate_limit: "Unknown"
+      timeout_default: 30
+      coverage: "Global"
+      resolution: "250-500m"
+      data_source: "MODIS satellite"
+      temporal_coverage: "2000-present"
+
+    reliability:
+      stability: "low"
+      data_quality: "satellite"
+      uptime_history: "Unknown"
+      known_issues:
+        - "⚠️ MOCK IMPLEMENTATION ONLY"
+        - "Not fully implemented"
+        - "Requires NASA Earthdata authentication"
+      error_handling: "none"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited (with NASA account)"
+      quota_limits: "Unknown"
+      cost_per_request: "$0"
+
+    strengths:
+      - "Global NDVI/EVI data"
+      - "Long temporal coverage"
+      - "Free with NASA account"
+
+    weaknesses:
+      - "⚠️ NOT IMPLEMENTED - mock only"
+      - "Requires authentication setup"
+      - "Complex API"
+
+    use_cases:
+      best_for:
+        - "Future implementation"
+      not_suitable_for:
+        - "Current use (not implemented)"
+      complements:
+        - "N/A"
+
+    nmdc_integration:
+      schema_slots:
+        - "ndvi"
+        - "evi"
+      multi_provider_role: "not_implemented"
+      geographic_preferences:
+        excellent: []
+        good: []
+        poor: []
+
+  # ============================================================================
+  # GEOCODING PROVIDERS
+  # ============================================================================
+
+  geocoding.google_forward:
+    name: "Google Geocoding (Forward)"
+    class: "GoogleForwardGeocodingProvider"
+    module: "biosample_enricher.forward_geocoding.providers.google"
+
+    technical:
+      api_type: "REST"
+      api_endpoint: "https://maps.googleapis.com/maps/api/geocode/json"
+      authentication: "api_key_required"
+      api_key_env_var: "GOOGLE_MAIN_API_KEY"
+      rate_limit: "Based on billing"
+      timeout_default: 20
+      coverage: "Global"
+      resolution: "Address-level precision"
+      data_source: "Google Maps database"
+
+    reliability:
+      stability: "high"
+      data_quality: "high"
+      uptime_history: "Excellent"
+      known_issues: []
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "paid"
+      free_tier: "No"
+      quota_limits: "Based on billing"
+      cost_per_request: "$0.005 per request"
+
+    strengths:
+      - "High accuracy"
+      - "Global coverage"
+      - "Excellent address parsing"
+      - "Robust error handling"
+
+    weaknesses:
+      - "Requires paid API key"
+      - "Cost per request"
+
+    use_cases:
+      best_for:
+        - "Production with budget"
+        - "High accuracy needs"
+      not_suitable_for:
+        - "High-volume without budget"
+      complements:
+        - "OSM Nominatim (free fallback)"
+
+    nmdc_integration:
+      schema_slots:
+        - "lat_lon"
+      multi_provider_role: "primary_if_key_available"
+      geographic_preferences:
+        excellent: ["global"]
+        good: []
+        poor: []
+
+  geocoding.osm_forward:
+    name: "OSM Nominatim (Forward)"
+    class: "OSMForwardGeocodingProvider"
+    module: "biosample_enricher.forward_geocoding.providers.osm"
+
+    technical:
+      api_type: "REST"
+      api_endpoint: "https://nominatim.openstreetmap.org/search"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "1 request/second"
+      timeout_default: 20
+      coverage: "Global"
+      resolution: "Address-level precision"
+      data_source: "OpenStreetMap database"
+
+    reliability:
+      stability: "high"
+      data_quality: "community_maintained"
+      uptime_history: "Good"
+      known_issues:
+        - "Rate limited to 1 request/second"
+        - "Requires User-Agent header"
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited (fair use)"
+      quota_limits: "1 request/second"
+      cost_per_request: "$0"
+
+    strengths:
+      - "Free access"
+      - "Global coverage"
+      - "Community-maintained data"
+
+    weaknesses:
+      - "Rate limited (1/second)"
+      - "Variable accuracy"
+      - "Requires User-Agent"
+
+    use_cases:
+      best_for:
+        - "Free geocoding"
+        - "Development/testing"
+      not_suitable_for:
+        - "High-volume batch (>1/second)"
+      complements:
+        - "Google Geocoding"
+
+    nmdc_integration:
+      schema_slots:
+        - "lat_lon"
+      multi_provider_role: "primary_free_option"
+      geographic_preferences:
+        excellent: ["global"]
+        good: []
+        poor: []
+
+  geocoding.google_reverse:
+    name: "Google Reverse Geocoding"
+    class: "GoogleReverseGeocodingProvider"
+    module: "biosample_enricher.reverse_geocoding.providers.google"
+
+    technical:
+      api_type: "REST"
+      api_endpoint: "https://maps.googleapis.com/maps/api/geocode/json"
+      authentication: "api_key_required"
+      api_key_env_var: "GOOGLE_MAIN_API_KEY"
+      rate_limit: "Based on billing"
+      timeout_default: 20
+      coverage: "Global"
+      resolution: "Address-level precision"
+      data_source: "Google Maps database"
+
+    reliability:
+      stability: "high"
+      data_quality: "high"
+      uptime_history: "Excellent"
+      known_issues: []
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "paid"
+      free_tier: "No"
+      quota_limits: "Based on billing"
+      cost_per_request: "$0.005 per request"
+
+    strengths:
+      - "High accuracy"
+      - "Detailed address components"
+      - "Global coverage"
+
+    weaknesses:
+      - "Requires paid API key"
+
+    use_cases:
+      best_for:
+        - "Production with budget"
+      not_suitable_for:
+        - "High-volume without budget"
+      complements:
+        - "OSM Nominatim"
+
+    nmdc_integration:
+      schema_slots:
+        - "geo_loc_name"
+      multi_provider_role: "primary_if_key_available"
+      geographic_preferences:
+        excellent: ["global"]
+        good: []
+        poor: []
+
+  geocoding.osm_reverse:
+    name: "OSM Nominatim (Reverse)"
+    class: "OSMReverseGeocodingProvider"
+    module: "biosample_enricher.reverse_geocoding.providers.osm"
+
+    technical:
+      api_type: "REST"
+      api_endpoint: "https://nominatim.openstreetmap.org/reverse"
+      authentication: "none"
+      api_key_env_var: null
+      rate_limit: "1 request/second"
+      timeout_default: 20
+      coverage: "Global"
+      resolution: "Address-level precision"
+      data_source: "OpenStreetMap database"
+
+    reliability:
+      stability: "high"
+      data_quality: "community_maintained"
+      uptime_history: "Good"
+      known_issues:
+        - "Rate limited to 1 request/second"
+      error_handling: "comprehensive"
+
+    cost:
+      pricing_model: "free"
+      free_tier: "Unlimited (fair use)"
+      quota_limits: "1 request/second"
+      cost_per_request: "$0"
+
+    strengths:
+      - "Free access"
+      - "Global coverage"
+
+    weaknesses:
+      - "Rate limited"
+      - "Variable accuracy"
+
+    use_cases:
+      best_for:
+        - "Free reverse geocoding"
+      not_suitable_for:
+        - "High-volume batch"
+      complements:
+        - "Google Reverse Geocoding"
+
+    nmdc_integration:
+      schema_slots:
+        - "geo_loc_name"
+      multi_provider_role: "primary_free_option"
+      geographic_preferences:
+        excellent: ["global"]
+        good: []
+        poor: []

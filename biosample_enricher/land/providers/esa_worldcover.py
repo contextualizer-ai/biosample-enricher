@@ -11,12 +11,58 @@ logger = get_logger(__name__)
 
 
 class ESAWorldCoverProvider(LandCoverProviderBase):
-    """ESA WorldCover land cover provider.
+    """
+    ESA WorldCover - Sentinel-1 & Sentinel-2
 
-    Provides global land cover classification at 10m resolution.
-    Uses ESA WorldCover data via WMS and REST APIs.
+    Technical Characteristics:
+        API Type: WMS
+        Endpoint: https://services.terrascope.be/wms/v2
+        Authentication: none
+        Coverage: Global
+        Resolution: 10m
+        Temporal: 2020, 2021
 
-    Data source: https://worldcover2021.esa.int/
+    Reliability:
+        Stability: HIGH
+        Data Quality: satellite_classified
+        Uptime: Good (ESA service)
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited
+        Quotas: None documented
+
+    Strengths:
+        ✓ Global coverage
+        ✓ High resolution (10m - best available)
+        ✓ Recent data (2020, 2021)
+        ✓ Free access
+        ✓ Sentinel satellite quality
+
+    Weaknesses:
+        ✗ Limited temporal coverage (only 2020, 2021)
+        ✗ Simplified classification scheme
+
+    Best For:
+        • Global land cover classification
+        • International locations
+        • Recent land cover needed
+
+    Not Suitable For:
+        • Historical land cover (pre-2020)
+        • Detailed US classification (use NLCD)
+
+    Complements:
+        • NLCD (for USA detail)
+
+    NMDC Integration:
+        Schema Slots: cur_land_use
+        Role: primary_global
+        Excellent For: global, international
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://services.terrascope.be/wms/v2
     """
 
     def __init__(self, timeout: int = 30):

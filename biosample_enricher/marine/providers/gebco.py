@@ -21,7 +21,56 @@ logger = get_logger(__name__)
 
 
 class GEBCOProvider(MarineProviderBase):
-    """GEBCO bathymetry provider."""
+    """
+    GEBCO Bathymetry - Compiled bathymetric surveys
+
+    Technical Characteristics:
+        API Type: WCS
+        Endpoint: https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/
+        Authentication: none
+        Coverage: Global oceans
+        Resolution: 15 arc-seconds (~450m)
+
+    Reliability:
+        Stability: MODERATE
+        Data Quality: survey_compilation
+        Uptime: Fair
+        Known Issues:
+            - ⚠️ WCS implementation incomplete
+            - Service reliability issues
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited
+
+    Strengths:
+        ✓ Global ocean coverage
+        ✓ High resolution (15 arc-seconds)
+        ✓ Free access
+
+    Weaknesses:
+        ✗ ⚠️ Incomplete WCS implementation
+        ✗ Service stability concerns
+        ✗ Limited error handling
+
+    Best For:
+        • Ocean depth estimates when working
+
+    Not Suitable For:
+        • Production systems requiring reliability
+
+    Complements:
+        • Other bathymetry providers needed
+
+    NMDC Integration:
+        Schema Slots: depth
+        Role: experimental
+        Excellent For: oceans
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/
+    """
 
     def __init__(self, timeout: int = 30) -> None:
         """Initialize GEBCO provider.

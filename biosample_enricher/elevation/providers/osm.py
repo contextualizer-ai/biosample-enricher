@@ -11,7 +11,56 @@ logger = get_logger(__name__)
 
 
 class OSMElevationProvider(BaseElevationProvider):
-    """Provider for OpenElevation/OpenTopoData-style APIs."""
+    """
+    OSM Elevation (open-elevation.com) - SRTM, ASTER GDEM
+
+    Technical Characteristics:
+        API Type: REST
+        Endpoint: https://api.open-elevation.com/api/v1/lookup
+        Authentication: none
+        Coverage: Global
+        Resolution: 90m (SRTM-based)
+
+    Reliability:
+        Stability: HIGH
+        Data Quality: satellite
+        Uptime: Good
+
+    Cost:
+        Model: free
+        Free Tier: Unlimited (fair use)
+        Quotas: None documented
+
+    Strengths:
+        ✓ Free, no API key
+        ✓ Global coverage
+        ✓ 90m resolution (better than Open Topo Data)
+        ✓ No documented rate limits
+
+    Weaknesses:
+        ✗ Less mature than other services
+        ✗ Limited documentation
+        ✗ Unknown reliability guarantees
+
+    Best For:
+        • Free alternative with decent resolution
+        • Development/testing
+
+    Not Suitable For:
+        • Production systems requiring SLA
+
+    Complements:
+        • Other free elevation providers
+
+    NMDC Integration:
+        Schema Slots: elev
+        Role: fallback_free_option
+        Excellent For: global
+
+    See Also:
+        Full comparison: config/provider_metadata.yaml
+        API: https://api.open-elevation.com/api/v1/lookup
+    """
 
     def __init__(
         self, endpoint: str = "https://api.open-elevation.com/api/v1/lookup"
