@@ -95,7 +95,7 @@ Deploy biosample-enricher as a standalone service and call it from nmdc-server:
 import httpx
 
 class SampleMetadataSuggester:
-    ENRICHER_URL = "https://enricher.microbiomedata.org/api/v1/submission-values"
+    ENRICHER_URL = "https://enricher.microbiomedata.org/api/v1/environmental-metadata"
 
     def suggest_values_from_enricher(
         self, sample: Dict[str, str], slots: list[str]

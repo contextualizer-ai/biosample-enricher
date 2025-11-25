@@ -423,4 +423,4 @@ if precip_range:
 - `docs/PROVIDER_RELIABILITY_ANALYSIS.md` - Overall provider stability analysis
 - `docs/elevation_providers.md` - Similar analysis for elevation providers
 - `biosample_enricher/weather/service.py` - Implementation code
-- `tests/test_environmental_metadata.py` - Usage examples in tests
+- `tests/test_submission_values.py` - Usage examples in tests
