@@ -396,7 +396,7 @@ def get_submission_values(
     # Collect metadata if requested
     all_metadata: dict[str, Any] = {}
 
-    # Fetch weather data if needed
+    # Fetch weather data if needed (includes climate normals)
     if requested_weather_slots:
         try:
             weather_service = WeatherService()
@@ -407,6 +407,7 @@ def get_submission_values(
                 requested_weather_slots,
                 datetime_obj,
                 providers,
+                strategy,
             )
             result.update(weather_values)
             all_metadata.update(weather_metadata)
@@ -477,9 +478,20 @@ def _get_weather_values(
     slots: list[str],
     datetime_obj: datetime | None,
     providers: list[str] | None,
+    strategy: str = "mean",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """
     Extract weather-related slot values.
+
+    Args:
+        service: WeatherService instance
+        lat: Latitude in decimal degrees
+        lon: Longitude in decimal degrees
+        slots: List of requested slot names
+        datetime_obj: Optional datetime for weather data
+        providers: Optional list of preferred provider names
+        strategy: Consensus strategy - "mean", "median", "first", "best_quality"
+                 Default is "mean" (consistent with get_submission_values)
 
     Returns:
         Tuple of (values_dict, metadata_dict) where metadata_dict contains
@@ -509,8 +521,8 @@ def _get_weather_values(
             # Get results from all providers (MultiProviderClimateNormals)
             normals = service.get_climate_normals(lat, lon, providers=providers)
 
-            # Use consensus values by default (average across all successful providers)
-            schema_values = normals.to_submission_schema(strategy="consensus")
+            # Use the specified strategy to combine provider values
+            schema_values = normals.to_submission_schema(strategy=strategy)
 
             if "annual_precpt" in slots:
                 annual_precip = schema_values.get("annual_precpt")
@@ -539,7 +551,7 @@ def _get_weather_values(
 
             metadata["climate_normals"] = {
                 "providers_used": normals.successful_providers,
-                "consensus_strategy": "mean",
+                "consensus_strategy": strategy,
                 "requested_start_year": normals.requested_start_year,
                 "requested_end_year": normals.requested_end_year,
                 "provider_results": provider_results,
